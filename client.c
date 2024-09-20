@@ -5,6 +5,13 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+/*
+Il messaggio di errore che ricevi è causato dal fatto che l'IDE non riesce a trovare la libreria <arpa/inet.h>, 
+che contiene le definizioni per la programmazione di socket di rete (come inet_pton e htonl), specifica per i 
+sistemi Unix/Linux. Questo errore è comune quando si lavora su Windows, poiché il sistema operativo non ha 
+una versione nativa di queste librerie.
+*/
+
 #define PORT 8080
 
 int main() {
