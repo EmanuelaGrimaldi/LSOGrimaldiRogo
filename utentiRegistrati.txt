@@ -1,0 +1,2 @@
+Nome Completo | Email | NumeroLibriPresiInPrestito | listaLibriPrestati
+Emy grimaldi | nome@gmail.com | 3 | titolo1;titolo2;titolo3

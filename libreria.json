@@ -1,0 +1,16 @@
+[
+    {
+      "titolo": "C Programming",
+      "totCopie": 5,
+      "totCopieDisponibili": 3,
+      "prestiti": [
+        {
+          "nomeUtente": "Mario Rossi",
+          "IDEmail": "mario.rossi@mail.com",
+          "dataPrestito": "2024-09-22",
+          "dataRestituzione": "2024-10-22"
+        }
+      ]
+    }
+  ]
+  

@@ -1,44 +1,36 @@
-#include <string.h>
-#include <time.h>
-#include <sys/time.h>
-#include <errno.h>
-#include <unistd.h>
-#include <winsock2.h>
-#include <windows.h>
-#include <ws2tcpip.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <json-c/json.h>
+#include "libro.h"
 
-#define MAXLEN 30
+void searchBook(int socket) {
+    char titolo[100];
+    FILE *file = fopen("libreria.json", "r");
+    struct json_object *parsed_json;
+    struct json_object *libri;
+    struct json_object *libro;
+    size_t n_libri;
 
-void ricercaTramiteISBN();
-void ricercaTramiteTitolo ();
-void aggiornaNumeroCopieDisponibili ();
+    recv(socket, titolo, 100, 0);
 
-typedef struct _BOOK {
-    char Titolo[MAXLEN];
-    int ISBN;
-    char autore[MAXLEN];
-    char casaEditrice[MAXLEN];
-    int copieTotali;
-    int copieDisponibili;
-} LIBRO;
+    char buffer[1024];
+    fread(buffer, 1024, 1, file);
+    fclose(file);
 
+    parsed_json = json_tokener_parse(buffer);
+    json_object_object_get_ex(parsed_json, "libri", &libri);
+    n_libri = json_object_array_length(libri);
 
-void ricercaTramiteISBN (){
-    //Apro file di testo "ListaLibri" e controllo se c'è un libro con lo stesso ISBN inserito da tastiera.
-}
+    for (size_t i = 0; i < n_libri; i++) {
+        libro = json_object_array_get_idx(libri, i);
+        const char *titolo_libro = json_object_get_string(json_object_object_get(libro, "titolo"));
 
-void ricercaTramiteTitolo (){
-    //Apro file di testo "ListaLibri" e controllo se c'è un libro con lo stesso titolo inserito da tastiera.
-}
+        if (strcmp(titolo, titolo_libro) == 0) {
+            send(socket, "Book found", strlen("Book found"), 0);
+            return;
+        }
+    }
 
-void aggiornaNumeroCopieDisponibili () {
-    /*
-    1) Apro file di testo "ListaLibri" e aggiorna tot copie disponibili
-    2) Apre il file di testo ISBN.txt e aggiorna: 
-                                totCopieDisponibili
-                                totCopiePrestate
-                                nuovo gruppo di metadati con ID utente, nome utente, currdate e data di restituzione.
-    */
+    send(socket, "Book not found", strlen("Book not found"), 0);
 }

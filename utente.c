@@ -1,31 +1,46 @@
-#include <string.h>
-#include <time.h>
-#include <sys/time.h>
-#include <errno.h>
-#include <unistd.h>
-#include <winsock2.h>
-#include <windows.h>
-#include <ws2tcpip.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "utente.h"
 
-#define MAXLEN 30
+void registerUser(int socket, char name[100], char email[100]) {
+    FILE *file = fopen("utentiRegistrati.txt", "a");
+    if (!file) {
+        perror("Could not open file");
+        return;
+    }
 
-void registrazioneUtente ();
-void accessoUtente ();
+    recv(socket, name, 100, 0);
+    recv(socket, email, 100, 0);
 
-typedef struct _USER {
-    char nome[MAXLEN];
-    char IDEmail[MAXLEN];
-    char listaLibriPrestati[MAXLEN][MAXLEN];
-    int numeroLibriPresiInPrestito;
-} UTENTE;
+    fprintf(file, "%s|%s|0|\n", name, email); // 0 libri presi in prestito all'inizio
+    fclose(file);
 
-
-void registrazioneUtente (){
-    //Prendi dati da tastiera e aggiungi nuovo rigo in file di testo "ListaUtenti"
+    send(socket, "User registered successfully", strlen("User registered successfully"), 0);
 }
 
-void accessoUtente (){
-    //Prendi i dati da tastiera e verifica sia presente nel file di testo "ListaUtenti"
+int loginUser(int socket, char *ID) {
+    char id[100], line[256];
+    FILE *file = fopen("utentiRegistrati.txt", "r");
+    if (!file) {
+        perror("Could not open file");
+        return 0;
+    }
+
+    recv(socket, id, 100, 0);
+    strcpy(ID, id);
+
+    while (fgets(line, sizeof(line), file)) {
+        char *token = strtok(line, "|");
+        if (token != NULL && strcmp(token, id) == 0) {
+            send(socket, "Login successful", strlen("Login successful"), 0);
+            fclose(file);
+            return 1;
+        }
+    }
+
+    send(socket, "Login failed", strlen("Login failed"), 0);
+    fclose(file);
+    return 0;
 }

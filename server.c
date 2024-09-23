@@ -1,52 +1,97 @@
-// server.c
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#include <stdlib.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
-/*
-Il messaggio di errore che ricevi è causato dal fatto che l'IDE non riesce a trovare la libreria <arpa/inet.h>, 
-che contiene le definizioni per la programmazione di socket di rete (come inet_pton e htonl), specifica per i 
-sistemi Unix/Linux. Questo errore è comune quando si lavora su Windows, poiché il sistema operativo non ha 
-una versione nativa di queste librerie.
-*/
+#include <unistd.h>
+#include "utente.h"  // Includiamo utente.h
+#include "libro.h"   // Includiamo libro.h
+#include "carrello.h" // Includiamo carrello.h
 
-#define PORT 8080
+#define MAX 1024
+
+void handleClient(int socket);
 
 int main() {
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    int addrlen = sizeof(address);
-    char buffer[1024] = {0};
-    const char *hello = "Hello from server";
+    int server_sock, client_sock, c;
+    struct sockaddr_in server, client;
 
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
+    // Creazione socket server
+    server_sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_sock == -1) {
+        printf("Could not create socket\n");
+        return 1;
     }
 
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons(8080);
 
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
+    // Bind
+    if (bind(server_sock, (struct sockaddr *)&server, sizeof(server)) < 0) {
+        printf("Bind failed\n");
+        return 1;
     }
 
-    if (listen(server_fd, 3) < 0) {
-        perror("listen");
-        exit(EXIT_FAILURE);
+    // Ascolto
+    listen(server_sock, 3);
+    printf("Server listening on port 8080...\n");
+
+    c = sizeof(struct sockaddr_in);
+    while ((client_sock = accept(server_sock, (struct sockaddr *)&client, (socklen_t *)&c))) {
+        printf("Client connected\n");
+        handleClient(client_sock);
+        close(client_sock);
     }
 
-    if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
-        perror("accept");
-        exit(EXIT_FAILURE);
+    if (client_sock < 0) {
+        printf("Accept failed\n");
+        return 1;
     }
 
-    read(new_socket, buffer, 1024);
-    printf("Message received: %s\n", buffer);
-    send(new_socket, hello, strlen(hello), 0);
-    printf("Hello message sent\n");
+    close(server_sock);
     return 0;
 }
+
+void handleClient(int socket) {
+    char client_message[MAX];
+    char userID[100];
+    int read_size;
+
+    // Ricevi comandi dal client
+    while ((read_size = recv(socket, client_message, MAX, 0)) > 0) {
+        client_message[read_size] = '\0';
+
+        if (strcmp(client_message, "REGISTER") == 0) {
+            char name[100], email[100];
+            recv(socket, name, 100, 0);
+            recv(socket, email, 100, 0);
+            registerUser(socket, name, email);
+
+        } else if (strcmp(client_message, "LOGIN") == 0) {
+            recv(socket, userID, 100, 0);
+            loginUser(socket, userID);
+
+        } else if (strcmp(client_message, "SEARCH") == 0) {
+            searchBook(socket);
+
+        } else if (strcmp(client_message, "ADD_TO_CART") == 0) {
+            char bookTitle[100];
+            recv(socket, bookTitle, 100, 0);
+            addBookToCart(socket, userID); // Utilizza l'ID dell'utente loggato
+
+        } else if (strcmp(client_message, "CHECKOUT") == 0) {
+            checkout(socket, userID); // Utilizza l'ID dell'utente loggato
+
+        } else {
+            send(socket, "Invalid command", strlen("Invalid command"), 0);
+        }
+    }
+
+    if (read_size == 0) {
+        printf("Client disconnected\n");
+    } else if (read_size == -1) {
+        perror("Recv failed");
+    }
+}
+
