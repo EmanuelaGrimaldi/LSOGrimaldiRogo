@@ -27,10 +27,10 @@ void searchBook(int socket) {
         const char *titolo_libro = json_object_get_string(json_object_object_get(libro, "titolo"));
 
         if (strcmp(titolo, titolo_libro) == 0) {
-            send(socket, "Book found", strlen("Book found"), 0);
+            send(socket, "Libro trovato", strlen("Libro trovato"), 0);
             return;
         }
     }
 
-    send(socket, "Book not found", strlen("Book not found"), 0);
+    send(socket, "Libro non trovato", strlen("Libro non trovato"), 0);
 }

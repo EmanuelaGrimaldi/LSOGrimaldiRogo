@@ -12,7 +12,7 @@ void addBookToCart(int socket, const char *userID) {
     
     if (!cartFile) {
         perror("Could not open cart file");
-        send(socket, "Failed to add book to cart", strlen("Failed to add book to cart"), 0);
+        send(socket, "Errore durante l'apertura del file carrello.txt in carrello.c\n", strlen("Errore durante l'apertura del file carrello.txt in carrello.c\n"), 0);
         return;
     }
     
@@ -22,9 +22,9 @@ void addBookToCart(int socket, const char *userID) {
     // Verifica se il libro è disponibile
     if (isBookAvailable(bookTitle)) {
         fprintf(cartFile, "%s|%s\n", userID, bookTitle);  // Scrivi l'ID utente e il titolo del libro nel carrello
-        send(socket, "Book added to cart", strlen("Book added to cart"), 0);
+        send(socket, "Libro aggiunto al carrello correttamente", strlen("Libro aggiunto al carrello correttamente"), 0);
     } else {
-        send(socket, "Book not available", strlen("Book not available"), 0);
+        send(socket, "Libro non disponibile", strlen("Libro non disponibile"), 0);
     }
 
     fclose(cartFile);
@@ -39,7 +39,7 @@ void checkout(int socket, const char *userID) {
 
     if (!cartFile || !temp) {
         perror("Could not open files for checkout");
-        send(socket, "Failed to process checkout", strlen("Failed to process checkout"), 0);
+        send(socket, "Errore durante il checkout", strlen("Errore durante il checkout"), 0);
         return;
     }
 
@@ -67,9 +67,9 @@ void checkout(int socket, const char *userID) {
     rename(tempFile, "carrello.txt");
 
     if (booksCheckedOut > 0) {
-        send(socket, "Checkout complete", strlen("Checkout complete"), 0);
+        send(socket, "Checkout completato", strlen("Checkout completato"), 0);
     } else {
-        send(socket, "No books to checkout", strlen("No books to checkout"), 0);
+        send(socket, "Non vi sono libri nel carrello!", strlen("Non vi sono libri nel carrello!"), 0);
     }
 }
 
@@ -82,7 +82,7 @@ int isBookAvailable(const char *bookTitle) {
     size_t n_libri;
 
     if (!libraryFile) {
-        perror("Could not open library file");
+        perror("Errore durante l'apertura del file libreria.json");
         return 0;
     }
 
@@ -111,7 +111,7 @@ void borrowBook(const char *userID, char *bookTitle) {
     // Apriamo il file della libreria per aggiornare le informazioni sui libri
     FILE *libroFile = fopen("libreria.JSON", "r+");
     if (libroFile == NULL) {
-        printf("Error opening library file.\n");
+        printf("Errore durante l'apertura del file libreria.json.\n");
         return;
     }
 
@@ -151,7 +151,7 @@ void borrowBook(const char *userID, char *bookTitle) {
     // Aggiungi il libro al carrello dell'utente
     FILE *carrelloFile = fopen("carrello.txt", "a");
     if (carrelloFile == NULL) {
-        printf("Error opening cart file.\n");
+        printf("Errore durante l'apertura del file carrello.txt\n");
         return;
     }
 
@@ -159,5 +159,5 @@ void borrowBook(const char *userID, char *bookTitle) {
     fprintf(carrelloFile, "%s | %s\n", userID, bookTitle);
     fclose(carrelloFile);
 
-    printf("Book '%s' has been borrowed by user '%s'.\n", bookTitle, userID);
+    printf("Il libro '%s' è stato preso in prestito dall'utente '%s'.\n", bookTitle, userID);
 }

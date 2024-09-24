@@ -21,7 +21,7 @@ int main() {
     // Creazione socket
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_desc == -1) {
-        printf("Could not create socket\n");
+        printf("Creazione socket fallita.\n");
         return 1;
     }
 
@@ -31,11 +31,11 @@ int main() {
 
     // Connessione al server
     if (connect(socket_desc, (struct sockaddr *)&server, sizeof(server)) < 0) {
-        printf("Connection failed\n");
+        printf("Connessione al server fallita\n");
         return 1;
     }
 
-    printf("Connected to server!\n");
+    printf("Connessione al server avvenuta con successo!\n");
     menu(socket_desc);
     close(socket_desc);
     return 0;
@@ -45,13 +45,13 @@ void menu(int socket) {
     int choice;
     while (1) {
         printf("\n--- Menu ---\n");
-        printf("1. Register\n");
+        printf("1. Registrazione nuovo utente\n");
         printf("2. Login\n");
-        printf("3. Search Book\n");
-        printf("4. Add to Cart\n");
+        printf("3. Ricerca di un libro\n");
+        printf("4. Aggiungi al carrello\n");
         printf("5. Checkout\n");
-        printf("6. Exit\n");
-        printf("Choose an option: ");
+        printf("6. Chiudi\n");
+        printf("Inserisci qui la tua opzione: ");
         scanf("%d", &choice);
 
         switch (choice) {
@@ -73,24 +73,27 @@ void menu(int socket) {
             case 6:
                 return;
             default:
-                printf("Invalid option. Try again.\n");
+                printf("Opzione non valida! Riprova.\n");
         }
     }
 }
 
 void registerUser(int socket) {
-    char name[100], email[100];
+    char name[100], email[100], password[30];
     char server_reply[MAX];
 
-    printf("Enter your name: ");
+    printf("Inserisci qui il tuo nome per intero: ");
     scanf("%s", name);
-    printf("Enter your email: ");
+    printf("Inserisci qui la tua email: ");
     scanf("%s", email);
+    printf("Inserisci qui la tua password: ");
+    scanf("%s", password);
 
     // Invia dati di registrazione al server
     send(socket, "REGISTER", strlen("REGISTER"), 0);
     send(socket, name, strlen(name), 0);
     send(socket, email, strlen(email), 0);
+    send(socket, password, strlen(password), 0);
 
     // Ricevi risposta dal server
     recv(socket, server_reply, MAX, 0);
@@ -98,15 +101,18 @@ void registerUser(int socket) {
 }
 
 void login(int socket) {
-    char email[100];
+    char email[100], password[30];
     char server_reply[MAX];
 
-    printf("Enter your email: ");
+    printf("Inserisci la tua email: ");
     scanf("%s", email);
+    printf("Inserisci qui la tua password: ");
+    scanf("%s", password);
 
     // Invia dati di login al server
     send(socket, "LOGIN", strlen("LOGIN"), 0);
     send(socket, email, strlen(email), 0);
+    send(socket, password, strlen(password), 0);
 
     // Ricevi risposta dal server
     recv(socket, server_reply, MAX, 0);
@@ -117,7 +123,7 @@ void searchBook(int socket) {
     char bookTitle[100];
     char server_reply[MAX];
 
-    printf("Enter book title to search: ");
+    printf("Inserisci la parola chiave per la ricerca del libro: ");
     scanf("%s", bookTitle);
 
     // Invia richiesta di ricerca al server
@@ -133,7 +139,7 @@ void addToCart(int socket) {
     char bookTitle[100];
     char server_reply[MAX];
 
-    printf("Enter book title to add to cart: ");
+    printf("Inserisci il titolo del libro da aggiungere al carrello: ");
     scanf("%s", bookTitle);
 
     // Invia richiesta di aggiungere al carrello
