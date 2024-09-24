@@ -3,24 +3,22 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include "client.h"
 
-#define MAX 1024
+// da implementare il login con utente.c
 
-void menu(int socket);
-void login(int socket);
-void registerUser(int socket);
-void searchBook(int socket);
-void addToCart(int socket);
-void checkout(int socket);
+int main()
+{
+    int client_connesso = NON_CONNESSO;
 
-int main() {
     int socket_desc;
     struct sockaddr_in server;
-    char message[MAX], server_reply[MAX];
+    char message[MAX_MASSAGE_LENGTH], server_reply[MAX_MASSAGE_LENGTH];
 
     // Creazione socket
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_desc == -1) {
+    if (socket_desc == -1)
+    {
         printf("Creazione socket fallita.\n");
         return 1;
     }
@@ -30,57 +28,90 @@ int main() {
     server.sin_port = htons(8080);
 
     // Connessione al server
-    if (connect(socket_desc, (struct sockaddr *)&server, sizeof(server)) < 0) {
+    if (connect(socket_desc, (struct sockaddr *)&server, sizeof(server)) < 0)
+    {
         printf("Connessione al server fallita\n");
         return 1;
     }
 
     printf("Connessione al server avvenuta con successo!\n");
-    menu(socket_desc);
+    menuGuest(socket_desc);
     close(socket_desc);
     return 0;
 }
 
-void menu(int socket) {
+void menuGuest(int socket)
+{
     int choice;
-    while (1) {
+    while (1)
+    {
         printf("\n--- Menu ---\n");
         printf("1. Registrazione nuovo utente\n");
         printf("2. Login\n");
         printf("3. Ricerca di un libro\n");
-        printf("4. Aggiungi al carrello\n");
-        printf("5. Checkout\n");
-        printf("6. Chiudi\n");
+        printf("4. Chiudi\n");
         printf("Inserisci qui la tua opzione: ");
         scanf("%d", &choice);
 
-        switch (choice) {
-            case 1:
-                registerUser(socket);
-                break;
-            case 2:
-                login(socket);
-                break;
-            case 3:
-                searchBook(socket);
-                break;
-            case 4:
-                addToCart(socket);
-                break;
-            case 5:
-                checkout(socket);
-                break;
-            case 6:
-                return;
-            default:
-                printf("Opzione non valida! Riprova.\n");
+        switch (choice)
+        {
+        case 1:
+            registerUser(socket);
+            break;
+        case 2:
+            login(socket);
+            break;
+        case 3:
+            searchBook(socket);
+            break;
+        case 4:
+            return;
+        default:
+            printf("Opzione non valida! Riprova.\n");
         }
     }
 }
 
-void registerUser(int socket) {
+void menuUser(int socket)
+{
+    int choice;
+    while (1)
+    {
+        // pulisci lo schermo con? clrscr(); system(clear); system(crl); printf("\033[2J"); boh
+        printf("\n--- Menu ---\n");
+        printf("1. Ricerca di un libro\n");
+        printf("2. Aggiungi al carrello un libro\n");
+        printf("3. Checkout\n");
+        printf("4. Esci\n");
+        printf("Inserisci qui la tua opzione: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            searchBook(socket);
+            break;
+        case 2:
+            addToCart(socket);
+            break;
+        case 3:
+            checkout(socket);
+            break;
+        case 4:
+            svuotaCarrelloLibri(); // non implemented
+            disaccedi();
+            menuGuest();
+            break;
+        default:
+            printf("Opzione non valida! Riprova.\n");
+        }
+    }
+}
+
+void registerUser(int socket)
+{
     char name[100], email[100], password[30];
-    char server_reply[MAX];
+    char server_reply[MAX_MASSAGE_LENGTH];
 
     printf("Inserisci qui il tuo nome per intero: ");
     scanf("%s", name);
@@ -96,13 +127,14 @@ void registerUser(int socket) {
     send(socket, password, strlen(password), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX, 0);
+    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
     printf("Server: %s\n", server_reply);
 }
 
-void login(int socket) {
+void login(int socket)
+{
     char email[100], password[30];
-    char server_reply[MAX];
+    char server_reply[MAX_MASSAGE_LENGTH];
 
     printf("Inserisci la tua email: ");
     scanf("%s", email);
@@ -115,13 +147,21 @@ void login(int socket) {
     send(socket, password, strlen(password), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX, 0);
+    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
     printf("Server: %s\n", server_reply);
+
+    // Ridirezionamento
+    if (strcmp(server_reply, "ok") == 0)
+        menuUser();
+    else
+        menuGuest();
+    // cambio var in utente/client per dire valido?
 }
 
-void searchBook(int socket) {
+void searchBook(int socket)
+{
     char bookTitle[100];
-    char server_reply[MAX];
+    char server_reply[MAX_MASSAGE_LENGTH];
 
     printf("Inserisci la parola chiave per la ricerca del libro: ");
     scanf("%s", bookTitle);
@@ -131,13 +171,14 @@ void searchBook(int socket) {
     send(socket, bookTitle, strlen(bookTitle), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX, 0);
+    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
     printf("Server: %s\n", server_reply);
 }
 
-void addToCart(int socket) {
+void addToCart(int socket)
+{
     char bookTitle[100];
-    char server_reply[MAX];
+    char server_reply[MAX_MASSAGE_LENGTH];
 
     printf("Inserisci il titolo del libro da aggiungere al carrello: ");
     scanf("%s", bookTitle);
@@ -147,17 +188,32 @@ void addToCart(int socket) {
     send(socket, bookTitle, strlen(bookTitle), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX, 0);
+    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
     printf("Server: %s\n", server_reply);
 }
 
-void checkout(int socket) {
-    char server_reply[MAX];
+void checkout(int socket)
+{
+    char server_reply[MAX_MASSAGE_LENGTH];
 
     // Invia richiesta di checkout al server
     send(socket, "CHECKOUT", strlen("CHECKOUT"), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX, 0);
+    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
     printf("Server: %s\n", server_reply);
+}
+
+void svuotaCarrelloLibri()
+{
+}
+
+void accedi()
+{
+    client_connesso = CONNESSO;
+}
+
+void disaccedi()
+{
+    client_connesso = NON_CONNESSO;
 }
