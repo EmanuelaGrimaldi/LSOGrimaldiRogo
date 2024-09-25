@@ -4,12 +4,13 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include "client.h"
-
-// da implementare il login con utente.c
+#include "utente.h"
 
 int main()
 {
-    int client_connesso = NON_CONNESSO;
+    client_connesso = NON_CONNESSO;
+    user_name = NULL;
+    user_email = NULL;
 
     int socket_desc;
     struct sockaddr_in server;
@@ -98,7 +99,7 @@ void menuUser(int socket)
             checkout(socket);
             break;
         case 4:
-            svuotaCarrelloLibri(); // non implemented
+            // checkout(socket, ); --- mi serve una struttura/var globale per fare l'operazione
             disaccedi();
             menuGuest();
             break;
@@ -135,6 +136,7 @@ void login(int socket)
 {
     char email[100], password[30];
     char server_reply[MAX_MASSAGE_LENGTH];
+    char server_reply_email[MAX_MASSAGE_LENGTH];
 
     printf("Inserisci la tua email: ");
     scanf("%s", email);
@@ -152,10 +154,11 @@ void login(int socket)
 
     // Ridirezionamento
     if (strcmp(server_reply, "ok") == 0)
+    {
         menuUser();
+    }
     else
         menuGuest();
-    // cambio var in utente/client per dire valido?
 }
 
 void searchBook(int socket)
@@ -202,18 +205,4 @@ void checkout(int socket)
     // Ricevi risposta dal server
     recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
     printf("Server: %s\n", server_reply);
-}
-
-void svuotaCarrelloLibri()
-{
-}
-
-void accedi()
-{
-    client_connesso = CONNESSO;
-}
-
-void disaccedi()
-{
-    client_connesso = NON_CONNESSO;
 }

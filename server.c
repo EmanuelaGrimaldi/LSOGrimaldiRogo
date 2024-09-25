@@ -71,7 +71,7 @@ void handleClient(int socket)
             recv(socket, name, 100, 0);
             recv(socket, email, 100, 0);
             recv(socket, password, 30, 0);
-            if (controlliUser(name, email, password) == 1)
+            if (callControlliUser(name, email, password) == 1)
             {
                 // eisite già
                 // rispondi con non_ok e torna indeitro
@@ -86,16 +86,20 @@ void handleClient(int socket)
         }
         else if (strcmp(client_message, "LOGIN") == 0)
         {
-            recv(socket, name, 100, 0);
-            recv(socket, password, 30, 0);
-            if (controlloUtente(email, password) == 1)
+            // in una f di utente
+            recv(socket, email, MAX_NAME_LENGTH, 0);
+            recv(socket, password, MAX_PWD_LENGTH, 0);
+            if (checkUser(email, password) == 1)
             {
-                accedi();
+
+                // come retrival i dati dell'utente? // send(socket, name, strlen(name), 0);
+                accedi(email);
             }
             else
-                nonAccedi();
+                disAccedi();
 
-            loginUser(socket, name, password); // non c'è
+            // loginUser(socket, name, password); // non c'è
+            //
         }
         else if (strcmp(client_message, "SEARCH") == 0)
         {
@@ -104,14 +108,15 @@ void handleClient(int socket)
         // ---- ATTENZIONE: ADD TO CART ---------------------------------------------------------------------------------------------
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-            // controllo user/client è collegato.
+            // Controllo user/client è collegato. -------
+
             char bookTitle[100];
             recv(socket, bookTitle, 100, 0);
-            addBookToCart(socket, name); // Utilizza l'ID dell'utente loggato
+            addBookToCart(socket, name); // Utilizza l'ID dell'utente loggato------ id= nome o email?
         }
         else if (strcmp(client_message, "CHECKOUT") == 0)
         {
-            checkout(socket, name); // Utilizza l'ID dell'utente loggato
+            checkout(socket, name); // Utilizza l'ID dell'utente loggato - name o email?
         }
         else
         {
@@ -128,7 +133,7 @@ void handleClient(int socket)
         perror("Errore con Recv in server.c\n");
     }
 }
-int controlloUtente(char *email, char *password)
+int checkUser(char *email, char *password)
 {
     int risposta = RISPOSTA_VALIDA;
 
@@ -141,9 +146,9 @@ int controlloUtente(char *email, char *password)
     return risposta;
 }
 
-int controlliUser(char *name, char *email, char *password)
+int callControlliUser(char *name, char *email, char *password)
 {
-    // controlliUser(name, email, password);
+    // callControlliUser(name, email, password);
     //      // boolean/int existUser(email,pwd);
     //      // booelan nomeValido(nome);
     //      // booelan emailValida(email);
@@ -164,19 +169,4 @@ int controlliUser(char *name, char *email, char *password)
         risposta = RISPOSTA_INVALIDA;
 
     return risposta;
-}
-
-int existUser(char *user)
-{
-    return RISPOSTA_VALIDA;
-}
-
-int emailValida(char *email)
-{
-    return RISPOSTA_VALIDA;
-}
-
-int pwdValida(char *pwd)
-{
-    return RISPOSTA_VALIDA;
 }

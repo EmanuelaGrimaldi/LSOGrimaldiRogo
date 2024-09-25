@@ -1,0 +1,15 @@
+#ifndef DEFINE_H
+#define DEFINE_H
+
+#define CONNESSO 1
+#define NON_CONNESSO 0
+
+#define MAX_MESSAGE_LENGTH 1024
+#define MAX_NAME_LENGTH 100
+#define MAX_EMAIL_LENGTH 100
+#define MAX_PWD_LENGTH 30
+
+#define RISPOSTA_VALIDA 1
+#define RISPOSTA_INVALIDA 0
+
+#endif
