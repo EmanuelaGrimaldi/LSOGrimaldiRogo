@@ -4,12 +4,12 @@
 #include "carrello.h"
 #include "libro.h"
 #include "define.h"
+#include "cJSON.h"
 
-// Aggiunge un libro al carrello dell'utente
-void addBookToCart(int socket, const char *userID)
+//---------------------------------------------------------------------------------------------------------------------------------- da rivedere
+void addBookToCart(int socket, const char *email, char * bookTitle)
 {
-    char bookTitle[100];
-    FILE *cartFile = fopen("carrello.txt", "a");
+    FILE *cartFile = fopen("carrelloUtenti.txt", "a");
 
     if (!cartFile)
     {
@@ -18,14 +18,51 @@ void addBookToCart(int socket, const char *userID)
         return;
     }
 
-    // Ricevi il titolo del libro dal client
-    recv(socket, bookTitle, 100, 0);
-
-    // Verifica se il libro è disponibile
     if (isBookAvailable(bookTitle))
     {
-        fprintf(cartFile, "%s|%s\n", userID, bookTitle); // Scrivi l'ID utente e il titolo del libro nel carrello
-        send(socket, "Libro aggiunto al carrello correttamente", strlen("Libro aggiunto al carrello correttamente"), 0);
+        char buffer[1024];
+        int trovato = 0;
+        char emailInput[] = email;
+
+        // Leggiamo il file riga per riga
+        while (fgets(buffer, sizeof(buffer), cartFile)) {
+            char tempEmailStringa[100];
+            char *tempEmail = strtok(buffer, "|");
+            char nuovaRigaCarrello[1024];
+
+            // Controlliamo se il nome esiste già
+            if (tempEmail != NULL) {
+                strncpy(tempEmailStringa, tempEmail, 100);
+
+                if (strcmp(tempEmailStringa, emailInput) == 0) 
+                {
+                    trovato = 1;
+                    // Se l'utente è trovato, aggiungiamo il prodotto
+                    snprintf(nuovaRigaCarrello, sizeof(nuovaRigaCarrello), "%s|", bookTitle);
+
+                    // Copiamo tutti i prodotti già esistenti
+                    tempEmail = strtok(NULL, "\n");
+                    if (tempEmail != NULL) {
+                        strncat(nuovaRigaCarrello, tempEmail, sizeof(nuovaRigaCarrello) - strlen(nuovaRigaCarrello) - 1);
+                    }
+
+                    // Aggiungiamo il nuovo prodotto
+                    //strncat(nuovaRigaCarrello, "|", sizeof(nuovaRigaCarrello) - strlen(nuovaRigaCarrello) - 1);
+                    strncat(nuovaRigaCarrello, bookTitle, sizeof(nuovaRigaCarrello) - strlen(nuovaRigaCarrello) - 1);
+
+                    // Torniamo indietro di una riga per riscrivere quella aggiornata
+                    fseek(cartFile, -strlen(buffer), SEEK_CUR);
+                    fprintf(cartFile, "%s\n", nuovaRigaCarrello);
+                    break;
+                }
+            }
+        }
+        if (trovato == 0) {
+            fseek(cartFile, 0, SEEK_END);
+            fprintf(cartFile, "%s|%s|\n", email, bookTitle);
+        }
+
+        fclose(cartFile);      
     }
     else
     {
@@ -35,8 +72,8 @@ void addBookToCart(int socket, const char *userID)
     fclose(cartFile);
 }
 
-// Processo di checkout: rimuove i libri dal carrello e li marca come presi in prestito
-void checkout(int socket, const char *userID)
+//-----------------------------------------------------------------------------------------------------------------------------------------------INCOMPLETO!
+void checkout(int socket, const char *email)
 {
     char line[256];
     char tempFile[] = "temp.txt";
@@ -54,40 +91,25 @@ void checkout(int socket, const char *userID)
 
     while (fgets(line, sizeof(line), cartFile))
     {
-        char *cartUserID = strtok(line, "|");
-        char *bookTitle = strtok(NULL, "|");
+        char *tempEmail = strtok(NULL, "|");
 
-        if (strcmp(cartUserID, userID) == 0)
+        if (strcmp(email, tempEmail) == 0)
         {
-            // Marca il libro come preso in prestito dall'utente
-            borrowBook(userID, bookTitle);
-            booksCheckedOut++;
-        }
-        else
-        {
-            // Se non è il libro dell'utente corrente, scrivilo nel file temporaneo
-            fprintf(temp, "%s|%s", cartUserID, bookTitle);
+            /*
+            ----------------------------------------------------------------------------------------------------------------------------------------------TODO: 
+            Prendi in prestito tutti i libri che vengono dopo la mia email
+            Per ogni libro: aggiornaLibreriaJson();
+            cancellare rigo attuale di carrello.txt
+            */
+        
         }
     }
 
     fclose(cartFile);
     fclose(temp);
-
-    // Rimuovi il file del carrello originale e rinominalo con il nuovo file  ---- non ho capito
-    remove("carrello.txt");
-    rename(tempFile, "carrello.txt");
-
-    if (booksCheckedOut > 0)
-    {
-        send(socket, "Checkout completato", strlen("Checkout completato"), 0);
-    }
-    else
-    {
-        send(socket, "Non vi sono libri nel carrello!", strlen("Non vi sono libri nel carrello!"), 0);
-    }
 }
 
-// Funzione di supporto che verifica se un libro è disponibile
+//---------------------------------------------------------------------------------------------------------------------------------------- Da verificare
 int isBookAvailable(const char *bookTitle)
 {
     FILE *libraryFile = fopen("libreria.json", "r");
@@ -120,7 +142,7 @@ int isBookAvailable(const char *bookTitle)
         if (strcmp(bookTitle, titolo) == 0)
         {
             int totCopieDisponibili = json_object_get_int(json_object_object_get(libro, "totCopieDisponibili"));
-            return totCopieDisponibili > 0;
+            //return totCopieDisponibili > 0;                           ------------------------------------------------------???????
             if (totCopieDisponibili > 0)
             {
                 risposta = RISPOSTA_VALIDA;
@@ -132,67 +154,102 @@ int isBookAvailable(const char *bookTitle)
     return risposta;
 }
 
-void borrowBook(const char *userID, char *bookTitle)
+
+// Funzione per aggiornare le copie disponibili di un libro con un dato ISBN
+int aggiornaLibreriaJson(const char *ISBN, int numeroCopia) 
 {
-    // Apriamo il file della libreria per aggiornare le informazioni sui libri
-    FILE *libroFile = fopen("libreria.JSON", "r+");
-    if (libroFile == NULL)
-    {
-        printf("Errore durante l'apertura del file libreria.json.\n");
-        return;
+    char *json_tempLibreria = copiaLibreriaJson();
+    if (json_tempLibreria == NULL) {
+        printf("Errore nel leggere il file.\n");
+        return 0;
     }
 
-    // Leggiamo il contenuto del file JSON
-    char line[256];
-    char jsonBuffer[1024] = "";
-    int found = 0;
+    // Parsing del file JSON
+    cJSON *json = cJSON_Parse(json_tempLibreria);
+    if (json == NULL) {
+        fprintf(stderr, "Errore nel parsing del JSON\n");
+        free(json_tempLibreria);
+        return 0;
+    }
 
-    while (fgets(line, sizeof(line), libroFile))
-    {
-        // Verifica se il libro è presente
-        if (strstr(line, bookTitle) != NULL)
-        {
-            found = 1;
+    // Otteniamo l'array "libri"
+    cJSON *libri = cJSON_GetObjectItem(json, "libri");
+    if (!cJSON_IsArray(libri)) {
+        fprintf(stderr, "Formato JSON non valido\n");
+        cJSON_Delete(json);
+        free(json_tempLibreria);
+        return 0;
+    }
 
-            // Qui dovresti analizzare il JSON e aggiornare i campi appropriati
-            // (totCopie, totCopieDisponibili, totCopiePrestate)
-            // Assumiamo che tu abbia una funzione che gestisce questa logica
-            // Per esempio, potresti usare una libreria per la manipolazione del JSON
+    // Iteriamo sugli elementi dell'array "libri"
+    cJSON *libro;
+    cJSON_ArrayForEach(libro, libri) {
+        cJSON *isbn = cJSON_GetObjectItem(libro, "ISBN");
+        cJSON *copie_disponibili = cJSON_GetObjectItem(libro, "copie_disponibili");
 
-            // Simuliamo l'aggiornamento delle copie
-            // (Dovresti implementare la logica per modificare effettivamente il JSON)
-            printf("Borrowing book: %s for user: %s\n", bookTitle, userID);
+        if (cJSON_IsString(isbn) && (isbn->valuestring != NULL) &&
+            cJSON_IsNumber(copie_disponibili)) {
+            // Controlliamo se l'ISBN corrisponde a quello cercato
+            if (strcmp(isbn->valuestring, isbn_da_cercare) == 0) {
+                // Incrementiamo il numero di copie disponibili di 1
+                copie_disponibili->valueint += 1;
+                printf("Copie disponibili aggiornate a: %d\n", copie_disponibili->valueint);
+
+                // Scriviamo il file JSON aggiornato
+                char *json_string = cJSON_Print(json); // Convertiamo l'oggetto JSON in stringa
+                if (scrivi_file(filename, json_string)) {
+                    printf("Il file JSON è stato aggiornato con successo.\n");
+                } else {
+                    printf("Errore nella scrittura del file JSON.\n");
+                }
+
+                // Pulizia della memoria
+                cJSON_Delete(json);
+                free(json_tempLibreria);
+                free(json_string);
+                return 1; // Aggiornamento riuscito
+            }
         }
-        else
-        {
-            strcat(jsonBuffer, line); // Mantieni le righe esistenti
-        }
     }
 
-    if (!found)
-    {
-        printf("Book not found in the library.\n");
-    }
-    else
-    {
-        // Scrivi le modifiche nel file della libreria
-        fseek(libroFile, 0, SEEK_SET);        // Torna all'inizio del file
-        fprintf(libroFile, "%s", jsonBuffer); // Scrivi il buffer aggiornato
-    }
+    printf("Il libro con ISBN %s non è stato trovato.\n", isbn_da_cercare);
+    cJSON_Delete(json);
+    free(json_tempLibreria);
+    return 0; // Libro non trovato
+}
 
-    fclose(libroFile);
-
-    // Aggiungi il libro al carrello dell'utente
-    FILE *carrelloFile = fopen("carrello.txt", "a");
-    if (carrelloFile == NULL)
-    {
-        printf("Errore durante l'apertura del file carrello.txt\n");
-        return;
+// Funzione per leggere il file JSON in memoria
+char* copiaLibreriaJson(){
+    FILE *file = fopen("libreria.json", "r");
+    if (file == NULL) {
+        perror("Errore nell'aprire il file");
+        return NULL;
     }
 
-    // Scriviamo nel file del carrello
-    fprintf(carrelloFile, "%s | %s\n", userID, bookTitle);
-    fclose(carrelloFile);
+    //ottengo file lenght
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
 
-    printf("Il libro '%s' è stato preso in prestito dall'utente '%s'.\n", bookTitle, userID);
+    char *tempLibreria = malloc(length + 1);
+    if (tempLibreria) {
+        fread(tempLibreria, 1, length, file);
+    }
+    fclose(file);
+
+    tempLibreria[length] = '\0';
+    return tempLibreria;
+}
+
+// Funzione per scrivere il file JSON aggiornato
+int aggiornaLibreriaJson(const char *filename, const char *tempLibreria) {
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        perror("Errore nell'aprire il file in scrittura");
+        return 0;
+    }
+    
+    fputs(tempLibreria, file);
+    fclose(file);
+    return 1;
 }

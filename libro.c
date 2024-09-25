@@ -4,6 +4,7 @@
 #include <json-c/json.h>
 #include "libro.h"
 
+//--------------------------------------------------------------------------------------------------------------DA TESTARE
 void searchBook(int socket) {
     char titolo[100];
     FILE *file = fopen("libreria.json", "r");

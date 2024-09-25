@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "client.h"
 #include "utente.h"
+#include "define.h"
 
 int main()
 {
@@ -40,6 +41,8 @@ int main()
     close(socket_desc);
     return 0;
 }
+
+
 
 void menuGuest(int socket)
 {
@@ -109,6 +112,8 @@ void menuUser(int socket)
     }
 }
 
+
+
 void registerUser(int socket)
 {
     char name[100], email[100], password[30];
@@ -131,6 +136,7 @@ void registerUser(int socket)
     recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
     printf("Server: %s\n", server_reply);
 }
+
 
 void login(int socket)
 {
@@ -160,6 +166,7 @@ void login(int socket)
     else
         menuGuest();
 }
+
 
 void searchBook(int socket)
 {

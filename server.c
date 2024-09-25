@@ -55,68 +55,73 @@ int main()
     return 0;
 }
 
+
+
 void handleClient(int socket)
 {
     char client_message[MAX_MESSAGE_LENGTH];
     char name[MAX_NAME_LENGTH], email[MAX_EMAIL_LENGTH], password[MAX_PWD_LENGTH];
     int read_size;
 
-    // Ricevi comandi dal client
     while ((read_size = recv(socket, client_message, MAX_MESSAGE_LENGTH, 0)) > 0)
     {
         client_message[read_size] = '\0';
 
+        //OK!!!!
         if (strcmp(client_message, "REGISTER") == 0)
         {
             recv(socket, name, 100, 0);
             recv(socket, email, 100, 0);
             recv(socket, password, 30, 0);
-            if (callControlliUser(name, email, password) == 1)
+
+            if (emailValida(email) == RISPOSTA_VALIDA)
             {
-                // eisite già
-                // rispondi con non_ok e torna indeitro
+                registerUser(name, email, password);
+                send(socket, "Utente registrato correttamente!", strlen("Utente registrato correttamente!"), 0);
             }
             else
             {
-                // rispondi con tt ok e torna indietro
+                send(socket, "Non è stato possibile registrare il nuovo utente.", strlen("Non è stato possibile registrare il nuovo utente."), 0);
             }
 
-            // registraUser(name, email, password);  // scrivere su file e inviare al client hce ora è connesso
-            //                                       // int registaUser(name, email, password); signatur giusta?
         }
+
+        //OK!!
         else if (strcmp(client_message, "LOGIN") == 0)
         {
-            // in una f di utente
             recv(socket, email, MAX_NAME_LENGTH, 0);
             recv(socket, password, MAX_PWD_LENGTH, 0);
-            if (checkUser(email, password) == 1)
+            
+            if (loginUser(socket, email, password) == RISPOSTA_VALIDA)
             {
-
-                // come retrival i dati dell'utente? // send(socket, name, strlen(name), 0);
                 accedi(email);
             }
             else
                 disAccedi();
-
-            // loginUser(socket, name, password); // non c'è
-            //
         }
+
+
+        //--------------------------------------------------------------------------------------------------------------------------------------------DA TESTARE
         else if (strcmp(client_message, "SEARCH") == 0)
         {
             searchBook(socket);
         }
-        // ---- ATTENZIONE: ADD TO CART ---------------------------------------------------------------------------------------------
+
+
+
+        //--------------------------------------------------------------------------------------------------------------------------------------------PROBABLY OK
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-            // Controllo user/client è collegato. -------
-
-            char bookTitle[100];
+            char * bookTitle;
             recv(socket, bookTitle, 100, 0);
-            addBookToCart(socket, name); // Utilizza l'ID dell'utente loggato------ id= nome o email?
+            addBookToCart(socket, email, bookTitle); 
         }
+
+
+        //------------------------------------------------------------------------------------------------------------------------------------------------TODO
         else if (strcmp(client_message, "CHECKOUT") == 0)
         {
-            checkout(socket, name); // Utilizza l'ID dell'utente loggato - name o email?
+            checkout(socket, email); // Utilizza l'ID dell'utente loggato - name o email?
         }
         else
         {
@@ -133,40 +138,4 @@ void handleClient(int socket)
         perror("Errore con Recv in server.c\n");
     }
 }
-int checkUser(char *email, char *password)
-{
-    int risposta = RISPOSTA_VALIDA;
 
-    if (risposta && !emailValida())
-        risposta = RISPOSTA_INVALIDA;
-
-    if (rispista && !pwdValida())
-        risposta = RISPOSTA_INVALIDA;
-
-    return risposta;
-}
-
-int callControlliUser(char *name, char *email, char *password)
-{
-    // callControlliUser(name, email, password);
-    //      // boolean/int existUser(email,pwd);
-    //      // booelan nomeValido(nome);
-    //      // booelan emailValida(email);
-    //      // booelan pwdValida(pwd);
-
-    int risposta = RISPOSTA_VALIDA;
-
-    if (risposta && !existUser())
-        risposta = RISPOSTA_INVALIDA;
-
-    if (risposta && !nomeValido())
-        risposta = RISPOSTA_INVALIDA;
-
-    if (risposta && !emailValida())
-        risposta = RISPOSTA_INVALIDA;
-
-    if (rispista && !pwdValida())
-        risposta = RISPOSTA_INVALIDA;
-
-    return risposta;
-}
