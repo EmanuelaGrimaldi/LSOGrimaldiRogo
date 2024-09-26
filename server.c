@@ -8,6 +8,7 @@
 #include "libro.h"
 #include "carrello.h"
 #include "server.h"
+#include "define.h"
 
 int main()
 {
@@ -55,19 +56,18 @@ int main()
     return 0;
 }
 
-
-
 void handleClient(int socket)
 {
     char client_message[MAX_MESSAGE_LENGTH];
     char name[MAX_LENGTH], email[MAX_LENGTH], password[MAX_LENGTH], parolaChiave[MAX_LENGTH];
+    char titoloLibro[MAX_LENGTH];
     int read_size, isbn;
 
     while ((read_size = recv(socket, client_message, MAX_MESSAGE_LENGTH, 0)) > 0)
     {
         client_message[read_size] = '\0';
 
-        //OK!!!!
+        // OK!!!!
         if (strcmp(client_message, "REGISTER") == 0)
         {
             recv(socket, name, 100, 0);
@@ -83,47 +83,53 @@ void handleClient(int socket)
             {
                 send(socket, "Non è stato possibile registrare il nuovo utente.", strlen("Non è stato possibile registrare il nuovo utente."), 0);
             }
-
         }
 
-        //OK!!
+        // OK!!
         else if (strcmp(client_message, "LOGIN") == 0)
         {
             recv(socket, email, MAX_LENGTH, 0);
             recv(socket, password, MAX_LENGTH, 0);
-            
+
             if (loginUtente(socket, email, password) == RISPOSTA_VALIDA)
             {
                 accedi(email);
+                send(socket, "ok", strlen("ok"), 0);
             }
             else
+            {
                 disAccedi();
+                send(socket, "Non ok.", strlen("Non ok."), 0);
+            }
         }
-
 
         //--------------------------------------------------------------------------------------------------------------------------------------------DA TESTARE
         else if (strcmp(client_message, "SEARCH_BY_PAROLACHIAVE") == 0)
         {
             recv(socket, parolaChiave, MAX_LENGTH, 0);
             cercaLibroByTitolo(socket, parolaChiave);
+            // restituisco info libro trovato?
         }
-
-//--------------------------------------------------------------------------------------------------------------------------------------------DA TESTARE
+        else if (strcmp(client_message, "SEARCH") == 0)
+        {
+            recv(socket, titoloLibro, MAX_LENGTH, 0);
+            cercaLibroByTitolo(socket, titoloLibro); // questa f stampa, non restituisce
+            // restituisco info libro trovato?
+        }
+        //--------------------------------------------------------------------------------------------------------------------------------------------DA TESTARE
         else if (strcmp(client_message, "SEARCH_BY_ISBN") == 0)
         {
-            recv(socket, isbn, MAX_LENGTH, 0);
+            recv(socket, &isbn, MAX_LENGTH, 0);
             cercaLibroByISBN(socket, isbn);
+            // restituisco info libro trovato?
         }
-
-
 
         //--------------------------------------------------------------------------------------------------------------------------------------------PROBABLY OK
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-            recv(socket, isbn, MAX_LENGTH, 0);
+            recv(socket, &isbn, MAX_LENGTH, 0);
             aggiungiLibroAlCarrello(socket, email, isbn);
         }
-
 
         //------------------------------------------------------------------------------------------------------------------------------------------------TODO
         else if (strcmp(client_message, "CHECKOUT") == 0)
@@ -146,4 +152,3 @@ void handleClient(int socket)
         perror("Errore con Recv in server.c\n");
     }
 }
-

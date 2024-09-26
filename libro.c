@@ -1,33 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libpq-fe.h>
 #include "libro.h"
 #include "define.h"
 
-#include <libpq-fe.h>
 const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void cercaLibroByTitolo(int socket, char parolaChiave[MAX_LENGTH]) 
+void cercaLibroByTitolo(int socket, char parolaChiave[MAX_LENGTH])
 {
+    // QUESTA FUNZIONE STAMPA SU STDOUTPUT NON RESTITUISCE QUELLO CHE TROVA
 
     PGconn *conn = PQconnectdb(conninfo);
 
-    if (PQstatus(conn) != CONNECTION_OK) 
+    if (PQstatus(conn) != CONNECTION_OK)
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
         PQfinish(conn);
         return;
     }
 
-    //Creo ed eseguo la query
+    // Creo ed eseguo la query
     char query[256];
     snprintf(query, sizeof(query),
-             "SELECT * FROM libro WHERE titolo LIKE '%s'",parolaChiave);
+             "SELECT * FROM libro WHERE titolo LIKE '%s'", parolaChiave);
     PGresult *res = PQexec(conn, query);
 
     // Controlla il risultato della query
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) 
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
     {
         fprintf(stderr, "Errore nell'inserimento dell'utente: %s", PQerrorMessage(conn));
         PQclear(res);
@@ -35,19 +36,19 @@ void cercaLibroByTitolo(int socket, char parolaChiave[MAX_LENGTH])
         return;
     }
 
-    int num_rows = PQntuples(res), 
-        num_fields = PQnfields(res), 
+    int num_rows = PQntuples(res),
+        num_fields = PQnfields(res),
         row, col;
-    
-    //Stampo tutti i risultati trovati
+
+    // Stampo tutti i risultati trovati
     if (num_rows > 0)
     {
         printf("\nEcco tutti i libri che corrispondono alla tua ricerca:\n");
-        for (row = 0; row < num_rows; row++) 
+        for (row = 0; row < num_rows; row++)
         {
-            for (col = 0; col < num_fields; col++) 
+            for (col = 0; col < num_fields; col++)
             {
-              printf("%s\t", PQgetvalue(res, row, col));
+                printf("%s\t", PQgetvalue(res, row, col));
             }
             printf("\n");
         }
@@ -58,26 +59,26 @@ void cercaLibroByTitolo(int socket, char parolaChiave[MAX_LENGTH])
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void cercaLibroByISBN(int socket, int ISBN) 
+void cercaLibroByISBN(int socket, int ISBN)
 {
 
     PGconn *conn = PQconnectdb(conninfo);
 
-    if (PQstatus(conn) != CONNECTION_OK) 
+    if (PQstatus(conn) != CONNECTION_OK)
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
         PQfinish(conn);
         return;
     }
 
-    //Creo ed eseguo la query
+    // Creo ed eseguo la query
     char query[256];
     snprintf(query, sizeof(query),
-             "SELECT * FROM libro WHERE isbn LIKE %d",ISBN);
+             "SELECT * FROM libro WHERE isbn LIKE %d", ISBN);
     PGresult *res = PQexec(conn, query);
 
     // Controlla il risultato della query
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) 
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
     {
         fprintf(stderr, "Errore nell'inserimento dell'utente: %s", PQerrorMessage(conn));
         PQclear(res);
@@ -85,19 +86,19 @@ void cercaLibroByISBN(int socket, int ISBN)
         return;
     }
 
-    int num_rows = PQntuples(res), 
-        num_fields = PQnfields(res), 
+    int num_rows = PQntuples(res),
+        num_fields = PQnfields(res),
         row, col;
-    
-    //Stampo tutti i risultati trovati
+
+    // Stampo tutti i risultati trovati
     if (num_rows > 0)
     {
         printf("\nEcco tutti i libri che corrispondono alla tua ricerca:\n");
-        for (row = 0; row < num_rows; row++) 
+        for (row = 0; row < num_rows; row++)
         {
-            for (col = 0; col < num_fields; col++) 
+            for (col = 0; col < num_fields; col++)
             {
-              printf("%s\t", PQgetvalue(res, row, col));
+                printf("%s\t", PQgetvalue(res, row, col));
             }
             printf("\n");
         }

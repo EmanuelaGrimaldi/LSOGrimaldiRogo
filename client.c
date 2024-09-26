@@ -43,8 +43,6 @@ int main()
     return 0;
 }
 
-
-
 void menuGuest(int socket)
 {
     int choice;
@@ -103,7 +101,6 @@ void menuUser(int socket)
             checkout(socket);
             break;
         case 4:
-            // checkout(socket, ); --- mi serve una struttura/var globale per fare l'operazione
             disaccedi();
             menuGuest();
             break;
@@ -112,8 +109,6 @@ void menuUser(int socket)
         }
     }
 }
-
-
 
 void registerUser(int socket)
 {
@@ -137,7 +132,6 @@ void registerUser(int socket)
     recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
     printf("Server: %s\n", server_reply);
 }
-
 
 void login(int socket)
 {
@@ -167,7 +161,6 @@ void login(int socket)
     else
         menuGuest();
 }
-
 
 void searchBook(int socket)
 {

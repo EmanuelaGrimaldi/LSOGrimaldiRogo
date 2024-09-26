@@ -1,7 +1,9 @@
 FROM ubuntu:latest
 
 RUN apt-get update && apt-get install -y \
-    postgresql postgresql-contrib libpq-dev
+    gcc build-essential \
+    postgresql postgresql-contrib \
+    libpq-dev
 
 WORKDIR /app
 
