@@ -1,9 +1,14 @@
 #ifndef CARRELLO_H
 #define CARRELLO_H
 
-void addBookToCart(int socket, const char *userID);
-void checkout(int socket, const char *userID);
-int isBookAvailable(const char *bookTitle);
-void borrowBook(const char *userID, char *bookTitle);
+#include "define.h" // ?
+
+void aggiungiLibroAlCarrello(int socket, char email[MAX_LENGTH], int ISBN);
+void checkout(int socket, char email[MAX_LENGTH]);
+int isLibroDisponibile(int isbn);
+void aggiornaNumeroLibri(int ISBN);
+void creaNuovoPrestito(char email[MAX_LENGTH], int ISBN);
+void cancellaCarrelloDiUtente(char email[MAX_LENGTH]);
+
 
 #endif

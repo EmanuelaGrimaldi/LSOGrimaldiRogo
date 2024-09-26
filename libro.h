@@ -1,6 +1,7 @@
 #ifndef LIBRO_H
 #define LIBRO_H
 
-void searchBook(int socket);
+void cercaLibroByTitolo(int socket, char parolaChiave[MAX_LENGTH]);
+void cercaLibroByISBN(int socket, int ISBN);
 
 #endif

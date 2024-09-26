@@ -60,8 +60,8 @@ int main()
 void handleClient(int socket)
 {
     char client_message[MAX_MESSAGE_LENGTH];
-    char name[MAX_NAME_LENGTH], email[MAX_EMAIL_LENGTH], password[MAX_PWD_LENGTH];
-    int read_size;
+    char name[MAX_LENGTH], email[MAX_LENGTH], password[MAX_LENGTH], parolaChiave[MAX_LENGTH];
+    int read_size, isbn;
 
     while ((read_size = recv(socket, client_message, MAX_MESSAGE_LENGTH, 0)) > 0)
     {
@@ -76,7 +76,7 @@ void handleClient(int socket)
 
             if (emailValida(email) == RISPOSTA_VALIDA)
             {
-                registerUser(name, email, password);
+                registraNuovoUtente(socket, name, email, password);
                 send(socket, "Utente registrato correttamente!", strlen("Utente registrato correttamente!"), 0);
             }
             else
@@ -89,10 +89,10 @@ void handleClient(int socket)
         //OK!!
         else if (strcmp(client_message, "LOGIN") == 0)
         {
-            recv(socket, email, MAX_NAME_LENGTH, 0);
-            recv(socket, password, MAX_PWD_LENGTH, 0);
+            recv(socket, email, MAX_LENGTH, 0);
+            recv(socket, password, MAX_LENGTH, 0);
             
-            if (loginUser(socket, email, password) == RISPOSTA_VALIDA)
+            if (loginUtente(socket, email, password) == RISPOSTA_VALIDA)
             {
                 accedi(email);
             }
@@ -102,9 +102,17 @@ void handleClient(int socket)
 
 
         //--------------------------------------------------------------------------------------------------------------------------------------------DA TESTARE
-        else if (strcmp(client_message, "SEARCH") == 0)
+        else if (strcmp(client_message, "SEARCH_BY_PAROLACHIAVE") == 0)
         {
-            searchBook(socket);
+            recv(socket, parolaChiave, MAX_LENGTH, 0);
+            cercaLibroByTitolo(socket, parolaChiave);
+        }
+
+//--------------------------------------------------------------------------------------------------------------------------------------------DA TESTARE
+        else if (strcmp(client_message, "SEARCH_BY_ISBN") == 0)
+        {
+            recv(socket, isbn, MAX_LENGTH, 0);
+            cercaLibroByISBN(socket, isbn);
         }
 
 
@@ -112,16 +120,16 @@ void handleClient(int socket)
         //--------------------------------------------------------------------------------------------------------------------------------------------PROBABLY OK
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-            char * bookTitle;
-            recv(socket, bookTitle, 100, 0);
-            addBookToCart(socket, email, bookTitle); 
+            recv(socket, isbn, MAX_LENGTH, 0);
+            aggiungiLibroAlCarrello(socket, email, isbn);
         }
 
 
         //------------------------------------------------------------------------------------------------------------------------------------------------TODO
         else if (strcmp(client_message, "CHECKOUT") == 0)
         {
-            checkout(socket, email); // Utilizza l'ID dell'utente loggato - name o email?
+            recv(socket, email, MAX_LENGTH, 0);
+            checkout(socket, email);
         }
         else
         {

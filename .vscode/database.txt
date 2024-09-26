@@ -1,0 +1,41 @@
+CREATE TABLE utente(
+    nome VARCHAR(50) NOT NULL,
+    email VARCHAR(50) PRIMARY KEY,
+    password VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE libro(
+    isbn INT PRIMARY KEY,
+    titolo VARCHAR(50) NOT NULL,
+    copieTotali INT NOT NULL,
+    totCopieDisponibili INT
+);
+
+CREATE TABLE prestito(
+    isbnPrestito INT FOREIGN KEY REFERENCES TO libro(isbn),
+    emailPrestito VARCHAR(50) FOREIGN KEY REFERENCES TO utente(email),
+    dataPrestito DATE,
+    dataRestituzione DATE
+
+);
+
+CREATE TABLE carrello(
+    isbnCarrello INT FOREIGN KEY REFERENCES TO libro(isbn),
+    emailCarrello VARCHAR(50) FOREIGN KEY REFERENCES TO utente(email)
+);
+
+
+INSERT INTO utente (nome, email, password)
+VALUES ('Emy Bianchi', 'EmyMail@mail.com', 'psw00');
+
+INSERT INTO utente (nome, email, password)
+VALUES ('Francesco Bianchi', 'Framail@mail.com', 'psw00');
+
+INSERT INTO utente (nome, email, password)
+VALUES ('Mario Rossi', 'Mariomail@mail.com', 'psw00');
+
+INSER INTO libro ( isbn, titolo copieTotali, totCopiePrestate)
+VALUES()
+
+INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
+VALUES ()

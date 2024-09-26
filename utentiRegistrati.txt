@@ -1,2 +1,0 @@
-Nome Completo|Email|Password|NumeroLibriPresiInPrestito
-Emy grimaldi|EmyMail@gmail.com|psw00|3 

@@ -1,37 +1,108 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <json-c/json.h>
 #include "libro.h"
+#include "define.h"
 
-//--------------------------------------------------------------------------------------------------------------DA TESTARE
-void searchBook(int socket) {
-    char titolo[100];
-    FILE *file = fopen("libreria.json", "r");
-    struct json_object *parsed_json;
-    struct json_object *libri;
-    struct json_object *libro;
-    size_t n_libri;
+#include <libpq-fe.h>
+const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
 
-    recv(socket, titolo, 100, 0);
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
+void cercaLibroByTitolo(int socket, char parolaChiave[MAX_LENGTH]) 
+{
 
-    char buffer[1024];
-    fread(buffer, 1024, 1, file);
-    fclose(file);
+    PGconn *conn = PQconnectdb(conninfo);
 
-    parsed_json = json_tokener_parse(buffer);
-    json_object_object_get_ex(parsed_json, "libri", &libri);
-    n_libri = json_object_array_length(libri);
+    if (PQstatus(conn) != CONNECTION_OK) 
+    {
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return;
+    }
 
-    for (size_t i = 0; i < n_libri; i++) {
-        libro = json_object_array_get_idx(libri, i);
-        const char *titolo_libro = json_object_get_string(json_object_object_get(libro, "titolo"));
+    //Creo ed eseguo la query
+    char query[256];
+    snprintf(query, sizeof(query),
+             "SELECT * FROM libro WHERE titolo LIKE '%s'",parolaChiave);
+    PGresult *res = PQexec(conn, query);
 
-        if (strcmp(titolo, titolo_libro) == 0) {
-            send(socket, "Libro trovato", strlen("Libro trovato"), 0);
-            return;
+    // Controlla il risultato della query
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) 
+    {
+        fprintf(stderr, "Errore nell'inserimento dell'utente: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return;
+    }
+
+    int num_rows = PQntuples(res), 
+        num_fields = PQnfields(res), 
+        row, col;
+    
+    //Stampo tutti i risultati trovati
+    if (num_rows > 0)
+    {
+        printf("\nEcco tutti i libri che corrispondono alla tua ricerca:\n");
+        for (row = 0; row < num_rows; row++) 
+        {
+            for (col = 0; col < num_fields; col++) 
+            {
+              printf("%s\t", PQgetvalue(res, row, col));
+            }
+            printf("\n");
         }
     }
 
-    send(socket, "Libro non trovato", strlen("Libro non trovato"), 0);
+    PQclear(res);
+    PQfinish(conn);
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
+void cercaLibroByISBN(int socket, int ISBN) 
+{
+
+    PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK) 
+    {
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return;
+    }
+
+    //Creo ed eseguo la query
+    char query[256];
+    snprintf(query, sizeof(query),
+             "SELECT * FROM libro WHERE isbn LIKE %d",ISBN);
+    PGresult *res = PQexec(conn, query);
+
+    // Controlla il risultato della query
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) 
+    {
+        fprintf(stderr, "Errore nell'inserimento dell'utente: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return;
+    }
+
+    int num_rows = PQntuples(res), 
+        num_fields = PQnfields(res), 
+        row, col;
+    
+    //Stampo tutti i risultati trovati
+    if (num_rows > 0)
+    {
+        printf("\nEcco tutti i libri che corrispondono alla tua ricerca:\n");
+        for (row = 0; row < num_rows; row++) 
+        {
+            for (col = 0; col < num_fields; col++) 
+            {
+              printf("%s\t", PQgetvalue(res, row, col));
+            }
+            printf("\n");
+        }
+    }
+
+    PQclear(res);
+    PQfinish(conn);
 }

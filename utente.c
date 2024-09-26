@@ -4,80 +4,104 @@
 #include <unistd.h>
 #include "utente.h"
 
-char user_name[MAX_NAME_LENGTH];
-char user_email[MAX_EMAIL_LENGTH];
-int client_connesso;
+#include <libpq-fe.h>
+const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
 
-//OK!!
-void registerUser(int socket, char name[100], char email[100], char password[30])
-{
-    FILE *file = fopen("utentiRegistrati.txt", "a");
-    if (!file)
+char user_name[MAX_LENGTH];
+char user_email[MAX_LENGTH];
+int client_connesso, risposta;
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
+void registraNuovoUtente(int socket, char nome[MAX_LENGTH], char email[MAX_LENGTH], char password[30])
+{    
+    PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK) 
     {
-        perror("Errore durante l'apertura del file utenteRegistrati.txt in utente.registerUser\n");
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return;
+    }
+    //Creo ed eseguo la query
+    const char *paramValues[3] = { nome, email, password };
+    PGresult *res = PQexecParams(conn,
+                                 "INSERT INTO utente (nome, email, password) VALUES ($1, $2, $3)",
+                                 3,        // Numero di parametri
+                                 NULL,     // OID dei parametri (NULL per default)
+                                 paramValues, // Valori dei parametri
+                                 NULL,     // Lunghezza dei parametri (NULL per stringhe)
+                                 NULL,     // Formato dei parametri (NULL per stringhe)
+                                 0);       // Formato del risultato (0 = testo)
+
+    // Verifica se l'operazione è andata a buon fine
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+        fprintf(stderr, "Errore durante l'inserimento: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
         return;
     }
 
-    recv(socket, name, 100, 0);
-    recv(socket, email, 100, 0);
-    recv(socket, password, 30, 0);
+    PQclear(res);
+    PQfinish(conn);
 
-    fprintf(file, "%s | %s | %s | 0 \n", name, email, password); // 0 libri presi in prestito all'inizio
-    fclose(file);
-
-    send(socket, "Utente registrato correttamente!", strlen("Utente registrato correttamente!"), 0);
+    printf("Utente inserito con successo!\n");
 }
 
-//OK!!
-int loginUser(int socket, char *EMAIL, char *PSW)
-{
-    char email[MAX_EMAIL_LENGTH], password[MAX_PWD_LENGTH], line[256];
 
-    FILE *file = fopen("utentiRegistrati.txt", "r");
-    if (!file)
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
+int loginUtente(int socket, char email[MAX_LENGTH], char password[MAX_LENGTH])
+{
+    recv(socket, email, MAX_LENGTH, 0);
+    recv(socket, password, MAX_LENGTH, 0);
+
+    PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK) 
     {
-        perror("Impossibile aprire file 'utentiRegistrati.txt' in utente.loginUser\n");
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
         return 0;
     }
 
-    recv(socket, email, MAX_EMAIL_LENGTH, 0);
-    recv(socket, password, MAX_PWD_LENGTH, 0);
-    strcpy(EMAIL, email);
-    strcpy(PSW, password);
+    // Prepara la query SQL per cercare l'utente con l'email e la password forniti
+    const char *paramValues[2] = { email, password };
+    PGresult *res = PQexecParams(conn,
+                                 "SELECT * FROM utenti WHERE email = $1 AND password = $2",
+                                 2,        // Numero di parametri
+                                 NULL,     // OID dei parametri (NULL per default)
+                                 paramValues, // Valori dei parametri
+                                 NULL,     // Lunghezza dei parametri (NULL per stringhe)
+                                 NULL,     // Formato dei parametri (NULL per stringhe)
+                                 0);       // Formato del risultato (0 = testo)
 
-    int risposta;
-    while (fgets(line, sizeof(line), file) != NULL)
-    {
-        char *tempMail, *tempPsw, *nomeUtente;
-
-        char *token = strtok(line, "|");
-        nomeUtente = token;
-
-        token = strtok(NULL, "|");
-        tempMail = token;
-
-        token = strtok(NULL, "|");
-        tempPsw = token;
-
-        if (strcmp(tempMail, EMAIL) == 0 && strcmp(tempPsw, PSW) == 0)
-        {
-            accedi(EMAIL);
-            fclose(file);
-            printf("Login riuscito per l'utente: %s\n", nomeUtente);
-            risposta = RISPOSTA_VALIDA;
-            return risposta;
-        }
-
+    // Verifica il risultato della query
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return 0;
     }
 
-    fclose(file);
-    printf("Login NON riuscito.\n");
-    risposta = RISPOSTA_INVALIDA;
-    return risposta;
+    // Verifica se c'è almeno una riga di risultato (cioè l'utente esiste)
+    int num_rows = PQntuples(res);
+    if (num_rows == 1) {
+        accedi(email);
+        printf("Login riuscito!\n");
+        PQclear(res);
+        PQfinish(conn);
+        return 1;  // Successo
+    } else {
+        printf("Email o password non validi!\n");
+        PQclear(res);
+        PQfinish(conn);
+        return 0;  // Fallimento
+    }
 }
 
 //OK!!
-void accedi(char *email)
+void accedi(char email[MAX_LENGTH])
 {
     client_connesso = CONNESSO;
     strcpy(user_name, getNomeUtente(email));
@@ -92,65 +116,88 @@ void disAccedi()
     strcpy(user_email, "");
 }
 
-//OK!!
-int emailValida(char *emailDaVerificare)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
+int emailValida(char emailDaVerificare[MAX_LENGTH])
 {
-    char email[MAX_EMAIL_LENGTH], line[256];
+    PGconn *conn = PQconnectdb(conninfo);
 
-    FILE *file = fopen("utentiRegistrati.txt", "r");
-    if (!file)
+    if (PQstatus(conn) != CONNECTION_OK) 
     {
-        perror("Impossibile aprire file 'utentiRegistrati.txt' in utente.loginUser\n");
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
         return 0;
     }
 
-    while (fgets(line, sizeof(line), file) != NULL)
-    {
-        int risposta;
+    // Prepara la query SQL per cercare l'utente con l'email e la password forniti
+    const char *paramValues[1] = { email};
+    PGresult *res = PQexecParams(conn,
+                                 "SELECT * FROM utenti WHERE email = $1",
+                                 1,        // Numero di parametri
+                                 NULL,     // OID dei parametri (NULL per default)
+                                 paramValues, // Valori dei parametri
+                                 NULL,     // Lunghezza dei parametri (NULL per stringhe)
+                                 NULL,     // Formato dei parametri (NULL per stringhe)
+                                 0);       // Formato del risultato (0 = testo)
 
-        char *tempMail, *nomeUtente;
-
-        char *token = strtok(line, "|");
-        nomeUtente = token;
-
-        token = strtok(NULL, "|");
-        tempMail = token;
-
-        if (strcmp(tempMail, emailDaVerificare) == 0)
-        {
-            fclose(file);
-            printf("Email non valida, è già presente nel nostro sistema.\n");
-            return RISPOSTA_INVALIDA;
-        }
-
+    // Verifica il risultato della query
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return 0;
     }
+
+    // Verifica se c'è almeno una riga di risultato
+    int num_rows = PQntuples(res);
+    if (num_rows == 1) {
+        printf("Email non valida, è già presente nel nostro sistema!\n");
+        PQclear(res);
+        PQfinish(conn);
+        return RISPOSTA_INVALIDA;
+    }
+
     return RISPOSTA_VALIDA;
 }
 
-//OK!!
-char * getNomeUtente (char * email){
-    char email[MAX_EMAIL_LENGTH], line[256];
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
+char getNomeUtente (char email[MAX_LENGTH])
+{
+    char line[256];
 
-    FILE *file = fopen("utentiRegistrati.txt", "r");
-    if (!file)
+    PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK) 
     {
-        perror("Impossibile aprire file 'utentiRegistrati.txt' in utente.loginUser\n");
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
         return 0;
     }
 
-    while (fgets(line, sizeof(line), file) != NULL)
-    {
-        char *tempMail, *tempPsw, *nomeUtente;
+    // Prepara la query SQL per cercare l'utente con l'email e la password forniti
+    const char *paramValues[1] = { email};
+    PGresult *res = PQexecParams(conn,
+                                 "SELECT nome FROM utenti WHERE email = $1",
+                                 1,        // Numero di parametri
+                                 NULL,     // OID dei parametri (NULL per default)
+                                 paramValues, // Valori dei parametri
+                                 NULL,     // Lunghezza dei parametri (NULL per stringhe)
+                                 NULL,     // Formato dei parametri (NULL per stringhe)
+                                 0);       // Formato del risultato (0 = testo)
 
-        char *token = strtok(line, "|");
-        nomeUtente = token;
-
-        token = strtok(NULL, "|");
-        tempMail = token;
-
-        if (strcmp(tempMail, email) == 0)
-            return nomeUtente;
+    // Verifica il risultato della query
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return 0;
     }
-    printf("Non ho trovato la mail nel sistema quindi non ho il nome utente :(");
+
+    //Prendo il valore del risultato e lo restituisco
+    int num_rows = PQntuples(res);
+    if (num_rows == 1) {
+        char risultatoNome[MAX_LENGTH] = PQgetvalue(res, 0, 0); 
+        return risultatoNome;
+    }
+
     return NULL;
 }
