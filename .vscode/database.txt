@@ -12,16 +12,22 @@ CREATE TABLE libro(
 );
 
 CREATE TABLE prestito(
-    isbnPrestito INT FOREIGN KEY REFERENCES TO libro(isbn),
-    emailPrestito VARCHAR(50) FOREIGN KEY REFERENCES TO utente(email),
+    isbnPrestito INT,
+    emailPrestito VARCHAR(50),
     dataPrestito DATE,
-    dataRestituzione DATE
+    dataRestituzione DATE,
+
+	 FOREIGN KEY(isbnPrestito) REFERENCES libro(isbn),
+	 FOREIGN KEY(emailPrestito) REFERENCES utente(email)
 
 );
 
 CREATE TABLE carrello(
-    isbnCarrello INT FOREIGN KEY REFERENCES TO libro(isbn),
-    emailCarrello VARCHAR(50) FOREIGN KEY REFERENCES TO utente(email)
+    isbnCarrello INT,
+    emailCarrello VARCHAR(50),
+
+	 FOREIGN KEY(isbnCarrello) REFERENCES libro(isbn),
+	  FOREIGN KEY(emailCarrello) REFERENCES utente(email)
 );
 
 

@@ -24,7 +24,7 @@ void aggiungiLibroAlCarrello(int socket, char email[MAX_LENGTH], int ISBN)
     }
 
     //Creo ed eseguo la query
-    const char *paramValues[3] = { ISBN, email };
+    const char *paramValues[2] = { ISBN, email };
     PGresult *res = PQexecParams(conn,
                                  "INSERT INTO carrello (isbnCarrello, emailCarrello) VALUES ($1, $2)",
                                  2,        // Numero di parametri
@@ -82,7 +82,7 @@ void checkout(int socket, char email[MAX_LENGTH])
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
         PQclear(res);
         PQfinish(conn);
-        return 0;
+        return;
     }
 
     /*STEP 2: per ogni libro:   aggiorno numero copie disponibili
