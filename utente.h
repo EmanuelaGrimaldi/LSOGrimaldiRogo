@@ -3,13 +3,13 @@
 
 #include "define.h" // ?
 
-void registraNuovoUtente(int socket, char nome[MAX_LENGTH], char email[MAX_LENGTH], char password[30]);
-int loginUtente(int socket, char email[MAX_LENGTH], char password[MAX_LENGTH]);
+void registraNuovoUtente(int socket, char *nome, char *email, char *password);
+int loginUtente(int socket, char *email, char *password);
 
-void accedi(char email[MAX_LENGTH]);
+void accedi(char *email);
 void disAccedi();
 
-int emailValida(char emailDaVerificare[MAX_LENGTH]);
-char getNomeUtente (char email[MAX_LENGTH]);
+int emailValida(char *emailDaVerificare);
+char *getNomeUtente (char *email);
 
 #endif

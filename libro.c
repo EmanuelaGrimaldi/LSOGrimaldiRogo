@@ -8,7 +8,7 @@
 const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void cercaLibroByTitolo(int socket, char parolaChiave[MAX_LENGTH])
+void cercaLibroByTitolo(int socket, char *parolaChiave)
 {
     // QUESTA FUNZIONE STAMPA SU STDOUTPUT NON RESTITUISCE QUELLO CHE TROVA
 
@@ -23,8 +23,7 @@ void cercaLibroByTitolo(int socket, char parolaChiave[MAX_LENGTH])
 
     // Creo ed eseguo la query
     char query[256];
-    snprintf(query, sizeof(query),
-             "SELECT * FROM libro WHERE titolo LIKE '%s'", parolaChiave);
+    snprintf(query, sizeof(query), "SELECT * FROM libro WHERE titolo LIKE '%s'", parolaChiave);
     PGresult *res = PQexec(conn, query);
 
     // Controlla il risultato della query
@@ -73,8 +72,7 @@ void cercaLibroByISBN(int socket, int ISBN)
 
     // Creo ed eseguo la query
     char query[256];
-    snprintf(query, sizeof(query),
-             "SELECT * FROM libro WHERE isbn LIKE %d", ISBN);
+    snprintf(query, sizeof(query), "SELECT * FROM libro WHERE isbn LIKE %d", ISBN);
     PGresult *res = PQexec(conn, query);
 
     // Controlla il risultato della query

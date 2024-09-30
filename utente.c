@@ -7,12 +7,12 @@
 #include <libpq-fe.h>
 const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
 
-char user_name[MAX_LENGTH];
-char user_email[MAX_LENGTH];
+char *user_name;
+char *user_email;
 int client_connesso, risposta;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void registraNuovoUtente(int socket, char nome[MAX_LENGTH], char email[MAX_LENGTH], char password[30])
+void registraNuovoUtente(int socket, char *nome, char *email, char *password)
 {    
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -51,11 +51,8 @@ void registraNuovoUtente(int socket, char nome[MAX_LENGTH], char email[MAX_LENGT
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-int loginUtente(int socket, char email[MAX_LENGTH], char password[MAX_LENGTH])
+int loginUtente(int socket, char *email, char *password)
 {
-    recv(socket, email, MAX_LENGTH, 0);
-    recv(socket, password, MAX_LENGTH, 0);
-
     PGconn *conn = PQconnectdb(conninfo);
 
     if (PQstatus(conn) != CONNECTION_OK) 
@@ -101,10 +98,11 @@ int loginUtente(int socket, char email[MAX_LENGTH], char password[MAX_LENGTH])
 }
 
 //OK!!
-void accedi(char email[MAX_LENGTH])
+void accedi(char *email)
 {
     client_connesso = CONNESSO;
-    strcpy(user_name, getNomeUtente(email));
+    char * nomeUtente = getNomeUtente(email);
+    strcpy(user_name, nomeUtente);
     strcpy(user_email, email);
 }
 
@@ -117,7 +115,7 @@ void disAccedi()
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-int emailValida(char emailDaVerificare[MAX_LENGTH])
+int emailValida(char *emailDaVerificare)
 {
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -129,7 +127,7 @@ int emailValida(char emailDaVerificare[MAX_LENGTH])
     }
 
     // Prepara la query SQL per cercare l'utente con l'email e la password forniti
-    const char *paramValues[1] = { email};
+    const char *paramValues[1] = { emailDaVerificare };
     PGresult *res = PQexecParams(conn,
                                  "SELECT * FROM utenti WHERE email = $1",
                                  1,        // Numero di parametri
@@ -139,7 +137,7 @@ int emailValida(char emailDaVerificare[MAX_LENGTH])
                                  NULL,     // Formato dei parametri (NULL per stringhe)
                                  0);       // Formato del risultato (0 = testo)
 
-    // Verifica il risultato della query
+    // Verifica il risultato della query strcpy
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
         PQclear(res);
@@ -160,7 +158,7 @@ int emailValida(char emailDaVerificare[MAX_LENGTH])
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-char getNomeUtente (char email[MAX_LENGTH])
+char *getNomeUtente (char *email)
 {
     char line[256];
 
@@ -174,7 +172,7 @@ char getNomeUtente (char email[MAX_LENGTH])
     }
 
     // Prepara la query SQL per cercare l'utente con l'email e la password forniti
-    const char *paramValues[1] = { email};
+    const char *paramValues[1] = { email };
     PGresult *res = PQexecParams(conn,
                                  "SELECT nome FROM utenti WHERE email = $1",
                                  1,        // Numero di parametri
@@ -189,13 +187,13 @@ char getNomeUtente (char email[MAX_LENGTH])
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
         PQclear(res);
         PQfinish(conn);
-        return 0;
+        return NULL;
     }
 
-    //Prendo il valore del risultato e lo restituisco
+    //Prendo il valore del risultato e lo restituisco------------------------------------CAMBIO X RETURN CHAR[] INVECE DI *CHAR
     int num_rows = PQntuples(res);
     if (num_rows == 1) {
-        char risultatoNome[MAX_LENGTH] = PQgetvalue(res, 0, 0); 
+        char *risultatoNome = PQgetvalue(res, 0, 0); 
         return risultatoNome;
     }
 

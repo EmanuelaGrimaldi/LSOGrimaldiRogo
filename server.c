@@ -59,8 +59,7 @@ int main()
 void handleClient(int socket)
 {
     char client_message[MAX_MESSAGE_LENGTH];
-    char name[MAX_LENGTH], email[MAX_LENGTH], password[MAX_LENGTH], parolaChiave[MAX_LENGTH];
-    char titoloLibro[MAX_LENGTH];
+    char *name, *email, *password, *parolaChiave, *titoloLibro;
     int read_size, isbn;
 
     while ((read_size = recv(socket, client_message, MAX_MESSAGE_LENGTH, 0)) > 0)
