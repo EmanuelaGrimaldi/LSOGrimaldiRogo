@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include "utente.h"
 
+#include "conninfo.h"
 #include <libpq-fe.h>
-const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
 
 char *user_name;
 char *user_email;

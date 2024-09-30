@@ -10,6 +10,8 @@
 #include "server.h"
 #include "define.h"
 
+const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
+
 int main()
 {
     int server_sock, client_sock, c;

@@ -2,11 +2,15 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <libpq-fe.h>
 #include <unistd.h>
 #include "client.h"
 #include "utente.h"
 #include "define.h"
+
+//#include <libpq-fe.h>   da errore?
+
+int client_connesso;
+char *user_name, *user_email;
 
 int main()
 {
@@ -16,7 +20,7 @@ int main()
 
     int socket_desc;
     struct sockaddr_in server;
-    char message[MAX_MASSAGE_LENGTH], server_reply[MAX_MASSAGE_LENGTH];
+    char message[MAX_MESSAGE_LENGTH], server_reply[MAX_MESSAGE_LENGTH];
 
     // Creazione socket
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -101,8 +105,8 @@ void menuUser(int socket)
             checkout(socket);
             break;
         case 4:
-            disaccedi();
-            menuGuest();
+            disAccedi();
+            menuGuest(socket);
             break;
         default:
             printf("Opzione non valida! Riprova.\n");
@@ -113,7 +117,7 @@ void menuUser(int socket)
 void registerUser(int socket)
 {
     char name[100], email[100], password[30];
-    char server_reply[MAX_MASSAGE_LENGTH];
+    char server_reply[E];
 
     printf("Inserisci qui il tuo nome per intero: ");
     scanf("%s", name);
@@ -129,15 +133,15 @@ void registerUser(int socket)
     send(socket, password, strlen(password), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
+    recv(socket, server_reply, E, 0);
     printf("Server: %s\n", server_reply);
 }
 
 void login(int socket)
 {
     char email[100], password[30];
-    char server_reply[MAX_MASSAGE_LENGTH];
-    char server_reply_email[MAX_MASSAGE_LENGTH];
+    char server_reply[E];
+    char server_reply_email[E];
 
     printf("Inserisci la tua email: ");
     scanf("%s", email);
@@ -150,22 +154,22 @@ void login(int socket)
     send(socket, password, strlen(password), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
+    recv(socket, server_reply, E, 0);
     printf("Server: %s\n", server_reply);
 
     // Ridirezionamento
     if (strcmp(server_reply, "ok") == 0)
     {
-        menuUser();
+        menuUser(socket);
     }
     else
-        menuGuest();
+        menuGuest(socket);
 }
 
 void searchBook(int socket)
 {
     char bookTitle[100];
-    char server_reply[MAX_MASSAGE_LENGTH];
+    char server_reply[E];
 
     printf("Inserisci la parola chiave per la ricerca del libro: ");
     scanf("%s", bookTitle);
@@ -175,14 +179,14 @@ void searchBook(int socket)
     send(socket, bookTitle, strlen(bookTitle), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
+    recv(socket, server_reply, E, 0);
     printf("Server: %s\n", server_reply);
 }
 
 void addToCart(int socket)
 {
     char bookTitle[100];
-    char server_reply[MAX_MASSAGE_LENGTH];
+    char server_reply[E];
 
     printf("Inserisci il titolo del libro da aggiungere al carrello: ");
     scanf("%s", bookTitle);
@@ -192,18 +196,18 @@ void addToCart(int socket)
     send(socket, bookTitle, strlen(bookTitle), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
+    recv(socket, server_reply, E, 0);
     printf("Server: %s\n", server_reply);
 }
 
 void checkout(int socket)
 {
-    char server_reply[MAX_MASSAGE_LENGTH];
+    char server_reply[E];
 
     // Invia richiesta di checkout al server
     send(socket, "CHECKOUT", strlen("CHECKOUT"), 0);
 
     // Ricevi risposta dal server
-    recv(socket, server_reply, MAX_MASSAGE_LENGTH, 0);
+    recv(socket, server_reply, E, 0);
     printf("Server: %s\n", server_reply);
 }

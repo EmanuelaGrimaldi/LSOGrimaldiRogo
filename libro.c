@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libpq-fe.h>
 #include "libro.h"
 #include "define.h"
 
-const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
+#include "conninfo.h"
+#include <libpq-fe.h>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
 void cercaLibroByTitolo(int socket, char *parolaChiave)

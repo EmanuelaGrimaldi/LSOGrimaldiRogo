@@ -6,10 +6,10 @@
 #include "libro.h"
 #include "define.h"
 
+#include "conninfo.h"
 #include <libpq-fe.h>
-const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
-char *puntatoreCharISBN;
 
+char *puntatoreCharISBN;
 char * charNumeroCopie, charISBN; 
 int numeroCopie;
 
@@ -29,7 +29,7 @@ void aggiungiLibroAlCarrello(int socket, char *email, int ISBN)
     sprintf(puntatoreCharISBN, "%d", ISBN);
 
     //Creo ed eseguo la query
-    const char *paramValues[2] = { puntatoreCharISBN, email };                                                  //****************
+    const char *paramValues[2] = { puntatoreCharISBN, email };                                                 
     PGresult *res = PQexecParams(conn,
                                  "INSERT INTO carrello (isbnCarrello, emailCarrello) VALUES ($1, $2)",
                                  2,        // Numero di parametri
@@ -127,7 +127,7 @@ int isLibroDisponibile(int isbn)
     puntatoreCharISBN = (char *)malloc(12 * sizeof(char));
     sprintf(puntatoreCharISBN, "%d", isbn);
 
-    const char *paramValues[1] = { puntatoreCharISBN };                                                                    //****************
+    const char *paramValues[1] = { puntatoreCharISBN };                                            
     PGresult *res = PQexecParams(conn,
                                 "SELECT totCopieDisponibili FROM libro WHERE isbn = $1",
                                 1,        // Numero di parametri
@@ -188,7 +188,7 @@ void aggiornaNumeroLibri(int ISBN)
     sprintf(puntatoreCharISBN, "%d", ISBN);
 
     //STEP 1: Mi prendo il numero attuale di totCopieDisponibili
-    const char *paramValuesUno[1] = { puntatoreCharISBN };                                                                          //*********************
+    const char *paramValuesUno[1] = { puntatoreCharISBN };                                           
     PGresult *res = PQexecParams(conn,
                                 "SELECT totCopieDisponibili FROM libro WHERE isbn = $1",
                                 1,        // Numero di parametri
@@ -249,7 +249,7 @@ void creaNuovoPrestito(char *email, int ISBN)
     }
 
     time_t t = time(NULL);
-    struct tm *localTimeStamp = *localtime(&t);
+    struct tm *localTimeStamp = localtime(&t);
 
     int currMese, currGiorno, meseRestituzione;
     char *dataPrestito, *dataRestituzione;
