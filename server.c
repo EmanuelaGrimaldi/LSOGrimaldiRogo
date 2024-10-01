@@ -99,7 +99,7 @@ void handleClient(int socket)
             }
             else
             {
-                disAccedi();
+                logout();
                 send(socket, "Non ok.", strlen("Non ok."), 0);
             }
         }

@@ -107,7 +107,7 @@ void accedi(char *email)
 }
 
 //OK!!
-void disAccedi()
+void logout()
 {
     client_connesso = NON_CONNESSO;
     strcpy(user_name, "");

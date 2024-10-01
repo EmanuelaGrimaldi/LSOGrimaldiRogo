@@ -8,14 +8,14 @@ CREATE TABLE libro(
     isbn INT PRIMARY KEY,
     titolo VARCHAR(50) NOT NULL,
     copieTotali INT NOT NULL,
-    totCopieDisponibili INT
+    totCopiePrestate INT
 );
 
 CREATE TABLE prestito(
     isbnPrestito INT,
     emailPrestito VARCHAR(50),
-    dataPrestito DATE,
-    dataRestituzione DATE,
+    dataPrestito VARCHAR(10),
+    dataRestituzione VARCHAR(10),
 
 	 FOREIGN KEY(isbnPrestito) REFERENCES libro(isbn),
 	 FOREIGN KEY(emailPrestito) REFERENCES utente(email)
@@ -40,8 +40,38 @@ VALUES ('Francesco Bianchi', 'Framail@mail.com', 'psw00');
 INSERT INTO utente (nome, email, password)
 VALUES ('Mario Rossi', 'Mariomail@mail.com', 'psw00');
 
-INSER INTO libro ( isbn, titolo copieTotali, totCopiePrestate)
-VALUES()
+INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
+VALUES( 1111, 'libro di Storia', 7, 2);
+
+INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
+VALUES( 2222, 'libro di Geografia', 7, 1);
+
+INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
+VALUES( 3333, 'libro di Arte', 5, 1);
+
+INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
+VALUES( 4444, 'libro di Storia Romana', 10, 2);
+
+INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
+VALUES( 5555, 'libro di Fisica', 7, 0);
+
+INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
+VALUES( 6666, 'libro di Matematica', 10, 0);
 
 INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
-VALUES ()
+VALUES (1111, 'EmyMail@mail.com', '25/09', '25/12');
+
+INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
+VALUES (1111,'Framail@mail.com', '05/09', '05/12');
+
+INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
+VALUES (2222, 'EmyMail@mail.com', '25/09', '25/12');
+
+INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
+VALUES (3333, 'Mariomail@mail.com', '13/08', '13/11');
+
+INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
+VALUES (4444,'Framail@mail.com', '20/09', '20/12');
+
+INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
+VALUES (4444,'Mariomail@mail.com', '20/09', '20/12');

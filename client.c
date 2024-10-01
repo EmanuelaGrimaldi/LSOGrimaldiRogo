@@ -105,7 +105,7 @@ void menuUser(int socket)
             checkout(socket);
             break;
         case 4:
-            disAccedi();
+            logout();
             menuGuest(socket);
             break;
         default:
