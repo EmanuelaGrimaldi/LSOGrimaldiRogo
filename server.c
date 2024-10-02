@@ -73,6 +73,8 @@ void handleClient(int socket)
     char *name, *email, *password, *parolaChiave, *titoloLibro;
     int read_size, isbn;
 
+    printf("\nsono in handle");
+
     while ((read_size = recv(socket, client_message, MAX_MESSAGE_LENGTH, 0)) > 0)
     {
         printf("\nmessaggio cliente ricevuto: %s", client_message);
