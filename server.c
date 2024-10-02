@@ -41,11 +41,20 @@ int main()
     printf("Server in ascolto sulla porta 8080!♥\n");
 
     c = sizeof(struct sockaddr_in);
-    while ((client_sock = accept(server_sock, (struct sockaddr *)&client, (socklen_t *)&c)))
+    while (1)
     {
-        printf("Client connesso con successo\n");
-        handleClient(client_sock);
-        close(client_sock);
+        client_sock = accept(server_sock, (struct sockaddr *)&client, (socklen_t *)&c);
+        if (client_sock > 0)
+        {
+            // dovrebbe partire una processo per gestire l'handle, ma poi ci pensiamo
+            printf("Client connesso con successo\n");
+            handleClient(client_sock);
+            close(client_sock);
+        }
+        else
+        {
+            perror("Errore nell'accettazione della connessione"); // perror va bene?
+        }
     }
 
     if (client_sock < 0)
@@ -66,7 +75,9 @@ void handleClient(int socket)
 
     while ((read_size = recv(socket, client_message, MAX_MESSAGE_LENGTH, 0)) > 0)
     {
+        printf("\nmessaggio cliente ricevuto: %s", client_message);
         client_message[read_size] = '\0';
+        printf("\nmessaggio cliente cambiato: %s", client_message);
 
         // OK!!!!
         if (strcmp(client_message, "REGISTER") == 0)
@@ -89,6 +100,7 @@ void handleClient(int socket)
         // OK!!
         else if (strcmp(client_message, "LOGIN") == 0)
         {
+            printf("entrato in login");
             recv(socket, email, MAX_LENGTH, 0);
             recv(socket, password, MAX_LENGTH, 0);
 

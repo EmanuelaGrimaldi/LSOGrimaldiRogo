@@ -7,7 +7,7 @@
 #include "utente.h"
 #include "define.h"
 
-//#include <libpq-fe.h>   da errore?
+// #include <libpq-fe.h>   da errore?
 
 int client_connesso;
 char *user_name, *user_email;
@@ -149,7 +149,7 @@ void login(int socket)
     scanf("%s", password);
 
     // Invia dati di login al server
-    send(socket, "LOGIN", strlen("LOGIN"), 0);
+    send(socket, "LOGIN", strlen("LOGIN") + 1, 0);
     send(socket, email, strlen(email), 0);
     send(socket, password, strlen(password), 0);
 
