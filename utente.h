@@ -10,6 +10,6 @@ void accedi(char *email, char *conninfo);
 void logout();
 
 int emailValida(char *emailDaVerificare, char *conninfo);
-char *getNomeUtente (char *email, char *conninfo);
+char *getNomeUtente(char *email, char *conninfo);
 
 #endif

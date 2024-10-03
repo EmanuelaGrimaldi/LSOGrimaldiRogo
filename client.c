@@ -7,8 +7,6 @@
 #include "utente.h"
 #include "define.h"
 
-// #include <libpq-fe.h>   da errore?
-
 int client_connesso;
 char *user_name, *user_email;
 
@@ -64,14 +62,14 @@ void menuGuest(int socket)
         switch (choice)
         {
         case 1:
-             send(socket, "REGISTER", strlen("REGISTER"), 0);
+            send(socket, "REGISTER", strlen("REGISTER"), 0);
             break;
         case 2:
             send(socket, "LOGIN", strlen("LOGIN"), 0);
 
-            if (recv(socket,"\n\nUtente registrato correttamente!\n\n", strlen("\n\nUtente registrato correttamente!\n\n"),0))
+            if (recv(socket, "\n\nUtente registrato correttamente!\n\n", strlen("\n\nUtente registrato correttamente!\n\n"), 0))
             {
-               menuUser(socket); 
+                menuUser(socket);
             }
             break;
         case 3:

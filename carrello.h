@@ -10,5 +10,4 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo);
 void creaNuovoPrestito(char *email, int ISBN, char *conninfo);
 void cancellaCarrelloDiUtente(char *email, char *conninfo);
 
-
 #endif
