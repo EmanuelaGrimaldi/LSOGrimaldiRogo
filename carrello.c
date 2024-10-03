@@ -5,16 +5,13 @@
 #include "carrello.h"
 #include "libro.h"
 #include "define.h"
-
-#include "conninfo.h"
 #include <libpq-fe.h>
 
-char *puntatoreCharISBN;
-char * charNumeroCopie, charISBN; 
+char *puntatoreCharISBN, *charNumeroCopie, *charISBN;
 int numeroCopie;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void aggiungiLibroAlCarrello(int socket, char *email, int ISBN)
+void aggiungiLibroAlCarrello(int socket, char *email, int ISBN, char *conninfo)
 {
      PGconn *conn = PQconnectdb(conninfo);
 
@@ -28,39 +25,43 @@ void aggiungiLibroAlCarrello(int socket, char *email, int ISBN)
     puntatoreCharISBN = (char *)malloc(12 * sizeof(char));
     sprintf(puntatoreCharISBN, "%d", ISBN);
 
-    //Creo ed eseguo la query
-    const char *paramValues[2] = { puntatoreCharISBN, email };                                                 
-    PGresult *res = PQexecParams(conn,
-                                 "INSERT INTO carrello (isbnCarrello, emailCarrello) VALUES ($1, $2)",
-                                 2,        // Numero di parametri
-                                 NULL,     // OID dei parametri (NULL per default)
-                                 paramValues, // Valori dei parametri
-                                 NULL,     // Lunghezza dei parametri (NULL per stringhe)
-                                 NULL,     // Formato dei parametri (NULL per stringhe)
-                                 0);       // Formato del risultato (0 = testo)
-
-    // Verifica se l'operazione è andata a buon fine
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        fprintf(stderr, "Errore durante l'inserimento: %s", PQerrorMessage(conn));
+    if (isLibroDisponibile(ISBN, conninfo) == RISPOSTA_INVALIDA){
+        printf("Non vi sono copie disponibili per questo libro.\n\n");
     } else {
-        printf("Inserimento del nuovo utente riuscito!\n");
-    }
 
+        //Creo ed eseguo la query
+        const char *paramValues[2] = { puntatoreCharISBN, email };                                                 
+        PGresult *res = PQexecParams(conn,
+                                    "INSERT INTO carrello (isbnCarrello, emailCarrello) VALUES ($1, $2)",
+                                    2,        // Numero di parametri
+                                    NULL,     // OID dei parametri (NULL per default)
+                                    paramValues, // Valori dei parametri
+                                    NULL,     // Lunghezza dei parametri (NULL per stringhe)
+                                    NULL,     // Formato dei parametri (NULL per stringhe)
+                                    0);       // Formato del risultato (0 = testo)
+
+        // Verifica se l'operazione è andata a buon fine
+        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+            fprintf(stderr, "Errore durante l'inserimento: %s", PQerrorMessage(conn));
+        } else {
+            printf("Inserimento del nuovo utente riuscito!\n");
+        }
+
+            PQclear(res);
+            PQfinish(conn);
+            free(puntatoreCharISBN);
+            return;
+        
+        // Libera la memoria allocata per il risultato
         PQclear(res);
         PQfinish(conn);
-        free(puntatoreCharISBN);
-        return;
-    
-    // Libera la memoria allocata per il risultato
-    PQclear(res);
-    PQfinish(conn);
 
-    printf("Elemento aggiunto al carrello con successo!\n");
-    
+        printf("Elemento aggiunto al carrello con successo!\n");
+    }
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void checkout(int socket, char *email)
+void checkout(int socket, char *email, char *conninfo)
 {
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -104,16 +105,16 @@ void checkout(int socket, char *email)
             charPointerISBN = PQgetvalue(res, row, col);
             int intISBN = atoi(charPointerISBN);
 
-            aggiornaNumeroLibri(intISBN);
-            creaNuovoPrestito(email, intISBN);
-            cancellaCarrelloDiUtente(email);
+            aggiornaNumeroLibri(intISBN, conninfo);
+            creaNuovoPrestito(email, intISBN, conninfo);
+            cancellaCarrelloDiUtente(email, conninfo);
         }
     }
 
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-int isLibroDisponibile(int isbn)
+
+int isLibroDisponibile(int isbn, char *conninfo)
 {
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -172,8 +173,7 @@ int isLibroDisponibile(int isbn)
 }
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void aggiornaNumeroLibri(int ISBN) 
+void aggiornaNumeroLibri(int ISBN, char *conninfo) 
 {
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -216,7 +216,7 @@ void aggiornaNumeroLibri(int ISBN)
     sprintf(puntatoreCharISBN, "%d", ISBN);
 
     //STEP 2: Aggiorno il numero di copie
-    const char *paramValuesDue[2] = { charNumeroCopie, puntatoreCharISBN };                                                    //*****************
+    const char *paramValuesDue[2] = { charNumeroCopie, puntatoreCharISBN };
     res = PQexecParams(conn,
                                  "UPDATE libro SET totCopieDisponibili = $1 WHERE isbn = $2",
                                  2,        // Numero di parametri
@@ -237,7 +237,7 @@ void aggiornaNumeroLibri(int ISBN)
 }
 
 
-void creaNuovoPrestito(char *email, int ISBN)
+void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
 {
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -277,15 +277,16 @@ void creaNuovoPrestito(char *email, int ISBN)
     // Verifica il risultato della query
     if (PQresultStatus(res) != PGRES_TUPLES_OK) 
     {
-        fprintf(stderr, "Errore durante la query cancellaCarrelloDiUtente : %s", PQerrorMessage(conn));
+        fprintf(stderr, "Errore durante la query crea Nuovo Prestito\n : %s", PQerrorMessage(conn));
         PQclear(res);
         PQfinish(conn);
     }
     free(puntatoreCharISBN);
 
 }
-            
-void cancellaCarrelloDiUtente(char *email)
+
+
+void cancellaCarrelloDiUtente(char *email, char *conninfo)
 {
     PGconn *conn = PQconnectdb(conninfo);
 

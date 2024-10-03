@@ -3,7 +3,7 @@
 
 #include "define.h"
 
-void cercaLibroByTitolo(int socket, char *parolaChiave);
-void cercaLibroByISBN(int socket, int ISBN);
+void cercaLibroByTitolo(int socket, char *parolaChiave, char *conninfo);
+void cercaLibroByISBN(int socket, int ISBN, char *conninfo);
 
 #endif

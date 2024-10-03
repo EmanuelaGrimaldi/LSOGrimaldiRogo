@@ -55,23 +55,32 @@ void menuGuest(int socket)
         printf("\n--- Menu ---\n");
         printf("1. Registrazione nuovo utente\n");
         printf("2. Login\n");
-        printf("3. Ricerca di un libro\n");
-        printf("4. Chiudi\n");
+        printf("3. Ricerca di un libro tramite parola chiave\n");
+        printf("4. Ricerca di un libro tramite ISBN\n");
+        printf("5. Esci\n");
         printf("Inserisci qui la tua opzione: ");
         scanf("%d", &choice);
 
         switch (choice)
         {
         case 1:
-            registerUser(socket);
+             send(socket, "REGISTER", strlen("REGISTER"), 0);
             break;
         case 2:
-            login(socket);
+            send(socket, "LOGIN", strlen("LOGIN"), 0);
+
+            if (recv(socket,"\n\nUtente registrato correttamente!\n\n", strlen("\n\nUtente registrato correttamente!\n\n"),0))
+            {
+               menuUser(socket); 
+            }
             break;
         case 3:
-            searchBook(socket);
+            send(socket, "SEARCH_BY_PAROLACHIAVE", strlen("SEARCH_BY_PAROLACHIAVE"), 0);
             break;
         case 4:
+            send(socket, "SEARCH_BY_ISBN", strlen("SEARCH_BY_ISBN"), 0);
+            break;
+        case 5:
             return;
         default:
             printf("Opzione non valida! Riprova.\n");
@@ -86,128 +95,37 @@ void menuUser(int socket)
     {
         // pulisci lo schermo con? clrscr(); system(clear); system(crl); printf("\033[2J"); boh
         printf("\n--- Menu ---\n");
-        printf("1. Ricerca di un libro\n");
-        printf("2. Aggiungi al carrello un libro\n");
-        printf("3. Checkout\n");
-        printf("4. Esci\n");
+        printf("1. Ricerca di un libro tramite parola chiave.\n");
+        printf("2. Ricerca di un libro tramite ISBN.\n");
+        printf("3. Aggiungi al carrello un libro tramite ISBN\n");
+        printf("4. Checkout\n");
+        printf("5. Logout\n");
+        printf("6.  Exit.\n");
         printf("Inserisci qui la tua opzione: ");
         scanf("%d", &choice);
 
         switch (choice)
         {
         case 1:
-            searchBook(socket);
+            send(socket, "SEARCH_BY_PAROLACHIAVE", strlen("SEARCH_BY_PAROLACHIAVE"), 0);
             break;
         case 2:
-            addToCart(socket);
+            send(socket, "SEARCH_BY_ISBN", strlen("SEARCH_BY_ISBN"), 0);
             break;
         case 3:
-            checkout(socket);
+            send(socket, "ADD_TO_CART", strlen("ADD_TO_CART"), 0);
             break;
         case 4:
+            send(socket, "CHECKOUT", strlen("CHECKOUT"), 0);
+            break;
+        case 5:
             logout();
             menuGuest(socket);
             break;
+        case 6:
+            return;
         default:
-            printf("Opzione non valida! Riprova.\n");
+            printf("Opzione non valida! Riprova.\n\n");
         }
     }
-}
-
-void registerUser(int socket)
-{
-    char name[100], email[100], password[30];
-    char server_reply[E];
-
-    printf("Inserisci qui il tuo nome per intero: ");
-    scanf("%s", name);
-    printf("Inserisci qui la tua email: ");
-    scanf("%s", email);
-    printf("Inserisci qui la tua password: ");
-    scanf("%s", password);
-
-    // Invia dati di registrazione al server
-    send(socket, "REGISTER", strlen("REGISTER"), 0);
-    send(socket, name, strlen(name), 0);
-    send(socket, email, strlen(email), 0);
-    send(socket, password, strlen(password), 0);
-
-    // Ricevi risposta dal server
-    recv(socket, server_reply, E, 0);
-    printf("Server: %s\n", server_reply);
-}
-
-void login(int socket)
-{
-    char email[100], password[30];
-    char server_reply[E];
-    char server_reply_email[E];
-
-    printf("Inserisci la tua email: ");
-    scanf("%s", email);
-    printf("Inserisci qui la tua password: ");
-    scanf("%s", password);
-
-    // Invia dati di login al server
-    send(socket, "LOGIN", strlen("LOGIN") + 1, 0);
-    send(socket, email, strlen(email), 0);
-    send(socket, password, strlen(password), 0);
-
-    // Ricevi risposta dal server
-    recv(socket, server_reply, E, 0);
-    printf("Server: %s\n", server_reply);
-
-    // Ridirezionamento
-    if (strcmp(server_reply, "ok") == 0)
-    {
-        menuUser(socket);
-    }
-    else
-        menuGuest(socket);
-}
-
-void searchBook(int socket)
-{
-    char bookTitle[100];
-    char server_reply[E];
-
-    printf("Inserisci la parola chiave per la ricerca del libro: ");
-    scanf("%s", bookTitle);
-
-    // Invia richiesta di ricerca al server
-    send(socket, "SEARCH", strlen("SEARCH"), 0);
-    send(socket, bookTitle, strlen(bookTitle), 0);
-
-    // Ricevi risposta dal server
-    recv(socket, server_reply, E, 0);
-    printf("Server: %s\n", server_reply);
-}
-
-void addToCart(int socket)
-{
-    char bookTitle[100];
-    char server_reply[E];
-
-    printf("Inserisci il titolo del libro da aggiungere al carrello: ");
-    scanf("%s", bookTitle);
-
-    // Invia richiesta di aggiungere al carrello
-    send(socket, "ADD_TO_CART", strlen("ADD_TO_CART"), 0);
-    send(socket, bookTitle, strlen(bookTitle), 0);
-
-    // Ricevi risposta dal server
-    recv(socket, server_reply, E, 0);
-    printf("Server: %s\n", server_reply);
-}
-
-void checkout(int socket)
-{
-    char server_reply[E];
-
-    // Invia richiesta di checkout al server
-    send(socket, "CHECKOUT", strlen("CHECKOUT"), 0);
-
-    // Ricevi risposta dal server
-    recv(socket, server_reply, E, 0);
-    printf("Server: %s\n", server_reply);
 }

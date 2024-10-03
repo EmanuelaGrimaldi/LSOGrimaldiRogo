@@ -3,16 +3,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "utente.h"
-
-#include "conninfo.h"
 #include <libpq-fe.h>
 
-char *user_name;
-char *user_email;
+char *user_name, *user_email;
 int client_connesso, risposta;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void registraNuovoUtente(int socket, char *nome, char *email, char *password)
+void registraNuovoUtente(int socket, char *nome, char *email, char *password, char *conninfo)
 {    
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -22,6 +19,7 @@ void registraNuovoUtente(int socket, char *nome, char *email, char *password)
         PQfinish(conn);
         return;
     }
+    
     //Creo ed eseguo la query
     const char *paramValues[3] = { nome, email, password };
     PGresult *res = PQexecParams(conn,
@@ -51,7 +49,7 @@ void registraNuovoUtente(int socket, char *nome, char *email, char *password)
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-int loginUtente(int socket, char *email, char *password)
+int loginUtente(int socket, char *email, char *password, char *conninfo)
 {
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -78,30 +76,30 @@ int loginUtente(int socket, char *email, char *password)
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
         PQclear(res);
         PQfinish(conn);
-        return 0;
+        return RISPOSTA_INVALIDA;
     }
 
     // Verifica se c'è almeno una riga di risultato (cioè l'utente esiste)
     int num_rows = PQntuples(res);
     if (num_rows == 1) {
-        accedi(email);
+        accedi(email, conninfo);
         printf("Login riuscito!\n");
         PQclear(res);
         PQfinish(conn);
-        return 1;  // Successo
+        return RISPOSTA_VALIDA;
     } else {
         printf("Email o password non validi!\n");
         PQclear(res);
         PQfinish(conn);
-        return 0;  // Fallimento
+        return RISPOSTA_INVALIDA;
     }
 }
 
 //OK!!
-void accedi(char *email)
+void accedi(char *email, char *conninfo)
 {
     client_connesso = CONNESSO;
-    char * nomeUtente = getNomeUtente(email);
+    char * nomeUtente = getNomeUtente(email, conninfo);
     strcpy(user_name, nomeUtente);
     strcpy(user_email, email);
 }
@@ -115,7 +113,7 @@ void logout()
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-int emailValida(char *emailDaVerificare)
+int emailValida(char *emailDaVerificare, char *conninfo)
 {
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -158,7 +156,7 @@ int emailValida(char *emailDaVerificare)
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-char *getNomeUtente (char *email)
+char *getNomeUtente (char *email, char *conninfo)
 {
     char line[256];
 

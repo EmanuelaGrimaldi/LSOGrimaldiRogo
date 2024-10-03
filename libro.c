@@ -3,12 +3,11 @@
 #include <string.h>
 #include "libro.h"
 #include "define.h"
-
-#include "conninfo.h"
 #include <libpq-fe.h>
 
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void cercaLibroByTitolo(int socket, char *parolaChiave)
+void cercaLibroByTitolo(int socket, char *parolaChiave, char *conninfo)
 {
     // QUESTA FUNZIONE STAMPA SU STDOUTPUT NON RESTITUISCE QUELLO CHE TROVA
 
@@ -58,7 +57,7 @@ void cercaLibroByTitolo(int socket, char *parolaChiave)
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void cercaLibroByISBN(int socket, int ISBN)
+void cercaLibroByISBN(int socket, int ISBN, char *conninfo)
 {
 
     PGconn *conn = PQconnectdb(conninfo);
