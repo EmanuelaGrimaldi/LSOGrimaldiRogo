@@ -8,7 +8,8 @@
 #include <libpq-fe.h>
 
 char *puntatoreCharISBN, *charNumeroCopie, *charISBN;
-int numeroCopie;
+char buffer[MAX_MESSAGE_LENGTH];
+int numeroCopie, i;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
 void aggiungiLibroAlCarrello(int socket, char *email, int ISBN, char *conninfo)
@@ -75,7 +76,7 @@ void checkout(int socket, char *email, char *conninfo)
     //STEP 1: Mi prendo tutti i libri messi nel carrello da quell'utente
     const char *paramValues[1] = { email };
     PGresult *res = PQexecParams(conn,
-                                "SELECT * FROM carrello WHERE emailCarrello = $1",
+                                "SELECT isbnCarrello FROM carrello WHERE emailCarrello = $1",
                                 1,        // Numero di parametri
                                 NULL,     // OID dei parametri (NULL per default)
                                 paramValues, // Valori dei parametri
@@ -91,24 +92,39 @@ void checkout(int socket, char *email, char *conninfo)
         PQfinish(conn);
         return;
     }
+    int num_rows = PQntuples(res);
+
+    //Mi salvo nel buffer tutti i libri
+    if (num_rows > 0)
+    for (i = 0; i < num_rows; i++) {
+
+            snprintf(charISBN, sizeof(charISBN), "%s", PQgetvalue(res, i, 0));
+
+            int len = strlen(buffer);
+            char toAppend[] = ("%s\n", charISBN);                   //Qui ho impostato il pattern del buffer
+            strcpy(buffer + len, toAppend);
+    }
+
 
     /*STEP 2: per ogni libro:   aggiorno numero copie disponibili
                                 creo un nuovo oggetto prestito
                                 cancello le righe dal carrello
+
+        Sfrutto il fatto che il buffer ha il seguenta pattern: "isbn\n isbn\n isbn\n"
     */
-    char * charPointerISBN;
-    int num_rows = PQntuples(res),  num_fields = 2;
 
-    for (int row = 0; row < num_rows; row++) {
-        for (int col = 0; col < num_fields; col++) {
+   char *singoloISBN = strtok(buffer, "\n");
 
-            charPointerISBN = PQgetvalue(res, row, col);
-            int intISBN = atoi(charPointerISBN);
+    for (i = 0; i < num_rows; i++) {
+
+            int intISBN = atoi(singoloISBN);
 
             aggiornaNumeroLibri(intISBN, conninfo);
             creaNuovoPrestito(email, intISBN, conninfo);
             cancellaCarrelloDiUtente(email, conninfo);
-        }
+
+             singoloISBN = strtok(NULL, "\n");
+        
     }
 
 }

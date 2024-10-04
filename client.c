@@ -120,11 +120,11 @@ void menuUser(int socket)
             break;
         case 3:
             send(socket, "ADD_TO_CART", strlen("ADD_TO_CART"), 0);
-            funzioneAddToCart(socket);                                      //DA IMPLEMENTARE SIA SERVER CHE CLIENT CHE IN CARRELLO.C!!
+            funzioneAddToCart(socket);
             break;
         case 4:
             send(socket, "CHECKOUT", strlen("CHECKOUT"), 0);
-            funzioneCheckout(socket);                                       //DA IMPLEMENTARE SIA SERVER CHE CLIENT CHE IN CARRELLO.C!!
+            send(socket, email, strlen(email), 0);
             break;
         case 5:
             logout();
@@ -249,7 +249,15 @@ void funzioneSearchISBN (int socket){
 }
 
 funzioneAddToCart(socket){
-}
 
-funzioneCheckout(int socket){
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s", buffer);
+
+    fgets(ISBN, sizeof(ISBN), stdin);
+    send(socket, ISBN, strlen(ISBN), 0);
+
+    // Attendi la risposta finale del server
+    memset(buffer, 0, sizeof(buffer));
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s\n", buffer);
 }

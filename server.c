@@ -177,8 +177,10 @@ void handleClient(int socket)
         // OPZIONE AGGIUNGERE AL CARRELLO: Funziona SOLO tramite ISBN.
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-            printf("Inserisci l'ISBN del libro da aggiungere al carrello: ");
-            scanf("%d", &ISBN);
+             *request = "Inserisci l'ISBN: ";
+            send(socket, request, strlen(request), 0);
+
+            recv(socket, ISBN, sizeof(ISBN), 0);
             aggiungiLibroAlCarrello(socket, email, ISBN, conninfo); //"isLibroDisponibile" è implementata in carrello.c
 
             send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
@@ -186,8 +188,12 @@ void handleClient(int socket)
 
         else if (strcmp(client_message, "CHECKOUT") == 0)
         {
-            checkout(socket, email, conninfo);
-            send(socket, "\n\nFine checkout!\n\n", strlen("\n\nFine checkout!\n\n"), 0);
+            // Riceve l'email dal client
+            recv(socket, email, sizeof(email), 0);
+
+            buffer = checkout(socket, email, conninfo);
+
+            send(socket, buffer, strlen(buffer), 0);
         }
         else
         {
