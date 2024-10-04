@@ -10,8 +10,10 @@
 #include "server.h"
 #include "define.h"
 
-const char *conninfo = "host=localhost port=5432 dbname=mydb user=myuser password=mypassword";
-char *nome, *email, *password;
+const char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
+char *parolaChiave, *request, *email, *password, *nome;
+int ISBN;
+char buffer[MAX_MESSAGE_LENGTH];
 
 int main()
 {
@@ -71,8 +73,7 @@ int main()
 void handleClient(int socket)
 {
     char client_message[MAX_MESSAGE_LENGTH];
-    char *parolaChiave, *titoloLibro;
-    int read_size, isbn;
+    int read_size;
 
     printf("\nsono in handleClient, contenuto socket: %d \n\n", socket);
 
@@ -85,12 +86,26 @@ void handleClient(int socket)
         // OPZIONE REGISTRA: prendo dati utente, verifico che non esiste già l'email nel db e in caso registro.
         if (strcmp(client_message, "REGISTER") == 0)
         {
-            printf("Inserisci qui il tuo nome per intero: ");
-            scanf("%s", nome);
-            printf("Inserisci qui la tua email: ");
-            scanf("%s", email);
-            printf("Inserisci qui la tua password: ");
-            scanf("%s", password);
+            // Chiede il nome completo
+            *request = "Inserisci il tuo nome completo: ";
+            send(socket, request, strlen(request), 0);
+
+            // Riceve il nome completo dal client
+            recv(socket, nome, sizeof(nome), 0);
+
+            // Chiede l'email
+            *request = "Inserisci la tua email: ";
+            send(socket, request, strlen(request), 0);
+
+            // Riceve l'email dal client
+            recv(socket, email, sizeof(email), 0);
+
+            // Chiede la password
+            *request = "Inserisci la tua password: ";
+            send(socket, request, strlen(request), 0);
+
+            // Riceve la password dal client
+            recv(socket, password, sizeof(password), 0);
 
             if (emailValida(email, conninfo) == RISPOSTA_VALIDA)
             {
@@ -103,53 +118,68 @@ void handleClient(int socket)
             }
         }
 
+
         // OPZIONE LOGIN: Prendo dati da utente e, se corrispondono nel DB, login.
         else if (strcmp(client_message, "LOGIN") == 0)
         {
 
-            printf("Inserisci la tua email: ");
-            scanf("%s", email);
-            printf("Inserisci qui la tua password: ");
-            scanf("%s", password);
+            // Chiede l'email
+            *request = "Inserisci la tua email: ";
+            send(socket, request, strlen(request), 0);
 
-            if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA)
-            {
-                accedi(email, conninfo);
-                send(socket, "\n\nAccesso eseguito correttamente!\n\n", strlen("\n\nAccesso eseguito correttamente!\n\n"), 0);
-            }
-            else
-            {
-                logout();
-                send(socket, "\n\nProblemi con l'accesso.\n\n", strlen("\n\nProblemi con l'accesso.\n\n"), 0);
+            // Riceve l'email dal client
+            recv(socket, email, sizeof(email), 0);
+
+            // Chiede la password
+            *request = "Inserisci la tua password: ";
+            send(socket, request, strlen(request), 0);
+
+            // Riceve la password dal client
+            recv(socket, password, sizeof(password), 0);
+
+            // Simula la verifica delle credenziali
+            if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
+                send(socket, RISPOSTA_VALIDA, strlen(RISPOSTA_VALIDA), 0);
+            } else {
+                send(socket, RISPOSTA_INVALIDA, strlen(RISPOSTA_INVALIDA), 0);
             }
         }
+
 
         // OPZIONE RICERCA PAROLA CHIAVE: prendo la parola e vedo se ci sono similitudini, se si, la funzione cercaLibroByTitolo stamperà tutte le occorrenze.
         else if (strcmp(client_message, "SEARCH_BY_PAROLACHIAVE") == 0)
         {
-            printf("Inserisci la parola chiave per la ricerca del libro: ");
-            scanf("%s", parolaChiave);
-            cercaLibroByTitolo(socket, parolaChiave, conninfo);
+            // Chiede la parola chiave
+            *request = "Inserisci la parola chiave: ";
+            send(socket, request, strlen(request), 0);
 
-            send(socket, "\n\nRicerca eseguita con successo!\n\n", strlen("\n\nRicerca eseguita con successo!\n\n"), 0);
+            // Riceve la parola chiave dal client
+            recv(socket, parolaChiave, sizeof(parolaChiave), 0);
+            buffer = cercaLibroByTitolo(socket, parolaChiave, conninfo);
+
+            send(socket, buffer, strlen(buffer), 0);
         }
 
         // OPZIONE RICERCA ISBN: prendo l'isbn e vedo se ci sono similitudini, se si, la funzione cercaLibroByISBN stamperà tutte le occorrenze.
         else if (strcmp(client_message, "SEARCH_BY_ISBN") == 0)
         {
-            printf("Inserisci l'ISBN per la ricerca del libro: ");
-            scanf("%d", &isbn);
-            cercaLibroByISBN(socket, isbn, conninfo);
+            // Chiede l'isbn'
+            *request = "Inserisci l'ISBN: ";
+            send(socket, request, strlen(request), 0);
 
-            send(socket, "\n\nRicerca eseguita con successo!\n\n", strlen("\n\nRicerca eseguita con successo!\n\n"), 0);
+            // Riceve la parola chiave dal client
+            recv(socket, ISBN, sizeof(ISBN), 0);
+            buffer = cercaLibroByISBN(socket, ISBN, conninfo);
+
+            send(socket, buffer, strlen(buffer), 0);
         }
 
         // OPZIONE AGGIUNGERE AL CARRELLO: Funziona SOLO tramite ISBN.
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
             printf("Inserisci l'ISBN del libro da aggiungere al carrello: ");
-            scanf("%d", &isbn);
-            aggiungiLibroAlCarrello(socket, email, isbn, conninfo); //"isLibroDisponibile" è implementata in carrello.c
+            scanf("%d", &ISBN);
+            aggiungiLibroAlCarrello(socket, email, ISBN, conninfo); //"isLibroDisponibile" è implementata in carrello.c
 
             send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
         }

@@ -61,7 +61,7 @@ int loginUtente(int socket, char *email, char *password, char *conninfo)
     // Prepara la query SQL per cercare l'utente con l'email e la password forniti
     const char *paramValues[2] = {email, password};
     PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM utenti WHERE email = $1 AND password = $2",
+                                 "SELECT * FROM utente WHERE email = $1 AND password = $2",
                                  2,           // Numero di parametri
                                  NULL,        // OID dei parametri (NULL per default)
                                  paramValues, // Valori dei parametri
@@ -115,7 +115,7 @@ void logout()
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-int emailValida(char *emailDaVerificare, const char *conninfo)
+int emailValida(char *emailDaVerificare, char *conninfo)
 {
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -129,7 +129,7 @@ int emailValida(char *emailDaVerificare, const char *conninfo)
     // Prepara la query SQL per cercare l'utente con l'email e la password forniti
     const char *paramValues[1] = {emailDaVerificare};
     PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM utenti WHERE email = $1",
+                                 "SELECT * FROM utente WHERE email = $1",
                                  1,           // Numero di parametri
                                  NULL,        // OID dei parametri (NULL per default)
                                  paramValues, // Valori dei parametri
@@ -176,7 +176,7 @@ char *getNomeUtente(char *email, char *conninfo)
     // Prepara la query SQL per cercare l'utente con l'email e la password forniti
     const char *paramValues[1] = {email};
     PGresult *res = PQexecParams(conn,
-                                 "SELECT nome FROM utenti WHERE email = $1",
+                                 "SELECT nome FROM utente WHERE email = $1",
                                  1,           // Numero di parametri
                                  NULL,        // OID dei parametri (NULL per default)
                                  paramValues, // Valori dei parametri
@@ -197,7 +197,7 @@ char *getNomeUtente(char *email, char *conninfo)
     int num_rows = PQntuples(res);
     if (num_rows == 1)
     {
-        char *risultatoNome = PQgetvalue(res, 0, 0);
+        char *risultatoNome = PQgetvalue(res, 0, 0);    //rigo 0, colonna 0 (nome)
         return risultatoNome;
     }
 

@@ -7,8 +7,11 @@
 #include "utente.h"
 #include "define.h"
 
-int client_connesso;
+int client_connesso, ISBN;
 char *user_name, *user_email;
+char *parolaChiave, *email, *password, *nome;
+int ISBN;
+char buffer[MAX_MESSAGE_LENGTH] = {0};
 
 int main()
 {
@@ -63,20 +66,23 @@ void menuGuest(int socket)
         {
         case 1:
             send(socket, "REGISTER", strlen("REGISTER"), 0);
+            funzioneRegister(socket);
             break;
         case 2:
-            send(socket, "LOGIN", strlen("LOGIN"), 0);
 
-            if (recv(socket, "\n\nUtente registrato correttamente!\n\n", strlen("\n\nUtente registrato correttamente!\n\n"), 0))
-            {
-                menuUser(socket);
-            }
+            send(socket, "LOGIN", strlen("LOGIN"), 0);
+            funzioneLogin(socket);
             break;
+
         case 3:
+
             send(socket, "SEARCH_BY_PAROLACHIAVE", strlen("SEARCH_BY_PAROLACHIAVE"), 0);
+            funzioneSearchParolaChiave (socket);
             break;
+
         case 4:
             send(socket, "SEARCH_BY_ISBN", strlen("SEARCH_BY_ISBN"), 0);
+            funzioneSearchISBN(socket);
             break;
         case 5:
             return;
@@ -106,15 +112,19 @@ void menuUser(int socket)
         {
         case 1:
             send(socket, "SEARCH_BY_PAROLACHIAVE", strlen("SEARCH_BY_PAROLACHIAVE"), 0);
+            funzioneSearchParolaChiave (socket);
             break;
         case 2:
             send(socket, "SEARCH_BY_ISBN", strlen("SEARCH_BY_ISBN"), 0);
+            funzioneSearchISBN(socket);
             break;
         case 3:
             send(socket, "ADD_TO_CART", strlen("ADD_TO_CART"), 0);
+            funzioneAddToCart(socket);                                      //DA IMPLEMENTARE SIA SERVER CHE CLIENT CHE IN CARRELLO.C!!
             break;
         case 4:
             send(socket, "CHECKOUT", strlen("CHECKOUT"), 0);
+            funzioneCheckout(socket);                                       //DA IMPLEMENTARE SIA SERVER CHE CLIENT CHE IN CARRELLO.C!!
             break;
         case 5:
             logout();
@@ -126,4 +136,120 @@ void menuUser(int socket)
             printf("Opzione non valida! Riprova.\n\n");
         }
     }
+}
+
+
+void funzioneLogin(int socket){
+
+    // Attendi la richiesta del server per l'email
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s", buffer);  // Mostra "Inserisci la tua email: "
+
+    // Inserisci l'email e inviala al server
+    fgets(email, sizeof(email), stdin);
+    send(socket, email, strlen(email), 0);
+
+    // Attendi la richiesta del server per la password
+    memset(buffer, 0, sizeof(buffer)); // Pulisci il buffer
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s", buffer);  // Mostra "Inserisci la tua password: "
+
+    // Inserisci la password e inviala al server
+    fgets(password, sizeof(password), stdin);
+    send(socket, password, strlen(password), 0);
+
+    // In base alla risposta effettuo o meno il login
+    if (recv(socket, buffer, sizeof(buffer), 0) == RISPOSTA_VALIDA)
+    {   
+        printf("%s\n", buffer);  // Mostra "Login riuscito" o "Login fallito"
+        menuUser(socket);
+    }
+}
+
+void funzioneRegister(int socket){
+
+     send(socket, "REGISTER", strlen("REGISTER"), 0);
+
+    // Attendi la richiesta del server per il nome completo
+    memset(buffer, 0, sizeof(buffer));
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s", buffer);  // Mostra "Inserisci il tuo nome completo: "
+
+    // Inserisci il nome completo e invialo al server
+    fgets(nome, sizeof(nome), stdin);
+    send(socket, nome, strlen(nome), 0);
+
+    // Attendi la richiesta del server per l'email
+    memset(buffer, 0, sizeof(buffer)); // Pulisci il buffer
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s", buffer);  // Mostra "Inserisci la tua email: "
+
+    // Inserisci l'email e inviala al server
+    fgets(email, sizeof(email), stdin);
+    send(socket, email, strlen(email), 0);
+
+    // Attendi la richiesta del server per la password
+    memset(buffer, 0, sizeof(buffer)); // Pulisci il buffer
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s", buffer);  // Mostra "Inserisci la tua password: "
+
+    // Inserisci la password e inviala al server
+    fgets(password, sizeof(password), stdin);
+    send(socket, password, strlen(password), 0);
+
+    // Attendi la risposta finale del server (registrazione riuscita o fallita)
+    memset(buffer, 0, sizeof(buffer)); // Pulisci il buffer
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s\n", buffer);  // Mostra "Registrazione riuscita" o "Registrazione fallita"
+
+}
+
+void funzioneSearchParolaChiave (int socket){
+
+    // Attendi la richiesta del server per la parola chiave
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s", buffer);
+
+    // Mando parola chiave
+    fgets(parolaChiave, sizeof(parolaChiave), stdin);
+    send(socket, parolaChiave, strlen(parolaChiave), 0);
+
+    // Attendi la risposta del server con la lista dei libri;
+    recv(socket, buffer, sizeof(buffer), 0);
+
+    // Mostra i risultati al client
+    printf("Risultati della ricerca:\n%s\n", buffer);
+    break;
+
+    // Attendi la risposta finale del server
+    memset(buffer, 0, sizeof(buffer));
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s\n", buffer);
+}
+
+void funzioneSearchISBN (int socket){
+
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s", buffer);
+
+    fgets(ISBN, sizeof(ISBN), stdin);
+    send(socket, ISBN, strlen(ISBN), 0);
+
+    // Attendi la risposta del server con la lista dei libri;
+    recv(socket, buffer, sizeof(buffer), 0);
+
+    // Mostra i risultati al client
+    printf("Risultati della ricerca:\n%s\n", buffer);
+    break;
+
+    // Attendi la risposta finale del server
+    memset(buffer, 0, sizeof(buffer));
+    recv(socket, buffer, sizeof(buffer), 0);
+    printf("%s\n", buffer);
+}
+
+funzioneAddToCart(socket){
+}
+
+funzioneCheckout(int socket){
 }

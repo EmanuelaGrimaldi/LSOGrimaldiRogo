@@ -130,7 +130,7 @@ int isLibroDisponibile(int isbn, char *conninfo)
 
     const char *paramValues[1] = { puntatoreCharISBN };                                            
     PGresult *res = PQexecParams(conn,
-                                "SELECT totCopieDisponibili FROM libro WHERE isbn = $1",
+                                "SELECT copieTotali, totcopieprestate FROM libro WHERE isbn = $1",
                                 1,        // Numero di parametri
                                 NULL,     // OID dei parametri (NULL per default)
                                 paramValues, // Valori dei parametri
@@ -147,28 +147,25 @@ int isLibroDisponibile(int isbn, char *conninfo)
         return 0;
     }
 
-    int num_rows = PQntuples(res);
-        
-    if (num_rows == 1) 
-    {
-        charNumeroCopie = PQgetvalue(res, 0, 0); 
-        numeroCopie = atoi(charNumeroCopie);
-    
-        if (numeroCopie == 0)
-        {
-            printf("Non vi sono copie disponibili attualmente per questo libro.\n");
-            PQclear(res);
-            PQfinish(conn);
-            return RISPOSTA_INVALIDA;
-        }
-        else 
-        {
-           printf("Vi sono %d copie disponibili attualmente per questo libro.\n", numeroCopie); 
-        }
+    if (PQntuples(res) > 0) {
+        char *copieTotaliStr = PQgetvalue(res, 0, 2); // Riga 0, Colonna 2 (copieTotali)
+        char *totCopiePrestateStr = PQgetvalue(res, 0, 3); // Riga 0, Colonna 3 (totcopieprestate)
+
+        int copieTotali = atoi(copieTotaliStr);
+        int totCopiePrestate = atoi(totCopiePrestateStr);
 
         PQclear(res);
         PQfinish(conn);
-        return RISPOSTA_VALIDA;
+
+        if (copieTotali > totCopiePrestate)
+        {
+            return RISPOSTA_VALIDA;
+        }
+        else 
+        {
+            return RISPOSTA_INVALIDA;   
+        }
+
     }
 }
 

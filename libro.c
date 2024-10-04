@@ -5,9 +5,12 @@
 #include "define.h"
 #include <libpq-fe.h>
 
+char buffer[MAX_MESSAGE_LENGTH];
+char *titolo, *charISBN, *charCopieTotali, *charTotCopiePrestate;
+int intCopieTotali, intTotCopiePrestate, copieDisponibili;
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void cercaLibroByTitolo(int socket, char *parolaChiave, char *conninfo)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MODIFICATA SECONDO NUOVA LOGICA OK!!
+char cercaLibroByTitolo(int socket, char *parolaChiave, char *conninfo)
 {
     // QUESTA FUNZIONE STAMPA SU STDOUTPUT NON RESTITUISCE QUELLO CHE TROVA
 
@@ -34,30 +37,38 @@ void cercaLibroByTitolo(int socket, char *parolaChiave, char *conninfo)
         return;
     }
 
-    int num_rows = PQntuples(res),
-        num_fields = PQnfields(res),
-        row, col;
+    int num_rows = PQntuples(res);
 
     // Stampo tutti i risultati trovati
     if (num_rows > 0)
-    {
-        printf("\nEcco tutti i libri che corrispondono alla tua ricerca:\n");
-        for (row = 0; row < num_rows; row++)
-        {
-            for (col = 0; col < num_fields; col++)
-            {
-                printf("%s\t", PQgetvalue(res, row, col));
-            }
-            printf("\n");
-        }
+    for (int i = 0; i < num_rows; i++) {
+
+            // Estrae i dati dalla query
+            snprintf(charISBN, sizeof(charISBN), "%s", PQgetvalue(res, i, 0));
+            snprintf(titolo, sizeof(titolo), "%s", PQgetvalue(res, i, 1));
+            snprintf(charCopieTotali, sizeof(charCopieTotali), "%s", PQgetvalue(res, i, 2));
+            snprintf(charTotCopiePrestate, sizeof(charTotCopiePrestate), "%s", PQgetvalue(res, i, 3));
+
+            intCopieTotali = atoi(charCopieTotali);
+            intTotCopiePrestate = atoi(charTotCopiePrestate);
+
+            copieDisponibili =  intCopieTotali - intTotCopiePrestate;
+
+            // Aggiungi il libro in coda al buffer dei risultati
+            int len = strlen(buffer);
+            char toAppend[] = ("ISBN: %s | Titolo: %s | Copie Disponibili: %d | CopieTotali: %d\n", charISBN, titolo, copieDisponibili, intCopieTotali);
+            strcpy(buffer + len, toAppend);
     }
 
     PQclear(res);
     PQfinish(conn);
+
+    return buffer;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void cercaLibroByISBN(int socket, int ISBN, char *conninfo)
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MODIFICATA SECONDO NUOVA LOGICA OK!!
+char cercaLibroByISBN(int socket, int ISBN, char *conninfo)
 {
 
     PGconn *conn = PQconnectdb(conninfo);
@@ -83,24 +94,31 @@ void cercaLibroByISBN(int socket, int ISBN, char *conninfo)
         return;
     }
 
-    int num_rows = PQntuples(res),
-        num_fields = PQnfields(res),
-        row, col;
+    int num_rows = PQntuples(res);
 
     // Stampo tutti i risultati trovati
     if (num_rows > 0)
-    {
-        printf("\nEcco tutti i libri che corrispondono alla tua ricerca:\n");
-        for (row = 0; row < num_rows; row++)
-        {
-            for (col = 0; col < num_fields; col++)
-            {
-                printf("%s\t", PQgetvalue(res, row, col));
-            }
-            printf("\n");
-        }
+    for (int i = 0; i < num_rows; i++) {
+
+            // Estrae i dati dalla query
+            snprintf(charISBN, sizeof(charISBN), "%s", PQgetvalue(res, i, 0));
+            snprintf(titolo, sizeof(titolo), "%s", PQgetvalue(res, i, 1));
+            snprintf(charCopieTotali, sizeof(charCopieTotali), "%s", PQgetvalue(res, i, 2));
+            snprintf(charTotCopiePrestate, sizeof(charTotCopiePrestate), "%s", PQgetvalue(res, i, 3));
+
+            intCopieTotali = atoi(charCopieTotali);
+            intTotCopiePrestate = atoi(charTotCopiePrestate);
+
+            copieDisponibili =  intCopieTotali - intTotCopiePrestate;
+
+            // Aggiungi il libro in coda al buffer dei risultati
+            int len = strlen(buffer);
+            char toAppend[] = ("ISBN: %s | Titolo: %s | Copie Disponibili: %d | CopieTotali: %d\n", charISBN, titolo, copieDisponibili, intCopieTotali);
+            strcpy(buffer + len, toAppend);
     }
 
     PQclear(res);
     PQfinish(conn);
+
+    return buffer;
 }
