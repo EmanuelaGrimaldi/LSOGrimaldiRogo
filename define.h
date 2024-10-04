@@ -10,6 +10,4 @@
 #define RISPOSTA_VALIDA 1
 #define RISPOSTA_INVALIDA 0
 
-#define E 1024      //Buffer server_reply da vedere se è abbastanza
-
 #endif

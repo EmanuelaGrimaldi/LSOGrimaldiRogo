@@ -10,8 +10,8 @@
 #include "server.h"
 #include "define.h"
 
-const char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
-char *parolaChiave, *request, *email, *password, *nome;
+char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
+char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN;
 int ISBN;
 char buffer[MAX_MESSAGE_LENGTH];
 
@@ -87,21 +87,21 @@ void handleClient(int socket)
         if (strcmp(client_message, "REGISTER") == 0)
         {
             // Chiede il nome completo
-            *request = "Inserisci il tuo nome completo: ";
+            request = "Inserisci il tuo nome completo: ";
             send(socket, request, strlen(request), 0);
 
             // Riceve il nome completo dal client
             recv(socket, nome, sizeof(nome), 0);
 
             // Chiede l'email
-            *request = "Inserisci la tua email: ";
+            request = "Inserisci la tua email: ";
             send(socket, request, strlen(request), 0);
 
             // Riceve l'email dal client
             recv(socket, email, sizeof(email), 0);
 
             // Chiede la password
-            *request = "Inserisci la tua password: ";
+            request = "Inserisci la tua password: ";
             send(socket, request, strlen(request), 0);
 
             // Riceve la password dal client
@@ -124,14 +124,14 @@ void handleClient(int socket)
         {
 
             // Chiede l'email
-            *request = "Inserisci la tua email: ";
+            request = "Inserisci la tua email: ";
             send(socket, request, strlen(request), 0);
 
             // Riceve l'email dal client
             recv(socket, email, sizeof(email), 0);
 
             // Chiede la password
-            *request = "Inserisci la tua password: ";
+            request = "Inserisci la tua password: ";
             send(socket, request, strlen(request), 0);
 
             // Riceve la password dal client
@@ -139,9 +139,9 @@ void handleClient(int socket)
 
             // Simula la verifica delle credenziali
             if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
-                send(socket, RISPOSTA_VALIDA, strlen(RISPOSTA_VALIDA), 0);
+                send(socket, "RISPOSTA_VALIDA", strlen("RISPOSTA_VALIDA"), 0);
             } else {
-                send(socket, RISPOSTA_INVALIDA, strlen(RISPOSTA_INVALIDA), 0);
+                send(socket, "RISPOSTA_INVALIDA", strlen("RISPOSTA_INVALIDA"), 0);
             }
         }
 
@@ -150,37 +150,42 @@ void handleClient(int socket)
         else if (strcmp(client_message, "SEARCH_BY_PAROLACHIAVE") == 0)
         {
             // Chiede la parola chiave
-            *request = "Inserisci la parola chiave: ";
+            request = "Inserisci la parola chiave: ";
             send(socket, request, strlen(request), 0);
 
             // Riceve la parola chiave dal client
             recv(socket, parolaChiave, sizeof(parolaChiave), 0);
-            buffer = cercaLibroByTitolo(socket, parolaChiave, conninfo);
+            bufferPointer = cercaLibroByTitolo(socket, parolaChiave, conninfo);
 
-            send(socket, buffer, strlen(buffer), 0);
+            send(socket, bufferPointer, strlen(bufferPointer), 0);
         }
 
         // OPZIONE RICERCA ISBN: prendo l'isbn e vedo se ci sono similitudini, se si, la funzione cercaLibroByISBN stamperà tutte le occorrenze.
         else if (strcmp(client_message, "SEARCH_BY_ISBN") == 0)
         {
             // Chiede l'isbn'
-            *request = "Inserisci l'ISBN: ";
+            request = "Inserisci l'ISBN: ";
             send(socket, request, strlen(request), 0);
 
-            // Riceve la parola chiave dal client
-            recv(socket, ISBN, sizeof(ISBN), 0);
-            buffer = cercaLibroByISBN(socket, ISBN, conninfo);
+            // Riceve isbn dal client
+            recv(socket, charPointerISBN, sizeof(charPointerISBN), 0);
+            ISBN = atoi(charPointerISBN);
 
-            send(socket, buffer, strlen(buffer), 0);
+            bufferPointer = cercaLibroByISBN(socket, ISBN, conninfo);
+
+            send(socket, bufferPointer, strlen(bufferPointer), 0);
         }
 
         // OPZIONE AGGIUNGERE AL CARRELLO: Funziona SOLO tramite ISBN.
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-             *request = "Inserisci l'ISBN: ";
+            request = "Inserisci l'ISBN: ";
             send(socket, request, strlen(request), 0);
 
-            recv(socket, ISBN, sizeof(ISBN), 0);
+            // Riceve isbn dal client
+            recv(socket, charPointerISBN, sizeof(charPointerISBN), 0);
+            ISBN = atoi(charPointerISBN);
+
             aggiungiLibroAlCarrello(socket, email, ISBN, conninfo); //"isLibroDisponibile" è implementata in carrello.c
 
             send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
@@ -191,9 +196,9 @@ void handleClient(int socket)
             // Riceve l'email dal client
             recv(socket, email, sizeof(email), 0);
 
-            buffer = checkout(socket, email, conninfo);
+            checkout(socket, email, conninfo);
 
-            send(socket, buffer, strlen(buffer), 0);
+            send(socket, "Prestito avvenuto correttamente!", strlen("Prestito avvenuto correttamente!"), 0);
         }
         else
         {

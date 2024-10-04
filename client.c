@@ -9,7 +9,7 @@
 
 int client_connesso, ISBN;
 char *user_name, *user_email;
-char *parolaChiave, *email, *password, *nome;
+char *parolaChiave, *email, *password, *nome, *rispostaValidaPointer = "RISPOSTA_VALIDA";
 int ISBN;
 char buffer[MAX_MESSAGE_LENGTH] = {0};
 
@@ -158,11 +158,14 @@ void funzioneLogin(int socket){
     fgets(password, sizeof(password), stdin);
     send(socket, password, strlen(password), 0);
 
-    // In base alla risposta effettuo o meno il login
-    if (recv(socket, buffer, sizeof(buffer), 0) == RISPOSTA_VALIDA)
+    // Comparo se la stringa ricevuta è "RISPOSTA_VALIDA" , come int dava problemi
+    if ( strcmp (recv(socket, buffer, sizeof(buffer), 0) , rispostaValidaPointer) == 0)                            //*********************************** 
     {   
-        printf("%s\n", buffer);  // Mostra "Login riuscito" o "Login fallito"
+        printf("Login riuscito correttamente!\n\n");
         menuUser(socket);
+    }
+    else{
+        printf("Login non riuscito.\n\n");
     }
 }
 
@@ -219,7 +222,6 @@ void funzioneSearchParolaChiave (int socket){
 
     // Mostra i risultati al client
     printf("Risultati della ricerca:\n%s\n", buffer);
-    break;
 
     // Attendi la risposta finale del server
     memset(buffer, 0, sizeof(buffer));
@@ -232,15 +234,14 @@ void funzioneSearchISBN (int socket){
     recv(socket, buffer, sizeof(buffer), 0);
     printf("%s", buffer);
 
-    fgets(ISBN, sizeof(ISBN), stdin);
-    send(socket, ISBN, strlen(ISBN), 0);
+    fgets(ISBN, sizeof(ISBN), stdin);                                                         //*********************************** 
+    send(socket, ISBN, strlen(ISBN), 0);                                                      //*********************************** 
 
     // Attendi la risposta del server con la lista dei libri;
     recv(socket, buffer, sizeof(buffer), 0);
 
     // Mostra i risultati al client
     printf("Risultati della ricerca:\n%s\n", buffer);
-    break;
 
     // Attendi la risposta finale del server
     memset(buffer, 0, sizeof(buffer));
@@ -248,13 +249,13 @@ void funzioneSearchISBN (int socket){
     printf("%s\n", buffer);
 }
 
-funzioneAddToCart(socket){
+void funzioneAddToCart(int socket){
 
     recv(socket, buffer, sizeof(buffer), 0);
     printf("%s", buffer);
 
-    fgets(ISBN, sizeof(ISBN), stdin);
-    send(socket, ISBN, strlen(ISBN), 0);
+    fgets(ISBN, sizeof(ISBN), stdin);                                                       //*********************************** 
+    send(socket, ISBN, strlen(ISBN), 0);                                                    //*********************************** 
 
     // Attendi la risposta finale del server
     memset(buffer, 0, sizeof(buffer));

@@ -8,7 +8,7 @@
 #include <libpq-fe.h>
 
 char *puntatoreCharISBN, *charNumeroCopie, *charISBN;
-char buffer[MAX_MESSAGE_LENGTH];
+char bufferCh[MAX_MESSAGE_LENGTH], toAppend[MAX_MESSAGE_LENGTH];
 int numeroCopie, i;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
@@ -100,9 +100,9 @@ void checkout(int socket, char *email, char *conninfo)
 
             snprintf(charISBN, sizeof(charISBN), "%s", PQgetvalue(res, i, 0));
 
-            int len = strlen(buffer);
-            char toAppend[] = ("%s\n", charISBN);                   //Qui ho impostato il pattern del buffer
-            strcpy(buffer + len, toAppend);
+            int len = strlen(bufferCh);
+            snprintf(toAppend, 10,"%s\n", charISBN); //Qui ho impostato il pattern del buffer
+            strcpy(bufferCh + len, toAppend);
     }
 
 
@@ -113,7 +113,7 @@ void checkout(int socket, char *email, char *conninfo)
         Sfrutto il fatto che il buffer ha il seguenta pattern: "isbn\n isbn\n isbn\n"
     */
 
-   char *singoloISBN = strtok(buffer, "\n");
+   char *singoloISBN = strtok(bufferCh, "\n");
 
     for (i = 0; i < num_rows; i++) {
 
