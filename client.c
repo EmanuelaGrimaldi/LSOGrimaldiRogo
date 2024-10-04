@@ -9,7 +9,7 @@
 
 int client_connesso, ISBN;
 char *user_name, *user_email;
-char *parolaChiave, *email, *password, *nome, *rispostaValidaPointer = "RISPOSTA_VALIDA";
+char *parolaChiave, *email, *password, *nome, *charPtISBN, *rispostaValidaPointer = "RISPOSTA_VALIDA";
 int ISBN;
 char buffer[MAX_MESSAGE_LENGTH] = {0};
 
@@ -234,8 +234,8 @@ void funzioneSearchISBN (int socket){
     recv(socket, buffer, sizeof(buffer), 0);
     printf("%s", buffer);
 
-    fgets(ISBN, sizeof(ISBN), stdin);                                                         //*********************************** 
-    send(socket, ISBN, strlen(ISBN), 0);                                                      //*********************************** 
+    fgets(charPtISBN, sizeof(charPtISBN), stdin);                                                         //*********************************** 
+    send(socket, charPtISBN, strlen(charPtISBN), 0);                                                      //*********************************** 
 
     // Attendi la risposta del server con la lista dei libri;
     recv(socket, buffer, sizeof(buffer), 0);
@@ -254,8 +254,8 @@ void funzioneAddToCart(int socket){
     recv(socket, buffer, sizeof(buffer), 0);
     printf("%s", buffer);
 
-    fgets(ISBN, sizeof(ISBN), stdin);                                                       //*********************************** 
-    send(socket, ISBN, strlen(ISBN), 0);                                                    //*********************************** 
+    fgets(charPtISBN, sizeof(charPtISBN), stdin);                                                       //*********************************** 
+    send(socket, charPtISBN, strlen(charPtISBN), 0);                                                    //*********************************** 
 
     // Attendi la risposta finale del server
     memset(buffer, 0, sizeof(buffer));
