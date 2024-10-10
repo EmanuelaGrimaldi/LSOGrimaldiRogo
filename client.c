@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -9,15 +10,21 @@
 
 int client_connesso, ISBN;
 char *user_name, *user_email;
-char *parolaChiave, *email, *password, *nome, *charPtISBN, *rispostaValidaPointer = "RISPOSTA_VALIDA";
+char *parolaChiave, *email, *password, *nome, *charPtISBN, *buffer, *rispostaValidaPointer = "RISPOSTA_VALIDA";
 int ISBN;
-char buffer[MAX_MESSAGE_LENGTH] = {0};
 
 int main()
 {
     client_connesso = NON_CONNESSO;
-    user_name = NULL;
-    user_email = NULL;
+
+    user_name = (char*)malloc(50*sizeof(char));
+    user_email = (char*)malloc(50*sizeof(char));
+    parolaChiave = (char*)malloc(15*sizeof(char));
+    email = (char*)malloc(50*sizeof(char));
+    password = (char*)malloc(30*sizeof(char));
+    nome = (char*)malloc(50*sizeof(char));
+    charPtISBN = (char*)malloc(10*sizeof(char));
+    buffer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
 
     int socket_desc;
     struct sockaddr_in server;
@@ -65,23 +72,15 @@ void menuGuest(int socket)
         switch (choice)
         {
         case 1:
-            send(socket, "REGISTER", strlen("REGISTER"), 0);
             funzioneRegister(socket);
             break;
         case 2:
-
-            send(socket, "LOGIN", strlen("LOGIN"), 0);
             funzioneLogin(socket);
             break;
-
         case 3:
-
-            send(socket, "SEARCH_BY_PAROLACHIAVE", strlen("SEARCH_BY_PAROLACHIAVE"), 0);
             funzioneSearchParolaChiave (socket);
             break;
-
         case 4:
-            send(socket, "SEARCH_BY_ISBN", strlen("SEARCH_BY_ISBN"), 0);
             funzioneSearchISBN(socket);
             break;
         case 5:
@@ -111,15 +110,12 @@ void menuUser(int socket)
         switch (choice)
         {
         case 1:
-            send(socket, "SEARCH_BY_PAROLACHIAVE", strlen("SEARCH_BY_PAROLACHIAVE"), 0);
             funzioneSearchParolaChiave (socket);
             break;
         case 2:
-            send(socket, "SEARCH_BY_ISBN", strlen("SEARCH_BY_ISBN"), 0);
             funzioneSearchISBN(socket);
             break;
         case 3:
-            send(socket, "ADD_TO_CART", strlen("ADD_TO_CART"), 0);
             funzioneAddToCart(socket);
             break;
         case 4:
@@ -141,8 +137,10 @@ void menuUser(int socket)
 
 void funzioneLogin(int socket){
 
+    send(socket, "LOGIN", strlen("LOGIN"), 0);
+
     // Attendi la richiesta del server per l'email
-    recv(socket, buffer, sizeof(buffer), 0);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s", buffer);  // Mostra "Inserisci la tua email: "
 
     // Inserisci l'email e inviala al server
@@ -150,8 +148,8 @@ void funzioneLogin(int socket){
     send(socket, email, strlen(email), 0);
 
     // Attendi la richiesta del server per la password
-    memset(buffer, 0, sizeof(buffer)); // Pulisci il buffer
-    recv(socket, buffer, sizeof(buffer), 0);
+    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s", buffer);  // Mostra "Inserisci la tua password: "
 
     // Inserisci la password e inviala al server
@@ -159,7 +157,7 @@ void funzioneLogin(int socket){
     send(socket, password, strlen(password), 0);
 
     // Comparo se la stringa ricevuta è "RISPOSTA_VALIDA" , come int dava problemi
-    if ( strcmp (recv(socket, buffer, sizeof(buffer), 0) , rispostaValidaPointer) == 0)                            //*********************************** 
+    if ( strcmp (recv(socket, buffer, MAX_MESSAGE_LENGTH, 0) , rispostaValidaPointer) == 0)                            //*********************************** 
     {   
         printf("Login riuscito correttamente!\n\n");
         menuUser(socket);
@@ -171,46 +169,51 @@ void funzioneLogin(int socket){
 
 void funzioneRegister(int socket){
 
-     send(socket, "REGISTER", strlen("REGISTER"), 0);
+    send(socket, "REGISTER", strlen("REGISTER"), 0);
 
     // Attendi la richiesta del server per il nome completo
-    memset(buffer, 0, sizeof(buffer));
-    recv(socket, buffer, sizeof(buffer), 0);
+    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s", buffer);  // Mostra "Inserisci il tuo nome completo: "
 
     // Inserisci il nome completo e invialo al server
-    fgets(nome, sizeof(nome), stdin);
+    //fgets(nome, sizeof(nome), stdin);
+    scanf("%s", nome);
     send(socket, nome, strlen(nome), 0);
 
     // Attendi la richiesta del server per l'email
-    memset(buffer, 0, sizeof(buffer)); // Pulisci il buffer
-    recv(socket, buffer, sizeof(buffer), 0);
+    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s", buffer);  // Mostra "Inserisci la tua email: "
 
     // Inserisci l'email e inviala al server
-    fgets(email, sizeof(email), stdin);
+    //fgets(email, sizeof(email), stdin);
+    scanf("%s", email);
     send(socket, email, strlen(email), 0);
 
     // Attendi la richiesta del server per la password
-    memset(buffer, 0, sizeof(buffer)); // Pulisci il buffer
-    recv(socket, buffer, sizeof(buffer), 0);
+    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s", buffer);  // Mostra "Inserisci la tua password: "
 
     // Inserisci la password e inviala al server
-    fgets(password, sizeof(password), stdin);
+    //fgets(password, sizeof(password), stdin);
+    scanf("%s", password);
     send(socket, password, strlen(password), 0);
 
     // Attendi la risposta finale del server (registrazione riuscita o fallita)
-    memset(buffer, 0, sizeof(buffer)); // Pulisci il buffer
-    recv(socket, buffer, sizeof(buffer), 0);
+    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s\n", buffer);  // Mostra "Registrazione riuscita" o "Registrazione fallita"
 
 }
 
 void funzioneSearchParolaChiave (int socket){
 
+    send(socket, "SEARCH_BY_PAROLACHIAVE", strlen("SEARCH_BY_PAROLACHIAVE"), 0);
+    
     // Attendi la richiesta del server per la parola chiave
-    recv(socket, buffer, sizeof(buffer), 0);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s", buffer);
 
     // Mando parola chiave
@@ -218,47 +221,51 @@ void funzioneSearchParolaChiave (int socket){
     send(socket, parolaChiave, strlen(parolaChiave), 0);
 
     // Attendi la risposta del server con la lista dei libri;
-    recv(socket, buffer, sizeof(buffer), 0);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
 
     // Mostra i risultati al client
     printf("Risultati della ricerca:\n%s\n", buffer);
 
     // Attendi la risposta finale del server
-    memset(buffer, 0, sizeof(buffer));
-    recv(socket, buffer, sizeof(buffer), 0);
+    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s\n", buffer);
 }
 
 void funzioneSearchISBN (int socket){
 
-    recv(socket, buffer, sizeof(buffer), 0);
+    send(socket, "SEARCH_BY_ISBN", strlen("SEARCH_BY_ISBN"), 0);
+
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s", buffer);
 
-    fgets(charPtISBN, sizeof(charPtISBN), stdin);                                                         //*********************************** 
-    send(socket, charPtISBN, strlen(charPtISBN), 0);                                                      //*********************************** 
+    fgets(charPtISBN, sizeof(charPtISBN), stdin);                
+    send(socket, charPtISBN, strlen(charPtISBN), 0);        
 
     // Attendi la risposta del server con la lista dei libri;
-    recv(socket, buffer, sizeof(buffer), 0);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
 
     // Mostra i risultati al client
     printf("Risultati della ricerca:\n%s\n", buffer);
 
     // Attendi la risposta finale del server
-    memset(buffer, 0, sizeof(buffer));
-    recv(socket, buffer, sizeof(buffer), 0);
+    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s\n", buffer);
 }
 
 void funzioneAddToCart(int socket){
 
-    recv(socket, buffer, sizeof(buffer), 0);
+    send(socket, "ADD_TO_CART", strlen("ADD_TO_CART"), 0);
+    
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s", buffer);
 
-    fgets(charPtISBN, sizeof(charPtISBN), stdin);                                                       //*********************************** 
-    send(socket, charPtISBN, strlen(charPtISBN), 0);                                                    //*********************************** 
+    fgets(charPtISBN, sizeof(charPtISBN), stdin);          
+    send(socket, charPtISBN, strlen(charPtISBN), 0);   
 
     // Attendi la risposta finale del server
-    memset(buffer, 0, sizeof(buffer));
-    recv(socket, buffer, sizeof(buffer), 0);
+    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s\n", buffer);
 }

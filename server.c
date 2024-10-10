@@ -20,6 +20,14 @@ int main()
     int server_sock, client_sock, c;
     struct sockaddr_in server, client;
 
+    parolaChiave = (char*)malloc(15*sizeof(char));
+    email = (char*)malloc(50*sizeof(char));
+    password = (char*)malloc(30*sizeof(char));
+    nome = (char*)malloc(50*sizeof(char));
+    request = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    bufferPointer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    charPointerISBN = (char*)malloc(10*sizeof(char));
+
     // Creazione socket server
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sock == -1)
@@ -87,25 +95,23 @@ void handleClient(int socket)
         if (strcmp(client_message, "REGISTER") == 0)
         {
             // Chiede il nome completo
-            request = "Inserisci il tuo nome completo: ";
+            memset(request, 0, sizeof(request));
+            strcpy(request, "Inserisci il tuo nome completo: ");
+            
             send(socket, request, strlen(request), 0);
-
-            // Riceve il nome completo dal client
-            recv(socket, nome, sizeof(nome), 0);
+            recv(socket, nome, 50, 0);
 
             // Chiede l'email
-            request = "Inserisci la tua email: ";
+            memset(request, 0, sizeof(request));
+            strcpy(request, "Inserisci la tua email: ");
             send(socket, request, strlen(request), 0);
-
-            // Riceve l'email dal client
-            recv(socket, email, sizeof(email), 0);
+            recv(socket, email, 50, 0);
 
             // Chiede la password
-            request = "Inserisci la tua password: ";
+            memset(request, 0, sizeof(request));
+            strcpy(request, "Inserisci la tua password: ");
             send(socket, request, strlen(request), 0);
-
-            // Riceve la password dal client
-            recv(socket, password, sizeof(password), 0);
+            recv(socket, password, 30, 0);
 
             if (emailValida(email, conninfo) == RISPOSTA_VALIDA)
             {
