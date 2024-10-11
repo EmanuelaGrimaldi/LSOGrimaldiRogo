@@ -21,9 +21,9 @@ int main()
     struct sockaddr_in server, client;
 
     parolaChiave = (char*)malloc(15*sizeof(char));
-    email = (char*)malloc(50*sizeof(char));
-    password = (char*)malloc(30*sizeof(char));
-    nome = (char*)malloc(50*sizeof(char));
+    email = (char*)malloc(25*sizeof(char));
+    password = (char*)malloc(15*sizeof(char));
+    nome = (char*)malloc(25*sizeof(char));
     request = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     bufferPointer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     charPointerISBN = (char*)malloc(10*sizeof(char));
@@ -99,19 +99,19 @@ void handleClient(int socket)
             strcpy(request, "Inserisci il tuo nome completo: ");
             
             send(socket, request, strlen(request), 0);
-            recv(socket, nome, 50, 0);
+            recv(socket, nome, 25, 0);
 
             // Chiede l'email
             memset(request, 0, sizeof(request));
             strcpy(request, "Inserisci la tua email: ");
             send(socket, request, strlen(request), 0);
-            recv(socket, email, 50, 0);
+            recv(socket, email, 25, 0);
 
             // Chiede la password
             memset(request, 0, sizeof(request));
             strcpy(request, "Inserisci la tua password: ");
             send(socket, request, strlen(request), 0);
-            recv(socket, password, 30, 0);
+            recv(socket, password, 15, 0);
 
             if (emailValida(email, conninfo) == RISPOSTA_VALIDA)
             {
@@ -130,20 +130,22 @@ void handleClient(int socket)
         {
 
             // Chiede l'email
-            request = "Inserisci la tua email: ";
+            memset(request, 0, sizeof(request));
+            strcpy(request, "Inserisci la tua email: ");
             send(socket, request, strlen(request), 0);
 
             // Riceve l'email dal client
             recv(socket, email, sizeof(email), 0);
 
             // Chiede la password
-            request = "Inserisci la tua password: ";
+            memset(request, 0, sizeof(request));
+            strcpy(request, "Inserisci la tua password: ");
             send(socket, request, strlen(request), 0);
 
             // Riceve la password dal client
             recv(socket, password, sizeof(password), 0);
 
-            // Simula la verifica delle credenziali
+            //verifica delle credenziali
             if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
                 send(socket, "RISPOSTA_VALIDA", strlen("RISPOSTA_VALIDA"), 0);
             } else {
@@ -156,7 +158,8 @@ void handleClient(int socket)
         else if (strcmp(client_message, "SEARCH_BY_PAROLACHIAVE") == 0)
         {
             // Chiede la parola chiave
-            request = "Inserisci la parola chiave: ";
+            memset(request, 0, sizeof(request));
+            strcpy(request, "Inserisci la parola chiave: ");
             send(socket, request, strlen(request), 0);
 
             // Riceve la parola chiave dal client
@@ -170,7 +173,8 @@ void handleClient(int socket)
         else if (strcmp(client_message, "SEARCH_BY_ISBN") == 0)
         {
             // Chiede l'isbn'
-            request = "Inserisci l'ISBN: ";
+            memset(request, 0, sizeof(request));
+            strcpy(request, "Inserisci l'ISBN: ");
             send(socket, request, strlen(request), 0);
 
             // Riceve isbn dal client
@@ -185,7 +189,8 @@ void handleClient(int socket)
         // OPZIONE AGGIUNGERE AL CARRELLO: Funziona SOLO tramite ISBN.
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-            request = "Inserisci l'ISBN: ";
+            memset(request, 0, sizeof(request));
+            strcpy(request, "Inserisci l'ISBN: ");
             send(socket, request, strlen(request), 0);
 
             // Riceve isbn dal client
