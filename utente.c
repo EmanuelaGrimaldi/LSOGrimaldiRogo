@@ -58,6 +58,10 @@ int loginUtente(int socket, char *email, char *password, char *conninfo)
         return 0;
     }
 
+    printf("\nIN UTENTE.C:\nemail %s\n", email);
+    printf("La password da segmentation fault:");
+    printf("psw: %s\n", password);
+
     // Prepara la query SQL per cercare l'utente con l'email e la password forniti
     const char *paramValues[2] = {email, password};
     PGresult *res = PQexecParams(conn,

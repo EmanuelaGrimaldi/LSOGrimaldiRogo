@@ -11,7 +11,7 @@
 #include "define.h"
 
 char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
-char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN;
+char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN, *client_message;
 int ISBN;
 char buffer[MAX_MESSAGE_LENGTH];
 
@@ -24,9 +24,10 @@ int main()
     email = (char*)malloc(25*sizeof(char));
     password = (char*)malloc(15*sizeof(char));
     nome = (char*)malloc(25*sizeof(char));
-    request = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    request = (char*)malloc(512*sizeof(char));
     bufferPointer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     charPointerISBN = (char*)malloc(10*sizeof(char));
+    client_message = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
 
     // Creazione socket server
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -78,16 +79,50 @@ int main()
     return 0;
 }
 
+
+// Funzione per leggere dalla socket fino al carattere '\n'
+int leggi_fino_a_newline(int socket, char *buffer) {
+
+    size_t i = 0;
+    char c;
+    int n;
+
+    while (i < MAX_MESSAGE_LENGTH -1) {
+
+        n = recv(socket, &c, 1, 0);  // Legge un carattere alla volta
+
+        if (n > 0) {
+
+            if ( c == '\n' ) {
+                printf("\nBUFFER FINALE IN SERVER: %s", buffer);
+                buffer[i] = '\0';  // Termina la stringa con sto coso
+                return i;
+            }
+            buffer[i] = c;  // Aggiunge il carattere al buffer
+            i++;
+        } else if (n == 0) {
+            printf("\nLa connessione è stata chiusa dal client.\n");
+            // Connessione chiusa dal client
+            break;
+        } else {
+            // Errore nella ricezione
+            perror("errore in leggi_fino_a_newline: recv");
+            return -1;
+        }
+    }
+    buffer[i] = '\0';
+    return i;
+}
+
 void handleClient(int socket)
 {
-    char client_message[MAX_MESSAGE_LENGTH];
     int read_size;
 
     printf("\nsono in handleClient, contenuto socket: %d \n\n", socket);
 
     memset(client_message, 0, MAX_MESSAGE_LENGTH);
 
-    while ((read_size = recv(socket, client_message, MAX_MESSAGE_LENGTH, 0)) > 0)
+    while ((read_size = leggi_fino_a_newline(socket, client_message)) > 0)
     {
         printf("\n\nmessaggio client ricevuto: %s\n\n", client_message);
 
@@ -97,21 +132,20 @@ void handleClient(int socket)
             // Chiede il nome completo
             memset(request, 0, sizeof(request));
             strcpy(request, "Inserisci il tuo nome completo: ");
-            
             send(socket, request, strlen(request), 0);
-            recv(socket, nome, 25, 0);
+            recv(socket, nome, 25*sizeof(char), 0);
 
             // Chiede l'email
             memset(request, 0, sizeof(request));
             strcpy(request, "Inserisci la tua email: ");
             send(socket, request, strlen(request), 0);
-            recv(socket, email, 25, 0);
+            recv(socket, email, 25*sizeof(char), 0);
 
             // Chiede la password
             memset(request, 0, sizeof(request));
             strcpy(request, "Inserisci la tua password: ");
             send(socket, request, strlen(request), 0);
-            recv(socket, password, 15, 0);
+            recv(socket, password, 15*sizeof(char), 0);
 
             if (emailValida(email, conninfo) == RISPOSTA_VALIDA)
             {
@@ -122,6 +156,8 @@ void handleClient(int socket)
             {
                 send(socket, "\n\nNon è stato possibile registrare il nuovo utente.\n\n", strlen("\n\nNon è stato possibile registrare il nuovo utente.\n\n"), 0);
             }
+
+            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
 
@@ -133,17 +169,15 @@ void handleClient(int socket)
             memset(request, 0, sizeof(request));
             strcpy(request, "Inserisci la tua email: ");
             send(socket, request, strlen(request), 0);
-
-            // Riceve l'email dal client
-            recv(socket, email, sizeof(email), 0);
+            recv(socket, email, 25*sizeof(char), 0);
 
             // Chiede la password
             memset(request, 0, sizeof(request));
             strcpy(request, "Inserisci la tua password: ");
             send(socket, request, strlen(request), 0);
+            recv(socket, password, 15*sizeof(char), 0);
 
-            // Riceve la password dal client
-            recv(socket, password, sizeof(password), 0);
+            printf("\nSERVER: riceve %s e %s\n", email, password);
 
             //verifica delle credenziali
             if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
@@ -151,6 +185,8 @@ void handleClient(int socket)
             } else {
                 send(socket, "RISPOSTA_INVALIDA", strlen("RISPOSTA_INVALIDA"), 0);
             }
+
+            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
 
@@ -161,16 +197,16 @@ void handleClient(int socket)
             memset(request, 0, sizeof(request));
             strcpy(request, "Inserisci la parola chiave: ");
             send(socket, request, strlen(request), 0);
+            recv(socket, parolaChiave, 15*sizeof(char), 0);
 
-            // Riceve la parola chiave dal client
-            recv(socket, parolaChiave, sizeof(parolaChiave), 0);
             bufferPointer = cercaLibroByTitolo(socket, parolaChiave, conninfo);
 
             send(socket, bufferPointer, strlen(bufferPointer), 0);
+            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
         // OPZIONE RICERCA ISBN: prendo l'isbn e vedo se ci sono similitudini, se si, la funzione cercaLibroByISBN stamperà tutte le occorrenze.
-        else if (strcmp(client_message, "SEARCH_BY_ISBN") == 0)
+        else if (strcmp(client_message, "SEARCH_BY_ISBN\0") == 0)
         {
             // Chiede l'isbn'
             memset(request, 0, sizeof(request));
@@ -178,12 +214,13 @@ void handleClient(int socket)
             send(socket, request, strlen(request), 0);
 
             // Riceve isbn dal client
-            recv(socket, charPointerISBN, sizeof(charPointerISBN), 0);
+            recv(socket, charPointerISBN, 10*sizeof(char), 0);
             ISBN = atoi(charPointerISBN);
 
             bufferPointer = cercaLibroByISBN(socket, ISBN, conninfo);
 
             send(socket, bufferPointer, strlen(bufferPointer), 0);
+            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
         // OPZIONE AGGIUNGERE AL CARRELLO: Funziona SOLO tramite ISBN.
@@ -192,20 +229,20 @@ void handleClient(int socket)
             memset(request, 0, sizeof(request));
             strcpy(request, "Inserisci l'ISBN: ");
             send(socket, request, strlen(request), 0);
+            recv(socket, charPointerISBN, 10*sizeof(char), 0);
 
-            // Riceve isbn dal client
-            recv(socket, charPointerISBN, sizeof(charPointerISBN), 0);
             ISBN = atoi(charPointerISBN);
 
             aggiungiLibroAlCarrello(socket, email, ISBN, conninfo); //"isLibroDisponibile" è implementata in carrello.c
 
             send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
+            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
         else if (strcmp(client_message, "CHECKOUT") == 0)
         {
             // Riceve l'email dal client
-            recv(socket, email, sizeof(email), 0);
+            recv(socket, email, 25*sizeof(char), 0);
 
             checkout(socket, email, conninfo);
 
