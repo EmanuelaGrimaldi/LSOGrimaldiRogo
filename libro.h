@@ -3,7 +3,7 @@
 
 #include "define.h"
 
-char *cercaLibroByTitolo(int socket, char *parolaChiave, char *conninfo);
-char *cercaLibroByISBN(int socket, int ISBN, char *conninfo);
+char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo);
+char *cercaLibroByISBN(int socket, char* ISBN, char *conninfo);
 
 #endif

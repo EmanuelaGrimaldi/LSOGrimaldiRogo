@@ -227,22 +227,13 @@ void funzioneSearchParolaChiave (int socket){
 
     //printf("Client:\n %s",buffer);
 
-    send(socket, buffer, strlen(buffer), 0);
-
-
-    //--------------------------------------------------------------------------------------------------da modificare da qui//
+    send(socket, buffer, strlen(buffer), 0);   
 
     // Attendi la risposta del server con la lista dei libri;
-    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
-
-    // Mostra i risultati al client
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
     printf("Risultati della ricerca:\n%s\n", buffer);
 
-    // Attendi la risposta finale del server
-    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
-    printf("%s\n", buffer);
 }
 
 void funzioneSearchISBN (int socket){
@@ -260,20 +251,11 @@ void funzioneSearchISBN (int socket){
 
     send(socket, buffer, strlen(buffer), 0);   
 
-
-    //-------------------------------------------------------------------------------------da modificare da qui//
-
     // Attendi la risposta del server con la lista dei libri;
-    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    bzero(buffer, MAX_MESSAGE_LENGTH);
     recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
-
-    // Mostra i risultati al client
     printf("Risultati della ricerca:\n%s\n", buffer);
 
-    // Attendi la risposta finale del server
-    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
-    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
-    printf("%s\n", buffer);
 }
 
 void funzioneAddToCart(int socket){

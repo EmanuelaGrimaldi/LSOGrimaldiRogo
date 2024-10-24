@@ -55,7 +55,7 @@ int loginUtente(int socket, char *email, char *password, char *conninfo)
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
         PQfinish(conn);
-        return;
+        return RISPOSTA_INVALIDA;
     }
 
     // Creo ed eseguo la query

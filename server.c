@@ -179,8 +179,7 @@ void handleClient(int socket)
             bzero(request, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-                                                                                                                              //IMPORTANTE: LOGICA ERRATA!!!
-            bufferPointer = cercaLibroByTitolo(socket, parolaChiave, conninfo);
+            bufferPointer = cercaLibroByParolaChiave(socket, buffer, conninfo);
 
             send(socket, bufferPointer, strlen(bufferPointer), 0);
         }
@@ -188,11 +187,11 @@ void handleClient(int socket)
         // OPZIONE RICERCA ISBN: prendo l'isbn e vedo se ci sono similitudini, se si, la funzione cercaLibroByISBN stamperà tutte le occorrenze.
         else if (strcmp(client_message, "SEARCH_BY_ISBN\0") == 0)
         {
-           //Attendo il buffer con ISBN        
+            //Attendo il buffer con l'ISBN        
             bzero(request, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            bufferPointer = cercaLibroByISBN(socket, ISBN, conninfo);
+            bufferPointer = cercaLibroByISBN(socket, buffer, conninfo);
 
             send(socket, bufferPointer, strlen(bufferPointer), 0);
         }
