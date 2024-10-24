@@ -12,7 +12,7 @@ char bufferCh[MAX_MESSAGE_LENGTH], toAppend[MAX_MESSAGE_LENGTH];
 int numeroCopie, i;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void aggiungiLibroAlCarrello(int socket, char *email, int ISBN, char *conninfo)
+void aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo)
 {
      PGconn *conn = PQconnectdb(conninfo);
 
@@ -23,16 +23,17 @@ void aggiungiLibroAlCarrello(int socket, char *email, int ISBN, char *conninfo)
         return;
     }
 
-    puntatoreCharISBN = (char *)malloc(12 * sizeof(char));
-    sprintf(puntatoreCharISBN, "%d", ISBN);
+    printf("\npre check in carrello.c\n\n"); 
 
     if (isLibroDisponibile(ISBN, conninfo) == RISPOSTA_INVALIDA){
         printf("Non vi sono copie disponibili per questo libro.\n\n");
 
     } else {
 
+        printf("\n POST CHECK\n Valori che ricevo: email: %s , ISBN: %s\n", email, ISBN);
         //Creo ed eseguo la query
-        const char *paramValues[2] = { puntatoreCharISBN, email };                                                 
+        const char *paramValues[2] = { ISBN, email };    
+        printf("2\n");                                             
         PGresult *res = PQexecParams(conn,
                                     "INSERT INTO carrello (isbnCarrello, emailCarrello) VALUES ($1, $2)",
                                     2,        // Numero di parametri
@@ -42,23 +43,19 @@ void aggiungiLibroAlCarrello(int socket, char *email, int ISBN, char *conninfo)
                                     NULL,     // Formato dei parametri (NULL per stringhe)
                                     0);       // Formato del risultato (0 = testo)
 
+        printf("3\n");
+
         // Verifica se l'operazione è andata a buon fine
         if (PQresultStatus(res) != PGRES_COMMAND_OK) {
             fprintf(stderr, "Errore durante l'inserimento: %s", PQerrorMessage(conn));
         } else {
-            printf("Inserimento del nuovo utente riuscito!\n");
+            printf("Elemento aggiunto al carrello con successo!\n");
         }
-
-            PQclear(res);
-            PQfinish(conn);
-            free(puntatoreCharISBN);
-            return;
-        
+  
         // Libera la memoria allocata per il risultato
         PQclear(res);
         PQfinish(conn);
 
-        printf("Elemento aggiunto al carrello con successo!\n");
     }
 }
 
@@ -132,7 +129,7 @@ char* checkout(int socket, char *email, char *conninfo)
 
             int intISBN = atoi(singoloISBN);
 
-            if (isLibroDisponibile(intISBN, conninfo)) {
+            if (isLibroDisponibile(singoloISBN, conninfo)) {
 
                 aggiornaNumeroLibri(intISBN, conninfo);
                 creaNuovoPrestito(email, intISBN, conninfo);
@@ -156,21 +153,25 @@ return bufferCart;
 }
 
 
-int isLibroDisponibile(int isbn, char *conninfo)
+int isLibroDisponibile(char * ISBN, char *conninfo)
 {
+    printf("ild : 1\n"); 
+
     PGconn *conn = PQconnectdb(conninfo);
+
+    printf("ild : 2\n"); 
 
     if (PQstatus(conn) != CONNECTION_OK) 
     {
+        printf("ild : 3\n"); 
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
         PQfinish(conn);
         return 0;
     }
 
-    puntatoreCharISBN = (char *)malloc(12 * sizeof(char));
-    sprintf(puntatoreCharISBN, "%d", isbn);
+    printf("ISBN CHE ricevo in is Libro disponibile: %s",ISBN);
 
-    const char *paramValues[1] = { puntatoreCharISBN };                                            
+    const char *paramValues[1] = { ISBN };                                            
     PGresult *res = PQexecParams(conn,
                                 "SELECT copieTotali, totcopieprestate FROM libro WHERE isbn = $1",
                                 1,        // Numero di parametri
@@ -190,8 +191,8 @@ int isLibroDisponibile(int isbn, char *conninfo)
     }
 
     if (PQntuples(res) > 0) {
-        char *copieTotaliStr = PQgetvalue(res, 0, 2); // Riga 0, Colonna 2 (copieTotali)
-        char *totCopiePrestateStr = PQgetvalue(res, 0, 3); // Riga 0, Colonna 3 (totcopieprestate)
+        char *copieTotaliStr = PQgetvalue(res, 0, 0); // Riga 0, Colonna 2 (copieTotali)
+        char *totCopiePrestateStr = PQgetvalue(res, 0, 1); // Riga 0, Colonna 3 (totcopieprestate)
 
         int copieTotali = atoi(copieTotaliStr);
         int totCopiePrestate = atoi(totCopiePrestateStr);

@@ -225,7 +225,6 @@ void funzioneSearchParolaChiave (int socket){
     printf("\nInserisci la parola chiave: ");
     scanf("%s", buffer);
 
-    //printf("Client:\n %s",buffer);
 
     send(socket, buffer, strlen(buffer), 0);   
 

@@ -199,14 +199,11 @@ void handleClient(int socket)
         // OPZIONE AGGIUNGERE AL CARRELLO: Funziona SOLO tramite ISBN.
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-           //Attendo il buffer con la parola chiave         
-            bzero(request, MAX_MESSAGE_LENGTH);
+           //Attendo il buffer con l'ISBN         
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            //mi converto l'isbn in intero
-            ISBN = atoi(buffer);
-
-            aggiungiLibroAlCarrello(socket, email, ISBN, conninfo); //"isLibroDisponibile" è implementata in carrello.c
+            aggiungiLibroAlCarrello(socket, email, buffer, conninfo); //"isLibroDisponibile" è implementata in carrello.c
 
             send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
         }
