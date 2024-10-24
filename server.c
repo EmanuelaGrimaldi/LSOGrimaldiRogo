@@ -129,14 +129,13 @@ void handleClient(int socket)
         // OPZIONE REGISTRA: prendo dati utente, verifico che non esiste già l'email nel db e in caso registro.
         if (strcmp(client_message, "REGISTER") == 0)
         {
-
             //Attendo il buffer con tutti i dati          
             bzero(request, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
             //divido il buffer in 3 variabili
             sscanf(buffer, "%[^;];%[^;];%[^;]", nome, email, password);
-            printf("\nDOPO SSCANF: %s %s %s\n\n", nome, email, password);
+            printf("\nREGISTER: DOPO SSCANF: %s %s %s\n\n", nome, email, password);
 
 
             if (emailValida(email, conninfo) == RISPOSTA_VALIDA)
@@ -149,27 +148,19 @@ void handleClient(int socket)
                 send(socket, "\n\nNon è stato possibile registrare il nuovo utente.\n\n", strlen("\n\nNon è stato possibile registrare il nuovo utente.\n\n"), 0);
             }
 
-            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
 
         // OPZIONE LOGIN: Prendo dati da utente e, se corrispondono nel DB, login.
         else if (strcmp(client_message, "LOGIN") == 0)
-        {
+        { 
+            //Attendo il buffer con tutti i dati          
+            bzero(request, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
 
-            // Chiede l'email
-            memset(buffer, 0, MAX_MESSAGE_LENGTH);
-            strcpy(request, "Inserisci la tua email: ");
-            send(socket, request, strlen(request), 0);
-            recv(socket, email, MAX_MESSAGE_LENGTH*sizeof(char), 0);
-
-            // Chiede la password
-            memset(buffer, 0, MAX_MESSAGE_LENGTH);
-            strcpy(request, "Inserisci la tua password: ");
-            send(socket, request, strlen(request), 0);
-            recv(socket, password, MAX_MESSAGE_LENGTH*sizeof(char), 0);
-
-            printf("\nSERVER: riceve %s e %s\n", email, password);
+            //divido il buffer in 2 variabili
+            sscanf(buffer, "%[^;];%[^;]", email, password);
+            printf("\nLOGIN: DOPO SSCANF: %s %s\n\n", email, password);
 
             //verifica delle credenziali
             if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
@@ -178,67 +169,63 @@ void handleClient(int socket)
                 send(socket, "RISPOSTA_INVALIDA", strlen("RISPOSTA_INVALIDA"), 0);
             }
 
-            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
 
         // OPZIONE RICERCA PAROLA CHIAVE: prendo la parola e vedo se ci sono similitudini, se si, la funzione cercaLibroByTitolo stamperà tutte le occorrenze.
         else if (strcmp(client_message, "SEARCH_BY_PAROLACHIAVE") == 0)
         {
-            // Chiede la parola chiave
-            memset(buffer, 0, MAX_MESSAGE_LENGTH);
-            strcpy(request, "Inserisci la parola chiave: ");
-            send(socket, request, strlen(request), 0);
-            recv(socket, parolaChiave, 15*sizeof(char), 0);
+            //Attendo il buffer con la parola chiave         
+            bzero(request, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
 
+                                                                                                                              //IMPORTANTE: LOGICA ERRATA!!!
             bufferPointer = cercaLibroByTitolo(socket, parolaChiave, conninfo);
 
             send(socket, bufferPointer, strlen(bufferPointer), 0);
-            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
         // OPZIONE RICERCA ISBN: prendo l'isbn e vedo se ci sono similitudini, se si, la funzione cercaLibroByISBN stamperà tutte le occorrenze.
         else if (strcmp(client_message, "SEARCH_BY_ISBN\0") == 0)
         {
-            // Chiede l'isbn'
-            memset(buffer, 0, MAX_MESSAGE_LENGTH);
-            strcpy(request, "Inserisci l'ISBN: ");
-            send(socket, request, strlen(request), 0);
-
-            // Riceve isbn dal client
-            recv(socket, charPointerISBN, 10*sizeof(char), 0);
-            ISBN = atoi(charPointerISBN);
+           //Attendo il buffer con ISBN        
+            bzero(request, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
 
             bufferPointer = cercaLibroByISBN(socket, ISBN, conninfo);
 
             send(socket, bufferPointer, strlen(bufferPointer), 0);
-            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
         // OPZIONE AGGIUNGERE AL CARRELLO: Funziona SOLO tramite ISBN.
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-            memset(buffer, 0, MAX_MESSAGE_LENGTH);
-            strcpy(request, "Inserisci l'ISBN: ");
-            send(socket, request, strlen(request), 0);
-            recv(socket, charPointerISBN, 10*sizeof(char), 0);
+           //Attendo il buffer con la parola chiave         
+            bzero(request, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
 
-            ISBN = atoi(charPointerISBN);
+            //mi converto l'isbn in intero
+            ISBN = atoi(buffer);
 
             aggiungiLibroAlCarrello(socket, email, ISBN, conninfo); //"isLibroDisponibile" è implementata in carrello.c
 
             send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
-            memset(client_message, 0, MAX_MESSAGE_LENGTH);
         }
 
         else if (strcmp(client_message, "CHECKOUT") == 0)
         {
-            // Riceve l'email dal client
-            recv(socket, email, 25*sizeof(char), 0);
+            //Attendo il buffer con l'email del checkout         
+            bzero(request, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
 
-            checkout(socket, email, conninfo);
+            bzero(request, MAX_MESSAGE_LENGTH);
+            bufferPointer = checkout(socket, email, conninfo);
 
-            send(socket, "Prestito avvenuto correttamente!", strlen("Prestito avvenuto correttamente!"), 0);
+            if ( strcmp(bufferPointer, "") == 0){
+                    send(socket, "Tutti i libri sono stati presi correttamente in prestito!\n", strlen("Tutti i libri sono stati presi correttamente in prestito!\n"), 0);
+                } else {
+                    send(socket, buffer, strlen(buffer), 0);
+                }
         }
         else
         {

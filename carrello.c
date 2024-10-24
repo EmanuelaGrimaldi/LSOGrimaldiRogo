@@ -7,7 +7,7 @@
 #include "define.h"
 #include <libpq-fe.h>
 
-char *puntatoreCharISBN, *charNumeroCopie, *charISBN;
+char *puntatoreCharISBN, *charNumeroCopie, *charISBN, *bufferCart;
 char bufferCh[MAX_MESSAGE_LENGTH], toAppend[MAX_MESSAGE_LENGTH];
 int numeroCopie, i;
 
@@ -28,6 +28,7 @@ void aggiungiLibroAlCarrello(int socket, char *email, int ISBN, char *conninfo)
 
     if (isLibroDisponibile(ISBN, conninfo) == RISPOSTA_INVALIDA){
         printf("Non vi sono copie disponibili per questo libro.\n\n");
+
     } else {
 
         //Creo ed eseguo la query
@@ -62,15 +63,17 @@ void aggiungiLibroAlCarrello(int socket, char *email, int ISBN, char *conninfo)
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void checkout(int socket, char *email, char *conninfo)
+char* checkout(int socket, char *email, char *conninfo)
 {
+    bufferCart = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+
     PGconn *conn = PQconnectdb(conninfo);
 
     if (PQstatus(conn) != CONNECTION_OK) 
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
         PQfinish(conn);
-        return;
+        return NULL;
     }
 
     //STEP 1: Mi prendo tutti i libri messi nel carrello da quell'utente
@@ -90,7 +93,7 @@ void checkout(int socket, char *email, char *conninfo)
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
         PQclear(res);
         PQfinish(conn);
-        return;
+        return NULL;
     }
     int num_rows = PQntuples(res);
 
@@ -106,27 +109,50 @@ void checkout(int socket, char *email, char *conninfo)
     }
 
 
-    /*STEP 2: per ogni libro:   aggiorno numero copie disponibili
-                                creo un nuovo oggetto prestito
-                                cancello le righe dal carrello
+    /*STEP 2: per ogni libro:   mi prendo il singolo ISBN
+                                controllo ci sia ancora una copia disponibile
+                                se c'è, la prendo io + creo un prestito
+                                se non c'è, aggiungo l'isbn nell'avviso che restituisco
 
-        Sfrutto il fatto che il buffer ha il seguenta pattern: "isbn\n isbn\n isbn\n"
+                                ultima azione cancello il carrello dell'utente
+
+        Sfrutto il fatto che il buffer ha il seguente pattern: "isbn\n isbn\n isbn\n"
     */
 
-   char *singoloISBN = strtok(bufferCh, "\n");
+    bzero(bufferCart, MAX_MESSAGE_LENGTH);
+    char *singoloISBN;
 
     for (i = 0; i < num_rows; i++) {
 
+            if (i == 0) {
+                singoloISBN = strtok(bufferCh, "\n");
+            } else {
+                singoloISBN = strtok(NULL, "\n");
+            }
+
             int intISBN = atoi(singoloISBN);
 
-            aggiornaNumeroLibri(intISBN, conninfo);
-            creaNuovoPrestito(email, intISBN, conninfo);
-            cancellaCarrelloDiUtente(email, conninfo);
+            if (isLibroDisponibile(intISBN, conninfo)) {
 
-             singoloISBN = strtok(NULL, "\n");
-        
+                aggiornaNumeroLibri(intISBN, conninfo);
+                creaNuovoPrestito(email, intISBN, conninfo);
+
+            } else {
+                
+                if (strcmp(bufferCart, "") == 0) {
+                    strcpy(bufferCart, "L'ultima copia dei seguenti libri già è stata presa in prestito: ");
+                    strcat(bufferCart, singoloISBN);
+                } else {
+                    strcat(bufferCart, " ,");
+                    strcat(bufferCart, singoloISBN);
+                }
+                
+            }
+            singoloISBN = strtok(NULL, "\n");      
     }
+    cancellaCarrelloDiUtente(email, conninfo);
 
+return bufferCart;
 }
 
 
