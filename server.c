@@ -20,13 +20,13 @@ int main()
     int server_sock, client_sock, c;
     struct sockaddr_in server, client;
 
-    parolaChiave = (char*)malloc(15*sizeof(char));
-    email = (char*)malloc(25*sizeof(char));
-    password = (char*)malloc(15*sizeof(char));
-    nome = (char*)malloc(25*sizeof(char));
-    request = (char*)malloc(512*sizeof(char));
+    parolaChiave = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    email = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    password = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    nome = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    request = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     bufferPointer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
-    charPointerISBN = (char*)malloc(10*sizeof(char));
+    charPointerISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     client_message = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
 
     // Creazione socket server
@@ -129,23 +129,15 @@ void handleClient(int socket)
         // OPZIONE REGISTRA: prendo dati utente, verifico che non esiste già l'email nel db e in caso registro.
         if (strcmp(client_message, "REGISTER") == 0)
         {
-            // Chiede il nome completo
-            memset(request, 0, sizeof(request));
-            strcpy(request, "Inserisci il tuo nome completo: ");
-            send(socket, request, strlen(request), 0);
-            recv(socket, nome, 25*sizeof(char), 0);
 
-            // Chiede l'email
-            memset(request, 0, sizeof(request));
-            strcpy(request, "Inserisci la tua email: ");
-            send(socket, request, strlen(request), 0);
-            recv(socket, email, 25*sizeof(char), 0);
+            //Attendo il buffer con tutti i dati          
+            bzero(request, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
 
-            // Chiede la password
-            memset(request, 0, sizeof(request));
-            strcpy(request, "Inserisci la tua password: ");
-            send(socket, request, strlen(request), 0);
-            recv(socket, password, 15*sizeof(char), 0);
+            //divido il buffer in 3 variabili
+            sscanf(buffer, "%[^;];%[^;];%[^;]", nome, email, password);
+            printf("\nDOPO SSCANF: %s %s %s\n\n", nome, email, password);
+
 
             if (emailValida(email, conninfo) == RISPOSTA_VALIDA)
             {
@@ -166,16 +158,16 @@ void handleClient(int socket)
         {
 
             // Chiede l'email
-            memset(request, 0, sizeof(request));
+            memset(buffer, 0, MAX_MESSAGE_LENGTH);
             strcpy(request, "Inserisci la tua email: ");
             send(socket, request, strlen(request), 0);
-            recv(socket, email, 25*sizeof(char), 0);
+            recv(socket, email, MAX_MESSAGE_LENGTH*sizeof(char), 0);
 
             // Chiede la password
-            memset(request, 0, sizeof(request));
+            memset(buffer, 0, MAX_MESSAGE_LENGTH);
             strcpy(request, "Inserisci la tua password: ");
             send(socket, request, strlen(request), 0);
-            recv(socket, password, 15*sizeof(char), 0);
+            recv(socket, password, MAX_MESSAGE_LENGTH*sizeof(char), 0);
 
             printf("\nSERVER: riceve %s e %s\n", email, password);
 
@@ -194,7 +186,7 @@ void handleClient(int socket)
         else if (strcmp(client_message, "SEARCH_BY_PAROLACHIAVE") == 0)
         {
             // Chiede la parola chiave
-            memset(request, 0, sizeof(request));
+            memset(buffer, 0, MAX_MESSAGE_LENGTH);
             strcpy(request, "Inserisci la parola chiave: ");
             send(socket, request, strlen(request), 0);
             recv(socket, parolaChiave, 15*sizeof(char), 0);
@@ -209,7 +201,7 @@ void handleClient(int socket)
         else if (strcmp(client_message, "SEARCH_BY_ISBN\0") == 0)
         {
             // Chiede l'isbn'
-            memset(request, 0, sizeof(request));
+            memset(buffer, 0, MAX_MESSAGE_LENGTH);
             strcpy(request, "Inserisci l'ISBN: ");
             send(socket, request, strlen(request), 0);
 
@@ -226,7 +218,7 @@ void handleClient(int socket)
         // OPZIONE AGGIUNGERE AL CARRELLO: Funziona SOLO tramite ISBN.
         else if (strcmp(client_message, "ADD_TO_CART") == 0)
         {
-            memset(request, 0, sizeof(request));
+            memset(buffer, 0, MAX_MESSAGE_LENGTH);
             strcpy(request, "Inserisci l'ISBN: ");
             send(socket, request, strlen(request), 0);
             recv(socket, charPointerISBN, 10*sizeof(char), 0);

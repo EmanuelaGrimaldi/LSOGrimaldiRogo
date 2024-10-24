@@ -7,6 +7,7 @@
 #include "client.h"
 #include "utente.h"
 #include "define.h"
+#include <fcntl.h> 
 
 int client_connesso, ISBN;
 char *user_name, *user_email;
@@ -17,13 +18,13 @@ int main()
 {
     client_connesso = NON_CONNESSO;
 
-    user_name = (char*)malloc(25*sizeof(char));
-    user_email = (char*)malloc(25*sizeof(char));
-    parolaChiave = (char*)malloc(15*sizeof(char));
-    email = (char*)malloc(25*sizeof(char));
-    password = (char*)malloc(15*sizeof(char));
-    nome = (char*)malloc(25*sizeof(char));
-    charPtISBN = (char*)malloc(10*sizeof(char));
+    user_name = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    user_email = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    parolaChiave = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    email = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    password = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    nome = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    charPtISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     buffer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
 
     int socket_desc;
@@ -49,8 +50,14 @@ int main()
         return 1;
     }
 
-    menuGuest(socket_desc);
+    int flags = fcntl(socket_desc, F_GETFL, 0);
+    
+    if (flags == 2){
+        printf("Socket bloccante!\n");
+    }
+
     printf("Connessione al server avvenuta con successo!♥\n");
+    menuGuest(socket_desc);
     close(socket_desc);
     return 0;
 }
@@ -150,7 +157,7 @@ void funzioneLogin(int socket){
 
     // Inserisci l'email e inviala al server
     scanf("%s", email);
-    send(socket, email, 25*sizeof(char), 0);
+    send(socket, email, MAX_MESSAGE_LENGTH*sizeof(char), 0);
 
     // Attendi la richiesta del server per la password
     memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
@@ -159,7 +166,7 @@ void funzioneLogin(int socket){
 
     // Inserisci la password e inviala al server
     scanf("%s", password);
-    send(socket, password, 14*sizeof(char), 0);
+    send(socket, password, MAX_MESSAGE_LENGTH*sizeof(char), 0);
 
     // Comparo se la stringa ricevuta è "RISPOSTA_VALIDA" , come int dava problemi
     memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
@@ -175,42 +182,38 @@ void funzioneLogin(int socket){
 
 void funzioneRegister(int socket){
 
+    //Mando comando "REGISTER"
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, "REGISTER\n");
+    send(socket, buffer, strlen(buffer), 0);
 
-    snprintf(buffer, MAX_MESSAGE_LENGTH, "REGISTER\n");
-    send(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
-
-    // Attendi la richiesta del server per il nome completo
-    memset(buffer, 0, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
-    printf("%s", buffer);
-
-    // Inserisci il nome completo e invialo al server
+    //Prendo i dati che mi servono
+    printf("\nInserisci il nome(parola unica): ");
     scanf("%s", nome);
-    send(socket, nome, 25*sizeof(char), 0);
 
-    // Attendi la richiesta del server per l'email
-    memset(buffer, 0, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
-    printf("%s", buffer);
-
-    // Inserisci l'email e inviala al server
+    printf("\nInserisci email: ");
     scanf("%s", email);
-    send(socket, email, 25*sizeof(char), 0);
 
-    // Attendi la richiesta del server per la password
-    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
-    printf("%s", buffer);  // Mostra "Inserisci la tua password: "
-
-    // Inserisci la password e inviala al server
-    //fgets(password, sizeof(password), stdin);
+    printf("\nInserisci psw: ");
     scanf("%s", password);
-    send(socket, password, 15*sizeof(char), 0);
+
+    //concateno i dati in un unico buffer
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, nome);
+    strcat(buffer, ";");
+    strcat(buffer, email);
+    strcat(buffer, ";");
+    strcat(buffer, password);
+
+    //printf("Client:\n %s",buffer);
+
+    send(socket, buffer,  strlen(buffer), 0);
 
     // Attendi la risposta finale del server (registrazione riuscita o fallita)
-    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    bzero(buffer, MAX_MESSAGE_LENGTH);
     recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s\n", buffer);  // Mostra "Registrazione riuscita" o "Registrazione fallita"
+
 
 }
 
