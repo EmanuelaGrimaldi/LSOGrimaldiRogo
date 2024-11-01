@@ -126,7 +126,7 @@ void menuUser(int socket)
             funzioneAddToCart(socket);
             break;
         case 4:
-        funzioneCheckout(socket);
+            funzioneCheckout(socket);
             break;
         case 5:
             logout();

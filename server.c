@@ -11,7 +11,7 @@
 #include "define.h"
 
 char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
-char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN, *client_message;
+char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN, *client_message, emailFinale[MAX_LENGTH];
 int ISBN;
 char buffer[MAX_MESSAGE_LENGTH];
 
@@ -162,6 +162,13 @@ void handleClient(int socket)
             sscanf(buffer, "%[^;];%[^;]", email, password);
             printf("\nLOGIN: DOPO SSCANF: %s %s\n\n", email, password);
 
+            //strncpy(emailFinale, email, MAX_LENGTH -1); 
+            //emailFinale[MAX_LENGTH -1] = '\0';
+
+        printf("\ncosa copio in email finale:: %s\n\n", emailFinale);
+
+    
+
             //verifica delle credenziali
             if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
                 send(socket, "RISPOSTA_VALIDA", strlen("RISPOSTA_VALIDA"), 0);
@@ -211,10 +218,11 @@ void handleClient(int socket)
         else if (strcmp(client_message, "CHECKOUT") == 0)
         {
             //Attendo il buffer con l'email del checkout         
-            bzero(request, MAX_MESSAGE_LENGTH);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            bzero(request, MAX_MESSAGE_LENGTH);
+            printf ("\nIN SERVER.C\nEmail: %s\n\n", email);
+
             bufferPointer = checkout(socket, email, conninfo);
 
             if ( strcmp(bufferPointer, "") == 0){
