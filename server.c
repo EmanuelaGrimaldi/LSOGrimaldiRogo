@@ -4,6 +4,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "utente.h"
 #include "libro.h"
 #include "carrello.h"
@@ -56,23 +58,38 @@ int main()
     while (1)
     {
         client_sock = accept(server_sock, (struct sockaddr *)&client, (socklen_t *)&c);
-        if (client_sock > -1)
-        {
-            // dovrebbe partire una processo per gestire l'handle, ma poi ci pensiamo
-            printf("Client connesso con successo\n");
+
+        if (client_sock == -1){
+            perror("Errore nell'acceept del client_sock.\n");
+            continue;
+        }
+
+        //Qui è dove grazie al fork gestisco i multiprocessi
+
+        pid_t pid = fork();
+
+        if (pid < 0 ){
+
+            perror("Errore fork");
+            close(client_sock);
+            continue;
+
+        } else if ( pid == 0 ){
+
+            //FIGLIO
+            printf("PROCESSO FIGLIO %d :Client connesso con successo!♥\n", getpid());
+            close(server_sock);
             handleClient(client_sock);
+            close(client_sock);         // Chiude il client_socket al termine
+            exit(0); 
+
+        } else {
+            //PADRE
             close(client_sock);
         }
-        else
-        {
-            perror("Server: Errore nell'accettazione della connessione.");
-        }
-    }
 
-    if (client_sock < 0)
-    {
-        printf("Server: Errore con 'accept' del client.\n");
-        return 1;
+        //Pulizia di eventuali processi zombie
+        while (waitpid(-1, NULL, WNOHANG) > 0);
     }
 
     close(server_sock);

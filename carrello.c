@@ -23,6 +23,14 @@ int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo
         return 0;
     } 
 
+    /*
+        TODO LIST:  Implementare K in aggiungiLibroCarrello
+                    Implementare credenziali admin x libraio
+                    Implementare x2 Funzioni SELECT di "prestito" e "libro" in database
+                    Implementare modifica del carattere K.                             //DA PENSARE
+    */
+
+
     if (isLibroDisponibile(ISBN, conninfo) == 0){
         printf("Non vi sono copie disponibili per questo libro.\n");
         return 0;
