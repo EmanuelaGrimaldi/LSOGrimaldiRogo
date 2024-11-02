@@ -3,7 +3,7 @@
 
 #include "define.h" // ?
 
-void aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo);
+int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo);
 char* checkout(int socket, char *email, char *conninfo);
 int isLibroDisponibile(char * ISBN, char *conninfo);
 void aggiornaNumeroLibri(int ISBN, char *conninfo);

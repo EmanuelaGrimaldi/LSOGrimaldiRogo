@@ -103,7 +103,6 @@ void menuUser(int socket)
     int choice;
     while (1)
     {
-        // pulisci lo schermo con? clrscr(); system(clear); system(crl); printf("\033[2J"); boh
         printf("\n--- Menu ---\n");
         printf("1. Ricerca di un libro tramite parola chiave.\n");
         printf("2. Ricerca di un libro tramite ISBN.\n");

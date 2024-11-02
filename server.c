@@ -12,7 +12,7 @@
 
 char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
 char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN, *client_message, emailFinale[MAX_LENGTH];
-int ISBN;
+int ISBN, risultato;
 char buffer[MAX_MESSAGE_LENGTH];
 
 int main()
@@ -94,7 +94,6 @@ int leggi_fino_a_newline(int socket, char *buffer) {
         if (n > 0) {
 
             if ( c == '\n' ) {
-                printf("\nBUFFER FINALE IN SERVER: %s", buffer);
                 buffer[i] = '\0';  // Termina la stringa con sto coso
                 return i;
             }
@@ -135,8 +134,6 @@ void handleClient(int socket)
 
             //divido il buffer in 3 variabili
             sscanf(buffer, "%[^;];%[^;];%[^;]", nome, email, password);
-            printf("\nREGISTER: DOPO SSCANF: %s %s %s\n\n", nome, email, password);
-
 
             if (emailValida(email, conninfo) == RISPOSTA_VALIDA)
             {
@@ -160,14 +157,6 @@ void handleClient(int socket)
 
             //divido il buffer in 2 variabili
             sscanf(buffer, "%[^;];%[^;]", email, password);
-            printf("\nLOGIN: DOPO SSCANF: %s %s\n\n", email, password);
-
-            //strncpy(emailFinale, email, MAX_LENGTH -1); 
-            //emailFinale[MAX_LENGTH -1] = '\0';
-
-        printf("\ncosa copio in email finale:: %s\n\n", emailFinale);
-
-    
 
             //verifica delle credenziali
             if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
@@ -210,9 +199,13 @@ void handleClient(int socket)
             bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            aggiungiLibroAlCarrello(socket, email, buffer, conninfo); //"isLibroDisponibile" è implementata in carrello.c
+            risultato = aggiungiLibroAlCarrello(socket, email, buffer, conninfo); //"isLibroDisponibile" è implementata in carrello.c
 
-            send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
+            if (risultato == 1){
+                send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
+            } else {
+                send(socket, "\n\nNon vi sono copie attualmente disponibili per questo libro.\n\n", strlen("\n\nNon vi sono copie attualmente disponibili per questo libro.\n\n"), 0);                
+            }
         }
 
         else if (strcmp(client_message, "CHECKOUT") == 0)
@@ -220,8 +213,6 @@ void handleClient(int socket)
             //Attendo il buffer con l'email del checkout         
             bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
-
-            printf ("\nIN SERVER.C\nEmail: %s\n\n", email);
 
             bufferPointer = checkout(socket, email, conninfo);
 

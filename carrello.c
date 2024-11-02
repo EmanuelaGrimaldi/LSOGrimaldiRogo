@@ -12,7 +12,7 @@ char bufferCh[MAX_MESSAGE_LENGTH], toAppend[MAX_MESSAGE_LENGTH];
 int numeroCopie, i, disponibile;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-void aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo)
+int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo)
 {
      PGconn *conn = PQconnectdb(conninfo);
 
@@ -20,20 +20,17 @@ void aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninf
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
         PQfinish(conn);
-        return;
-    }
+        return 0;
+    } 
 
-    printf("\npre check in carrello.c\n\n"); 
-
-    if (isLibroDisponibile(ISBN, conninfo) == RISPOSTA_INVALIDA){
-        printf("Non vi sono copie disponibili per questo libro.\n\n");
+    if (isLibroDisponibile(ISBN, conninfo) == 0){
+        printf("Non vi sono copie disponibili per questo libro.\n");
+        return 0;
 
     } else {
 
-        printf("\n POST CHECK\n Valori che ricevo: email: %s , ISBN: %s\n", email, ISBN);
         //Creo ed eseguo la query
-        const char *paramValues[2] = { ISBN, email };    
-        printf("2\n");                                             
+        const char *paramValues[2] = { ISBN, email };                                                
         PGresult *res = PQexecParams(conn,
                                     "INSERT INTO carrello (isbnCarrello, emailCarrello) VALUES ($1, $2)",
                                     2,        // Numero di parametri
@@ -43,7 +40,6 @@ void aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninf
                                     NULL,     // Formato dei parametri (NULL per stringhe)
                                     0);       // Formato del risultato (0 = testo)
 
-        printf("3\n");
 
         // Verifica se l'operazione è andata a buon fine
         if (PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -55,7 +51,7 @@ void aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninf
         // Libera la memoria allocata per il risultato
         PQclear(res);
         PQfinish(conn);
-
+        return 1;
     }
 }
 
@@ -95,8 +91,6 @@ char* checkout(int socket, char *email, char *conninfo)
     }
     int num_rows = PQntuples(res);
 
-    printf("\n CARRELLO.C - post query\n");
-
     //Mi salvo nel buffer tutti i libri
     if (num_rows > 0){
         for (i = 0; i < num_rows; i++) {
@@ -109,8 +103,6 @@ char* checkout(int socket, char *email, char *conninfo)
                     strcat(bufferCh, "\n");
                 }
         }
-
-        printf("\nDOPO FOR - bufferCh:%s", bufferCh);
     }
 
 
@@ -123,7 +115,6 @@ char* checkout(int socket, char *email, char *conninfo)
 
         Sfrutto il fatto che il buffer ha il seguente pattern: "isbn\n isbn\n isbn\n"
     */
-    printf("\npre step2\n");
     strcpy(bufferCart, "");
     singoloISBN = (char*)malloc(MAX_MESSAGE_LENGTH);
 
@@ -138,23 +129,14 @@ char* checkout(int socket, char *email, char *conninfo)
             }
 
             int intISBN = atoi(singoloISBN);
-
-            printf("\n\nvalore di singolo ISBN:%s | intISBN: %d\n\n", singoloISBN, intISBN);
-
             disponibile = isLibroDisponibile(singoloISBN, conninfo);
-            printf("\nvalore disponibile: %d\n",disponibile);
 
             if (disponibile == 1) {
-                
-                printf("\nIF: 2 -\n");
+
                 aggiornaNumeroLibri(intISBN, conninfo);
-                printf("\n3 -\n");
                 creaNuovoPrestito(email, intISBN, conninfo);
-                printf("\n4 -\n");
 
             } else {
-
-                printf("\nELSE: 5 -\n");
                 
                 if (strcmp(bufferCart, "") == 0) {
                     strcpy(bufferCart, "L'ultima copia dei seguenti libri già è stata presa in prestito: ");
@@ -163,17 +145,9 @@ char* checkout(int socket, char *email, char *conninfo)
                     strcat(bufferCart, " ,");
                     strcat(bufferCart, singoloISBN);
                 }
-                
-                printf("\n6 -\n");
-            } 
-        printf("\nFINE CICLO FOR NUMERO %d\n", i); 
-        //free(singoloISBN); 
+            }  
     }
-
     cancellaCarrelloDiUtente(email, conninfo);
-    printf("\n7 -\n");
-
-    free(bufferCh); free(bufferCart);
 
 return bufferCart;
 }
@@ -190,8 +164,6 @@ int isLibroDisponibile(char * ISBN, char *conninfo)
         PQfinish(conn);
         return 0;
     }
-
-    printf("ISBN CHE ricevo in is Libro disponibile: %s",ISBN);
 
     const char *paramValues[1] = { ISBN };                                            
     PGresult *res = PQexecParams(conn,
@@ -212,8 +184,6 @@ int isLibroDisponibile(char * ISBN, char *conninfo)
         return 0;
     }
 
-    printf("\nDopo query per is libro disponibile\n\n");
-
     if (PQntuples(res) > 0) {
         char *copieTotaliStr = PQgetvalue(res, 0, 0); // Riga 0, Colonna 0 (copieTotali)
         char *totCopiePrestateStr = PQgetvalue(res, 0, 1); // Riga 0, Colonna 1 (totcopieprestate)
@@ -223,8 +193,6 @@ int isLibroDisponibile(char * ISBN, char *conninfo)
 
         PQclear(res);
         PQfinish(conn);
-
-        printf("\nI valori presi dalla query sono: %d e %d\n", copieTotali, totCopiePrestate);
 
         if (copieTotali > totCopiePrestate)
         {
@@ -250,7 +218,6 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
         return;
     }
 
-    printf("\nAGGNUMLIB -1");
     charISBN = (char *)malloc(12 * sizeof(char));
     sprintf(charISBN, "%d", ISBN);
 
@@ -274,14 +241,10 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
         return;
     }
 
-    printf("\nAGGNUMLIB -2");
-
     int num_rows = PQntuples(res);
     charNumeroCopie = PQgetvalue(res, 0, 0); 
     numeroCopie = atoi(charNumeroCopie);                                                     
     numeroCopie++;
-
-    printf("\nAGGNUMLIB -3");
 
     sprintf(charNumeroCopie, "%d", numeroCopie);
 
@@ -299,7 +262,6 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
                                  0);       // Formato del risultato (0 = testo)
 
     // Verifica il risultato della query
-    printf("\nAGGNUMLIB -4");
 
     if (PQresultStatus(res) != PGRES_TUPLES_OK) 
     {
@@ -323,15 +285,11 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
         return;
     }
 
-    printf("in creaNuovoPrestito\n");
-
     time_t t = time(NULL);
     struct tm *localTimeStamp = localtime(&t);
 
     int currMese, currGiorno, meseRestituzione;
     char *dataPrestito, *dataRestituzione;
-
-    printf ("\npre allocazione\n");
 
     dataPrestito = (char*)malloc(MAX_MESSAGE_LENGTH);
     dataRestituzione = (char*)malloc(MAX_MESSAGE_LENGTH);
@@ -347,9 +305,6 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
 
     sprintf(dataPrestito, "%02d/%02d", currMese, currGiorno);
     sprintf(dataRestituzione, "%02d/%02d", meseRestituzione, currGiorno);
-
-    printf("in creaNuovoPrestito - GIORNI\n");
-    printf("Data prestito: %s | Data restituzione: %s", dataPrestito, dataRestituzione);
 
     const char *paramValues[4] = { charISBN, email, dataPrestito, dataRestituzione };
     PGresult *res = PQexecParams(conn,
@@ -376,9 +331,7 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
 
 void cancellaCarrelloDiUtente(char *email, char *conninfo)
 {
-    printf("\n\n\n");
     PGconn *conn = PQconnectdb(conninfo);
-    printf("cancella carrelo: 1 \n");
     if (PQstatus(conn) != CONNECTION_OK) 
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
@@ -386,11 +339,9 @@ void cancellaCarrelloDiUtente(char *email, char *conninfo)
         return;
     }
 
-    printf("cancella carrelo: 2 \n");
-
     const char *paramValues[1] = { email };
     PGresult *res = PQexecParams(conn,
-                                "DELETE * FROM carrello WHERE emailCarrello = $1",
+                                "DELETE FROM carrello WHERE emailcarrello = $1",
                                 1,        // Numero di parametri
                                 NULL,     // OID dei parametri (NULL per default)
                                 paramValues, // Valori dei parametri
@@ -399,11 +350,10 @@ void cancellaCarrelloDiUtente(char *email, char *conninfo)
                                 0);       // Formato del risultato (0 = testo)
 
     // Verifica il risultato della query
-    if (PQresultStatus(res) != PGRES_TUPLES_OK) 
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) 
     {
         fprintf(stderr, "Errore durante la query cancellaCarrelloDiUtente : %s", PQerrorMessage(conn));
         PQclear(res);
         PQfinish(conn);
     }
-    printf("\nFine eliminazione carrello.\n");
 }
