@@ -5,8 +5,8 @@
 #include "define.h"
 #include <libpq-fe.h>
 
-char *titolo, *chISBN, *charCopieTotali, *charTotCopiePrestate, *bufferPoin, *charCopieDisponibili;
-int intCopieTotali, intTotCopiePrestate, copieDisponibili, valore;
+char *titolo, *chISBN, *charCopieTotali, *charTotCopiePrestate, *bufferPoin, *bufferPoinDeluxe, *charCopieDisponibili, *emailPrestito, *dataPrestito, *dataRestituzione;
+int intCopieTotali, intTotCopiePrestate, copieDisponibili, valore, Ipointer;
 char stringToAppend[MAX_MESSAGE_LENGTH];
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MODIFICATA SECONDO NUOVA LOGICA OK!!
@@ -52,11 +52,11 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
         return 0;
     }
 
-    int num_rows = PQntuples(res);
+    int numeroRighe = PQntuples(res);
 
     // Stampo tutti i risultati trovati
-    if (num_rows > 0){
-        for (valore = 0; valore < num_rows; valore++) {
+    if (numeroRighe > 0){
+        for (valore = 0; valore < numeroRighe; valore++) {
             // Estrae i dati dalla query
             snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, valore, 0));
             snprintf(titolo, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(res, valore, 1));
@@ -140,10 +140,10 @@ char *cercaLibroByISBN(int socket, char* ISBN, char *conninfo)
         return 0;
     }
 
-    int num_rows = PQntuples(res);
+    int numeroRighe = PQntuples(res);
 
     // Stampo tutti i risultati trovati
-    if (num_rows > 0) {
+    if (numeroRighe > 0) {
 
             // Estrae i dati dalla query
             snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, 0, 0));
@@ -173,4 +173,154 @@ char *cercaLibroByISBN(int socket, char* ISBN, char *conninfo)
     PQfinish(conn);
 
     return bufferPoin;
+}
+
+char *getAllLibri(char *conninfo){
+
+
+free(bufferPoin); free(chISBN); free(titolo); free(charCopieTotali); free(charTotCopiePrestate);
+
+    bufferPoin = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    chISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    titolo = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    charCopieTotali = (char*)malloc(MAX_MESSAGE_LENGTH);
+    charTotCopiePrestate = (char*)malloc(MAX_MESSAGE_LENGTH);
+
+    PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK) 
+    {
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return 0;
+    }
+
+    PGresult *res = PQexec(conn, "SELECT * FROM libro");
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) 
+    {
+        fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return 0;
+    }
+
+    int numeroRighe = PQntuples(res);
+
+    // Stampo tutti i risultati trovati
+    if (numeroRighe > 0) {
+
+        for (Ipointer=0; Ipointer<numeroRighe; Ipointer++){
+
+            snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, Ipointer, 0));
+            snprintf(titolo, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(res, Ipointer, 1));
+            snprintf(charCopieTotali, sizeof(charCopieTotali), "%s", PQgetvalue(res, Ipointer, 2));
+            snprintf(charTotCopiePrestate, sizeof(charTotCopiePrestate), "%s", PQgetvalue(res, Ipointer, 3));
+
+            if (Ipointer == 0){
+                strcpy(bufferPoin, "Titolo: ");
+            } else {
+                strcat(bufferPoin, "Titolo: ");
+            }
+
+            strcat(bufferPoin, titolo);
+            strcat(bufferPoin, "| ISBN: ");
+            strcat(bufferPoin, chISBN);
+            strcat(bufferPoin, "| Copie totali: ");
+            strcat(bufferPoin, charCopieTotali);
+            strcat(bufferPoin, "| Copie prese in prestito: ");
+            strcat(bufferPoin, charTotCopiePrestate);
+            strcat(bufferPoin, "\n");
+        }
+            
+    } else {
+            strcpy(bufferPoin, "Errore query in getAllLibri.\n");
+    }
+
+    PQclear(res);
+    PQfinish(conn);
+
+return bufferPoin;
+}
+
+
+
+char *getAllPrestiti(char *conninfo){
+
+printf("\nSono in get all prestiti");
+
+free(bufferPoinDeluxe); free(chISBN); free(titolo); free(dataPrestito); free(dataRestituzione);
+
+    bufferPoinDeluxe = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*10);
+    chISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    titolo = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    dataPrestito = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    dataRestituzione = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+
+    PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK) 
+    {
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return 0;
+    }
+
+    PGresult *res = PQexec(conn, "SELECT * FROM prestito");
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return 0;
+    }
+
+    int numeroRighe = PQntuples(res);
+
+    printf("\nPre if - mi sto per rompere");
+
+    if (numeroRighe > 0) {
+
+        printf("\nIn if - mi sto per rompere");
+
+        for (Ipointer=0; Ipointer<numeroRighe; Ipointer++){
+
+            printf("\n1 - Ciclo for: %d", Ipointer);
+
+            snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, Ipointer, 0));
+            snprintf(emailPrestito, sizeof(emailPrestito), "%s", PQgetvalue(res, Ipointer, 1));
+            snprintf(dataPrestito, sizeof(dataPrestito), "%s", PQgetvalue(res, Ipointer, 2));
+            snprintf(dataRestituzione, sizeof(dataRestituzione), "%s", PQgetvalue(res, Ipointer, 3));
+
+            if (Ipointer == 0){
+                strcpy(bufferPoinDeluxe, "ISBN: ");
+            } else {
+                strcat(bufferPoinDeluxe, "ISBN: ");
+            }
+
+            strcat(bufferPoinDeluxe, chISBN);
+            strcat(bufferPoinDeluxe, "| Email cliente: ");
+            strcat(bufferPoinDeluxe, emailPrestito);
+            strcat(bufferPoinDeluxe, "| Data prestito: ");
+            strcat(bufferPoinDeluxe, dataPrestito);
+            strcat(bufferPoinDeluxe, "| Data restituzione: ");
+            strcat(bufferPoinDeluxe, dataRestituzione);
+            strcat(bufferPoinDeluxe, "\n");
+        }  
+
+        printf("\nDOPO for: %d", Ipointer); 
+
+    } else {
+        printf("\nsono nell'else");
+            strcpy(bufferPoinDeluxe, "Errore query in getAllPrestiti.\n");
+    }
+
+    printf("\nPost for");
+
+    PQclear(res);
+    PQfinish(conn);
+
+    printf("\nIN LIBRO.C - GET ALL PRESTITI:\n%s",bufferPoinDeluxe);
+
+return bufferPoinDeluxe;
 }

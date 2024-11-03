@@ -11,8 +11,7 @@ char *charISBN, *charNumeroCopie, *charISBN, *bufferCart, *singoloISBN;
 char bufferCh[MAX_MESSAGE_LENGTH], toAppend[MAX_MESSAGE_LENGTH];
 int numeroCopie, i, disponibile;
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
-int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo)
+int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, int valoreK, char *conninfo)
 {
      PGconn *conn = PQconnectdb(conninfo);
 
@@ -23,13 +22,10 @@ int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo
         return 0;
     } 
 
-    /*
-        TODO LIST:  Implementare K in aggiungiLibroCarrello
-                    Implementare credenziali admin x libraio
-                    Implementare x2 Funzioni SELECT di "prestito" e "libro" in database
-                    Implementare modifica del carattere K.                             //DA PENSARE
-    */
 
+    if (numeroLibriInCarrello(email, conninfo) > valoreK){
+        return 2;
+    }
 
     if (isLibroDisponibile(ISBN, conninfo) == 0){
         printf("Non vi sono copie disponibili per questo libro.\n");
@@ -63,7 +59,7 @@ int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo
     }
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
+
 char* checkout(int socket, char *email, char *conninfo)
 {
     bufferCart = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
@@ -364,4 +360,41 @@ void cancellaCarrelloDiUtente(char *email, char *conninfo)
         PQclear(res);
         PQfinish(conn);
     }
+}
+
+int numeroLibriInCarrello( char *email, char * conninfo) {
+
+    PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return RISPOSTA_INVALIDA;
+    }
+
+    // Creo ed eseguo la query
+    const char *paramValues[1] = {email};
+    PGresult *res = PQexecParams(conn,
+                                 "SELECT * FROM carrello WHERE emailcarrello = $1",
+                                 1,           // Numero di parametri
+                                 NULL,        // OID dei parametri (NULL per default)
+                                 paramValues, // Valori dei parametri
+                                 NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                                 NULL,        // Formato dei parametri (NULL per stringhe)
+                                 0);          // Formato del risultato (0 = testo)
+
+    // Verifica il risultato della query
+    if (PQresultStatus(res) != PGRES_TUPLES_OK)
+    {
+        fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return RISPOSTA_INVALIDA;
+    }
+
+    //Il numero di righe equivale al numero di libri nel carrello
+    int num_rows = PQntuples(res);
+   
+return num_rows;
 }

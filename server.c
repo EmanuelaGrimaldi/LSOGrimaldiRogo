@@ -14,7 +14,9 @@
 
 char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
 char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN, *client_message, emailFinale[MAX_LENGTH];
-int ISBN, risultato;
+char *bufferDeluxeDue;
+int ISBN, risultato, Kvalue;
+int * intPointer;
 char buffer[MAX_MESSAGE_LENGTH];
 
 int main()
@@ -30,6 +32,7 @@ int main()
     bufferPointer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     charPointerISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     client_message = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    bufferDeluxeDue = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*10);
 
     // Creazione socket server
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -175,11 +178,22 @@ void handleClient(int socket)
             //divido il buffer in 2 variabili
             sscanf(buffer, "%[^;];%[^;]", email, password);
 
-            //verifica delle credenziali
-            if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
-                send(socket, "RISPOSTA_VALIDA", strlen("RISPOSTA_VALIDA"), 0);
-            } else {
-                send(socket, "RISPOSTA_INVALIDA", strlen("RISPOSTA_INVALIDA"), 0);
+            //verifico prima se è admin
+            if ( (strcmp(email, "admin") == 0) && (strcmp(password, "admin") == 0) )
+            {
+
+                send(socket, "ADMIN", strlen("ADMIN") + 1, 0);   
+            } 
+            else 
+            {
+                //se non è admin, verifica delle credenziali
+                if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
+                    send(socket, "RISPOSTA_VALIDA", strlen("RISPOSTA_VALIDA"), 0);
+
+                } else {
+                    send(socket, "RISPOSTA_INVALIDA", strlen("RISPOSTA_INVALIDA"), 0);
+
+                }
             }
 
         }
@@ -216,10 +230,21 @@ void handleClient(int socket)
             bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            risultato = aggiungiLibroAlCarrello(socket, email, buffer, conninfo); //"isLibroDisponibile" è implementata in carrello.c
+            //ricevo K
+            printf("Ora ricevo K: ");
+            recv(socket, buffer , sizeof(buffer), 0);
+
+            Kvalue = atoi(buffer);
+            printf("%d", Kvalue);
+
+            risultato = aggiungiLibroAlCarrello(socket, email, buffer, Kvalue, conninfo); //"isLibroDisponibile" è implementata in carrello.c
 
             if (risultato == 1){
                 send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
+
+            } else if ( risultato == 2){
+                send(socket, "\nSoglia massima di libri nel carrello raggiunta.\nSi prega di effettuare il checkout.\n", strlen("\nSoglia massima di libri nel carrello raggiunta.\nSi prega di effettuare il checkout.\n"), 0);
+
             } else {
                 send(socket, "\n\nNon vi sono copie attualmente disponibili per questo libro.\n\n", strlen("\n\nNon vi sono copie attualmente disponibili per questo libro.\n\n"), 0);                
             }
@@ -238,6 +263,28 @@ void handleClient(int socket)
                 } else {
                     send(socket, buffer, strlen(buffer), 0);
                 }
+        }
+
+        else if (strcmp(client_message, "ELENCO_LIBRI") == 0)
+        {
+            bzero(bufferPointer, MAX_MESSAGE_LENGTH);
+            bufferPointer = getAllLibri(conninfo);
+            send(socket, bufferPointer, strlen(bufferPointer), 0);
+
+        }
+
+        else if (strcmp(client_message, "ELENCO_PRESTITI") == 0)
+        {
+            printf("\n1");
+            bzero(bufferDeluxeDue, MAX_MESSAGE_LENGTH*sizeof(char)*9);
+            printf("\n2");
+            bufferDeluxeDue = getAllPrestiti(conninfo);
+            printf("\n3");
+
+            printf("\n\nIN SERVER.C - GET ALL PRESTITI:\n%s",bufferDeluxeDue);
+
+            send(socket, bufferDeluxeDue, strlen(bufferPointer), 0);
+
         }
         else
         {

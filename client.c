@@ -9,10 +9,11 @@
 #include "define.h"
 #include <fcntl.h> 
 
-int client_connesso, ISBN;
-char *user_name, *user_email;
+int client_connesso, ISBN,  K = 3;
+int * puntatoreInt;
+char *user_name, *user_email, charRisposta;
 char *parolaChiave, *email, *password, *nome, *charPtISBN, *buffer, *rispostaValidaPointer = "RISPOSTA_VALIDA";
-int ISBN;
+char *bufferDeluxe;
 
 int main()
 {
@@ -26,6 +27,7 @@ int main()
     nome = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     charPtISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     buffer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    bufferDeluxe = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*10);
 
     int socket_desc;
     struct sockaddr_in server;
@@ -139,6 +141,49 @@ void menuUser(int socket)
     }
 }
 
+void menuAdmin (int socket)
+{
+    int choice;
+    while (1)
+    {
+        printf("\n--- Menu ---\n");
+        printf("1. Elenco di tutti i libri.\n");
+        printf("2. Elenco di tutti i prestiti.\n");
+        printf("3. Modifica valore K.\n");
+        printf("4. Exit\n");
+        printf("Inserisci qui la tua opzione: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            funzioneElencoLibri(socket);
+            break;
+        case 2:
+            funzioneElencoPrestiti(socket);
+            break;
+         case 3:
+            printf("\nValore attuale K: %d\n Vuoi cambiarlo?(s/n)", K);
+            scanf("%c", &charRisposta);
+
+            if ( charRisposta == 's'){
+                printf("\nInserisci il nuovo valore di K: ");
+                scanf("%d",&K);
+            }
+
+            break;
+        case 4:
+            logout();
+            menuGuest(socket);
+            break;
+        default:
+            printf("Opzione non valida! Riprova.\n\n");
+        }
+    }
+
+
+}
+
 
 void funzioneLogin(int socket){
 
@@ -164,6 +209,7 @@ void funzioneLogin(int socket){
     send(socket, buffer, strlen(buffer), 0);
 
     //In base alla risposta restituisco un messaggio diverso
+    bzero(buffer, MAX_MESSAGE_LENGTH);
     recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
 
     if ( strcmp (buffer , "RISPOSTA_VALIDA") == 0)      
@@ -171,7 +217,12 @@ void funzioneLogin(int socket){
         printf("Login riuscito correttamente!\n\n");
         menuUser(socket);
     }
-    else{
+
+    else if ( strcmp (buffer , "ADMIN") == 0){
+        printf("\nBentornato Libraio!\n\n");
+        menuAdmin(socket);
+
+    } else{
         printf("Login non riuscito.\n\n");
     }
 }
@@ -263,14 +314,24 @@ void funzioneAddToCart(int socket){
     strcpy(buffer, "ADD_TO_CART\n");
     send(socket, buffer, strlen(buffer), 0);
 
+    //Mando ISBN
     bzero(buffer, MAX_MESSAGE_LENGTH);
     printf("\nInserisci l'ISBN da aggiungere al carrello: ");
     scanf("%s", buffer);
-
     send(socket, buffer, strlen(buffer), 0);   
 
+    //Gli mando il valore K
+    bzero(parolaChiave, MAX_MESSAGE_LENGTH);
+    sprintf(parolaChiave, "%d", K);                                                       
+                                                                                            /*
+                                                                                            TODO LIST:  Fixare il passaggio di K
+                                                                                                        Fixare il return del prestiti da admin
+                                                                                                        cambio in K in database                                                                                            
+                                                                                            */
+    send(socket, parolaChiave, strlen(parolaChiave), 0);
+
     // Attendi la risposta finale del server
-    memset(buffer, 0, MAX_MESSAGE_LENGTH); // Pulisci il buffer
+    bzero(buffer, MAX_MESSAGE_LENGTH); // Pulisci il buffer
     recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s\n", buffer);
 }
@@ -286,5 +347,32 @@ void funzioneCheckout (int socket){
 
     recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s\n", buffer);
+
+}
+
+void funzioneElencoLibri(socket){
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, "ELENCO_LIBRI\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    printf("Ecco l'elenco completo di tutti i libri:\n");
+    printf("%s\n", buffer);
+
+}
+
+void funzioneElencoPrestiti(socket){
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, "ELENCO_PRESTITI\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*9);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*9, 0);
+    printf("Ecco l'elenco completo di tutti i prestiti:\n");
+    printf("%s\n", bufferDeluxe);
+
 
 }
