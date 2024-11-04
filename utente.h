@@ -12,4 +12,7 @@ void logout();
 int emailValida(char *emailDaVerificare, char *conninfo);
 char *getNomeUtente(char *email, char *conninfo);
 
+int getValoreK ( char *conninfo);
+void updateValoreK ( char *conninfo, int nuovoK);
+
 #endif

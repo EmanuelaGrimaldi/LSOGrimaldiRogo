@@ -9,9 +9,9 @@
 #include "define.h"
 #include <fcntl.h> 
 
-int client_connesso, ISBN,  K = 3;
+int client_connesso, ISBN;
 int * puntatoreInt;
-char *user_name, *user_email, charRisposta;
+char *user_name, *user_email, *charRisposta;
 char *parolaChiave, *email, *password, *nome, *charPtISBN, *buffer, *rispostaValidaPointer = "RISPOSTA_VALIDA";
 char *bufferDeluxe;
 
@@ -27,6 +27,7 @@ int main()
     nome = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     charPtISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     buffer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    charRisposta = (char*)malloc(MAX_MESSAGE_LENGTH);
     bufferDeluxe = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*10);
 
     int socket_desc;
@@ -163,14 +164,7 @@ void menuAdmin (int socket)
             funzioneElencoPrestiti(socket);
             break;
          case 3:
-            printf("\nValore attuale K: %d\n Vuoi cambiarlo?(s/n)", K);
-            scanf("%c", &charRisposta);
-
-            if ( charRisposta == 's'){
-                printf("\nInserisci il nuovo valore di K: ");
-                scanf("%d",&K);
-            }
-
+            funzioneModificaK(socket);
             break;
         case 4:
             logout();
@@ -320,16 +314,6 @@ void funzioneAddToCart(int socket){
     scanf("%s", buffer);
     send(socket, buffer, strlen(buffer), 0);   
 
-    //Gli mando il valore K
-    bzero(parolaChiave, MAX_MESSAGE_LENGTH);
-    sprintf(parolaChiave, "%d", K);                                                       
-                                                                                            /*
-                                                                                            TODO LIST:  Fixare il passaggio di K
-                                                                                                        Fixare il return del prestiti da admin
-                                                                                                        cambio in K in database                                                                                            
-                                                                                            */
-    send(socket, parolaChiave, strlen(parolaChiave), 0);
-
     // Attendi la risposta finale del server
     bzero(buffer, MAX_MESSAGE_LENGTH); // Pulisci il buffer
     recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
@@ -350,7 +334,7 @@ void funzioneCheckout (int socket){
 
 }
 
-void funzioneElencoLibri(socket){
+void funzioneElencoLibri(int socket){
 
     bzero(buffer, MAX_MESSAGE_LENGTH);
     strcpy(buffer, "ELENCO_LIBRI\n");
@@ -363,7 +347,7 @@ void funzioneElencoLibri(socket){
 
 }
 
-void funzioneElencoPrestiti(socket){
+void funzioneElencoPrestiti(int socket){
 
     bzero(buffer, MAX_MESSAGE_LENGTH);
     strcpy(buffer, "ELENCO_PRESTITI\n");
@@ -374,5 +358,40 @@ void funzioneElencoPrestiti(socket){
     printf("Ecco l'elenco completo di tutti i prestiti:\n");
     printf("%s\n", bufferDeluxe);
 
+
+}
+
+
+void funzioneModificaK(int socket){
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, "MODIFICA_K\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    //Riceve K attuale
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+
+    printf("\nIl valore attuale di K è: %s", buffer);
+    printf("\nvuoi cambiare valore? (s/n): ");
+    scanf("%s", charRisposta);
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+
+    if (strcmp(charRisposta, "s") == 0) {
+
+        printf("\nInserisci il nuovo valore: ");
+        scanf("%s", buffer);
+        send(socket, buffer, strlen(buffer), 0); 
+
+    } else {
+
+        strcpy(buffer, "-1");
+        send(socket, buffer, strlen(buffer), 0);
+    }
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    printf("%s\n", buffer);
 
 }

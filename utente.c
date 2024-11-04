@@ -5,8 +5,8 @@
 #include "utente.h"
 #include <libpq-fe.h>
 
-char *user_name, *user_email;
-int client_connesso, risposta;
+char *user_name, *user_email, *charK;
+int client_connesso, risposta, intK;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
 void registraNuovoUtente(int socket, char *nome, char *email, char *password, char *conninfo)
@@ -139,4 +139,71 @@ int emailValida(char *emailDaVerificare, char *conninfo)
     }
 
     return RISPOSTA_VALIDA;
+}
+
+int getValoreK ( char *conninfo) {
+
+    free(charK);
+    charK = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+
+    PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK) 
+    {
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return 0;
+    }
+
+    PGresult *res = PQexec(conn, "SELECT * FROM Kvalue");
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return 0;
+    }
+
+    int numeroRighe = PQntuples(res);
+
+    if (numeroRighe > 0) {
+
+            strcpy(charK, PQgetvalue(res, 0, 0));
+            intK = atoi(charK);
+    }       
+
+    PQclear(res);
+    PQfinish(conn);
+
+return intK;
+
+}
+
+void updateValoreK ( char *conninfo, int nuovoK) {
+
+PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK) 
+    {
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return;
+    }
+
+    sprintf(charK, "%d", nuovoK);
+
+
+    const char *paramValuesDue[1] = { charK };
+    PGresult *res = PQexecParams(conn,
+                                 "UPDATE kvalue SET k = $1",
+                                 1,        // Numero di parametri
+                                 NULL,     // OID dei parametri (NULL per default)
+                                 paramValuesDue, // Valori dei parametri
+                                 NULL,     // Lunghezza dei parametri (NULL per stringhe)
+                                 NULL,     // Formato dei parametri (NULL per stringhe)
+                                 0);       // Formato del risultato (0 = testo)
+
+
+    PQfinish(conn);
+
 }

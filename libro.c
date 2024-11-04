@@ -288,7 +288,7 @@ free(bufferPoinDeluxe); free(chISBN); free(titolo); free(dataPrestito); free(dat
             printf("\n1 - Ciclo for: %d", Ipointer);
 
             snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, Ipointer, 0));
-            snprintf(emailPrestito, sizeof(emailPrestito), "%s", PQgetvalue(res, Ipointer, 1));
+            snprintf(emailPrestito, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(res, Ipointer, 1));
             snprintf(dataPrestito, sizeof(dataPrestito), "%s", PQgetvalue(res, Ipointer, 2));
             snprintf(dataRestituzione, sizeof(dataRestituzione), "%s", PQgetvalue(res, Ipointer, 3));
 

@@ -30,6 +30,12 @@ CREATE TABLE carrello(
 	  FOREIGN KEY(emailCarrello) REFERENCES utente(email)
 );
 
+CREATE TABLE Kvalue(
+    k INT 
+);
+
+INSERT INTO Kvalue (k)
+VALUES(3);
 
 INSERT INTO utente (nome, email, password)
 VALUES ('Emy Bianchi', 'EmyMail@mail.com', 'psw00');

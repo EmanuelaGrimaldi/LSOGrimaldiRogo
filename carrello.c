@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "carrello.h"
+#include "utente.h"
 #include "libro.h"
 #include "define.h"
 #include <libpq-fe.h>
@@ -11,7 +12,7 @@ char *charISBN, *charNumeroCopie, *charISBN, *bufferCart, *singoloISBN;
 char bufferCh[MAX_MESSAGE_LENGTH], toAppend[MAX_MESSAGE_LENGTH];
 int numeroCopie, i, disponibile;
 
-int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, int valoreK, char *conninfo)
+int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo)
 {
      PGconn *conn = PQconnectdb(conninfo);
 
@@ -22,8 +23,13 @@ int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, int valoreK, c
         return 0;
     } 
 
+    /*
+    Return 0 se non ci sono copie disponibili
+    Return 1 se è tutto apposto
+    Return 2 se si è raggiunto K limite
+    */
 
-    if (numeroLibriInCarrello(email, conninfo) > valoreK){
+    if (isNumeroLibriCarrelloMaggioreDiK(email, conninfo) == 0){
         return 2;
     }
 
@@ -362,7 +368,7 @@ void cancellaCarrelloDiUtente(char *email, char *conninfo)
     }
 }
 
-int numeroLibriInCarrello( char *email, char * conninfo) {
+int isNumeroLibriCarrelloMaggioreDiK( char *email, char * conninfo) {
 
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -395,6 +401,16 @@ int numeroLibriInCarrello( char *email, char * conninfo) {
 
     //Il numero di righe equivale al numero di libri nel carrello
     int num_rows = PQntuples(res);
-   
-return num_rows;
+    int valoreDiK = getValoreK(conninfo);
+
+    PQclear(res);
+    PQfinish(conn);
+
+    //restituisco 1 se posso aggiungere al carrello
+    if (num_rows < valoreDiK ){
+        return 1;
+    } else {
+        return 0;
+    }
+
 }

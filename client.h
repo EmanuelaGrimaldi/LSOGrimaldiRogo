@@ -11,8 +11,10 @@ void funzioneRegister(int socket);
 void funzioneSearchParolaChiave (int socket);
 void funzioneSearchISBN (int socket);
 void funzioneAddToCart(int socket);
-void funzioneElencoLibri( int socket);
-void funzioneElencoPrestiti( int socket);
+void funzioneCheckout (int socket);
+void funzioneElencoLibri(int socket);
+void funzioneElencoPrestiti(int socket);
+void funzioneModificaK(int socket);
 
 
 #endif

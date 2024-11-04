@@ -14,7 +14,7 @@
 
 char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
 char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN, *client_message, emailFinale[MAX_LENGTH];
-char *bufferDeluxeDue;
+char *bufferDeluxeDue, *charPointerK;
 int ISBN, risultato, Kvalue;
 int * intPointer;
 char buffer[MAX_MESSAGE_LENGTH];
@@ -33,6 +33,7 @@ int main()
     charPointerISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     client_message = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     bufferDeluxeDue = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*10);
+    charPointerK = (char*)malloc(MAX_MESSAGE_LENGTH); 
 
     // Creazione socket server
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -230,19 +231,12 @@ void handleClient(int socket)
             bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            //ricevo K
-            printf("Ora ricevo K: ");
-            recv(socket, buffer , sizeof(buffer), 0);
+            risultato = aggiungiLibroAlCarrello(socket, email, buffer, conninfo); //"isLibroDisponibile" è implementata in carrello.c
 
-            Kvalue = atoi(buffer);
-            printf("%d", Kvalue);
-
-            risultato = aggiungiLibroAlCarrello(socket, email, buffer, Kvalue, conninfo); //"isLibroDisponibile" è implementata in carrello.c
-
-            if (risultato == 1){
+            if (risultato == 1 ){
                 send(socket, "\n\nLibro aggiunto con successo!\n\n", strlen("\n\nLibro aggiunto con successo!\n\n"), 0);
 
-            } else if ( risultato == 2){
+            } else if ( risultato == 2 ){
                 send(socket, "\nSoglia massima di libri nel carrello raggiunta.\nSi prega di effettuare il checkout.\n", strlen("\nSoglia massima di libri nel carrello raggiunta.\nSi prega di effettuare il checkout.\n"), 0);
 
             } else {
@@ -285,6 +279,30 @@ void handleClient(int socket)
 
             send(socket, bufferDeluxeDue, strlen(bufferPointer), 0);
 
+        } 
+        
+        else if (strcmp(client_message, "MODIFICA_K") == 0)
+        {
+            //Restituisco K attuale
+            int K_attuale = getValoreK(conninfo);
+            snprintf(charPointerK, sizeof(charPointerK), "%d", K_attuale);
+            printf("\nSono in server.c, Char K : %s\n", charPointerK);
+            send(socket, charPointerK, strlen(charPointerK), 0);
+
+            //Ricevo risposta se voglio cambiarlo
+            bzero(buffer, MAX_MESSAGE_LENGTH);
+            recv(socket, bufferPointer, MAX_MESSAGE_LENGTH, 0);
+
+            char *endptr;  // Puntatore per verificare eventuali errori
+            int rispostaK = bufferPointer[0] - '0';     
+
+            if ( rispostaK > 0 ) {
+                updateValoreK(conninfo, rispostaK);
+                send(socket, "\nValore di K aggiornato correttamente.\n", strlen("\nValore di K aggiornato correttamente.\n"), 0);
+
+            } else {
+                send(socket, "\nValore di K rimasto invariato.\n", strlen("\nValore di K rimasto invariato.\n"), 0);
+            }
         }
         else
         {
