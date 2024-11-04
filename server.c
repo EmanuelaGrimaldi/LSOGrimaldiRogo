@@ -13,8 +13,7 @@
 #include "define.h"
 
 char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
-char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN, *client_message, emailFinale[MAX_LENGTH];
-char *bufferDeluxeDue, *charPointerK;
+char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN, *client_message, emailFinale[MAX_LENGTH], *charPointerK;
 int ISBN, risultato, Kvalue;
 int * intPointer;
 char buffer[MAX_MESSAGE_LENGTH];
@@ -32,7 +31,6 @@ int main()
     bufferPointer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     charPointerISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     client_message = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
-    bufferDeluxeDue = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*10);
     charPointerK = (char*)malloc(MAX_MESSAGE_LENGTH); 
 
     // Creazione socket server
@@ -269,15 +267,9 @@ void handleClient(int socket)
 
         else if (strcmp(client_message, "ELENCO_PRESTITI") == 0)
         {
-            printf("\n1");
-            bzero(bufferDeluxeDue, MAX_MESSAGE_LENGTH*sizeof(char)*9);
-            printf("\n2");
-            bufferDeluxeDue = getAllPrestiti(conninfo);
-            printf("\n3");
-
-            printf("\n\nIN SERVER.C - GET ALL PRESTITI:\n%s",bufferDeluxeDue);
-
-            send(socket, bufferDeluxeDue, strlen(bufferPointer), 0);
+            bzero(bufferPointer, MAX_MESSAGE_LENGTH);
+            bufferPointer = getAllPrestiti(conninfo);
+            send(socket, bufferPointer, strlen(bufferPointer), 0);
 
         } 
         

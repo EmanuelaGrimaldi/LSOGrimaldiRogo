@@ -277,8 +277,6 @@ free(bufferPoinDeluxe); free(chISBN); free(titolo); free(dataPrestito); free(dat
 
     int numeroRighe = PQntuples(res);
 
-    printf("\nPre if - mi sto per rompere");
-
     if (numeroRighe > 0) {
 
         printf("\nIn if - mi sto per rompere");
