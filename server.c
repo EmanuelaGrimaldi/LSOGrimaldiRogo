@@ -279,7 +279,6 @@ void handleClient(int socket)
             //Restituisco K attuale
             int K_attuale = getValoreK(conninfo);
             snprintf(charPointerK, sizeof(charPointerK), "%d", K_attuale);
-            printf("\nSono in server.c, Char K : %s\n", charPointerK);
             send(socket, charPointerK, strlen(charPointerK), 0);
 
             //Ricevo risposta se voglio cambiarlo

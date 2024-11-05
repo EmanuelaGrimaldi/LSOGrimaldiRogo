@@ -34,7 +34,6 @@ int aggiungiLibroAlCarrello(int socket, char *email, char * ISBN, char *conninfo
     }
 
     if (isLibroDisponibile(ISBN, conninfo) == 0){
-        printf("Non vi sono copie disponibili per questo libro.\n");
         return 0;
 
     } else {
@@ -258,9 +257,7 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
 
     sprintf(charNumeroCopie, "%d", numeroCopie);
 
-    printf("\nValori in aggiornaNumeroLibti che passo alla query: %s %s . \n",charNumeroCopie, charISBN);
-
-    //STEP 2: Aggiorno il numero di copie                                                                                   NON FUNZIONA?????
+    //STEP 2: Aggiorno il numero di copie
     const char *paramValuesDue[2] = { charNumeroCopie, charISBN };
     res = PQexecParams(conn,
                                  "UPDATE libro SET totcopieprestate = $1 WHERE isbn = $2",

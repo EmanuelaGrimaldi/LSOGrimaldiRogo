@@ -276,15 +276,10 @@ free(bufferPoinDeluxe); free(chISBN); free(emailPrestito); free(dataPrestito); f
     }
 
     int numeroRighe = PQntuples(res);
-    printf("Il numero righe: %d\n", numeroRighe);
 
     if (numeroRighe > 0) {
 
-        printf("\nIn if - mi sto per rompere");
-
         for (Ipointer=0; Ipointer<numeroRighe; Ipointer++){
-
-            printf("\n1 - Ciclo for: %d", Ipointer);
 
             snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, Ipointer, 0));
             snprintf(emailPrestito, sizeof(emailPrestito), "%s", PQgetvalue(res, Ipointer, 1));
@@ -305,21 +300,14 @@ free(bufferPoinDeluxe); free(chISBN); free(emailPrestito); free(dataPrestito); f
             strcat(bufferPoinDeluxe, "| Data restituzione: ");
             strcat(bufferPoinDeluxe, dataRestituzione);
             strcat(bufferPoinDeluxe, "\n");
-        }  
-
-        printf("\nDOPO for: %d", Ipointer); 
+        }   
 
     } else {
-        printf("\nsono nell'else");
             strcpy(bufferPoinDeluxe, "Errore query in getAllPrestiti.\n");
     }
 
-    printf("\nPost for");
-
     PQclear(res);
     PQfinish(conn);
-
-    printf("\nIN LIBRO.C - GET ALL PRESTITI:\n%s",bufferPoinDeluxe);
 
 return bufferPoinDeluxe;
 }

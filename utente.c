@@ -82,14 +82,14 @@ int loginUtente(int socket, char *email, char *password, char *conninfo)
     int num_rows = PQntuples(res);
     if (num_rows == 1)
     {
-        printf("Login riuscito!\n");
+        //Login riuscito!
         PQclear(res);
         PQfinish(conn);
         return RISPOSTA_VALIDA;
     }
     else
     {
-        printf("Email o password non validi!\n");
+        //Email o password non validi!
         PQclear(res);
         PQfinish(conn);
         return RISPOSTA_INVALIDA;

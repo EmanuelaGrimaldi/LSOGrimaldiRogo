@@ -53,10 +53,6 @@ int main()
     }
 
     int flags = fcntl(socket_desc, F_GETFL, 0);
-    
-    if (flags == 2){
-        printf("Socket bloccante!\n");
-    }
 
     printf("Connessione al server avvenuta con successo!♥\n");
     menuGuest(socket_desc);
@@ -93,7 +89,7 @@ void menuGuest(int socket)
             funzioneSearchISBN(socket);
             break;
         case 5:
-            return;
+            exit(0);
         default:
             printf("Opzione non valida! Riprova.\n");
         }
@@ -134,7 +130,7 @@ void menuUser(int socket)
             menuGuest(socket);
             break;
         case 6:
-            return;
+            exit(0);
         default:
             printf("Opzione non valida! Riprova.\n\n");
         }
@@ -197,8 +193,6 @@ void funzioneLogin(int socket){
     strcat(buffer, ";");
     strcat(buffer, password);
 
-    //printf("Client:\n %s",buffer);
-
     send(socket, buffer, strlen(buffer), 0);
 
     //In base alla risposta restituisco un messaggio diverso
@@ -244,8 +238,6 @@ void funzioneRegister(int socket){
     strcat(buffer, email);
     strcat(buffer, ";");
     strcat(buffer, password);
-
-    //printf("Client:\n %s",buffer);
 
     send(socket, buffer, strlen(buffer), 0);
 
