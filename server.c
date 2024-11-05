@@ -36,11 +36,18 @@ int main()
 
     // Creazione socket server
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_sock == -1)
-    {
-        printf("Server: Errore durante la creazione della socket.\n");
-        return 1;
+    if (server_sock <= 0) {
+    perror("Socket creation failed");
+    exit(EXIT_FAILURE);
+}
+
+    int opt = 1;
+if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+        perror("Errore: setsockopt");
+        exit(EXIT_FAILURE);
     }
+
+     
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
@@ -149,13 +156,13 @@ void handleClient(int socket)
         if (strcmp(client_message, "REGISTER") == 0)
         {
             //Attendo il buffer con tutti i dati          
-            bzero(request, MAX_MESSAGE_LENGTH);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
             //divido il buffer in 3 variabili
             sscanf(buffer, "%[^;];%[^;];%[^;]", nome, email, password);
 
-            if (emailValida(email, conninfo) == RISPOSTA_VALIDA)
+            if (emailValida(email, conninfo) == 1)
             {
                 registraNuovoUtente(socket, nome, email, password, conninfo);
                 send(socket, "\n\nUtente registrato correttamente!\n\n", strlen("\n\nUtente registrato correttamente!\n\n"), 0);
@@ -172,7 +179,7 @@ void handleClient(int socket)
         else if (strcmp(client_message, "LOGIN") == 0)
         { 
             //Attendo il buffer con tutti i dati          
-            bzero(request, MAX_MESSAGE_LENGTH);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
             //divido il buffer in 2 variabili
@@ -187,7 +194,7 @@ void handleClient(int socket)
             else 
             {
                 //se non è admin, verifica delle credenziali
-                if (loginUtente(socket, email, password, conninfo) == RISPOSTA_VALIDA) {
+                if (loginUtente(socket, email, password, conninfo) == 1) {
                     send(socket, "RISPOSTA_VALIDA", strlen("RISPOSTA_VALIDA"), 0);
 
                 } else {
@@ -203,7 +210,7 @@ void handleClient(int socket)
         else if (strcmp(client_message, "SEARCH_BY_PAROLACHIAVE") == 0)
         {
             //Attendo il buffer con la parola chiave         
-            bzero(request, MAX_MESSAGE_LENGTH);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
             bufferPointer = cercaLibroByParolaChiave(socket, buffer, conninfo);
@@ -215,7 +222,7 @@ void handleClient(int socket)
         else if (strcmp(client_message, "SEARCH_BY_ISBN\0") == 0)
         {
             //Attendo il buffer con l'ISBN        
-            bzero(request, MAX_MESSAGE_LENGTH);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
             bufferPointer = cercaLibroByISBN(socket, buffer, conninfo);

@@ -55,7 +55,7 @@ int loginUtente(int socket, char *email, char *password, char *conninfo)
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
         PQfinish(conn);
-        return RISPOSTA_INVALIDA;
+        return 0;
     }
 
     // Creo ed eseguo la query
@@ -75,7 +75,7 @@ int loginUtente(int socket, char *email, char *password, char *conninfo)
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
         PQclear(res);
         PQfinish(conn);
-        return RISPOSTA_INVALIDA;
+        return 0;
     }
 
     // Verifica se c'è almeno una riga di risultato (cioè l'utente esiste)
@@ -85,14 +85,14 @@ int loginUtente(int socket, char *email, char *password, char *conninfo)
         //Login riuscito!
         PQclear(res);
         PQfinish(conn);
-        return RISPOSTA_VALIDA;
+        return 1;
     }
     else
     {
         //Email o password non validi!
         PQclear(res);
         PQfinish(conn);
-        return RISPOSTA_INVALIDA;
+        return 0;
     }
 }
 
@@ -135,10 +135,10 @@ int emailValida(char *emailDaVerificare, char *conninfo)
         printf("Email non valida, è già presente nel nostro sistema!\n");
         PQclear(res);
         PQfinish(conn);
-        return RISPOSTA_INVALIDA;
+        return 0;
     }
 
-    return RISPOSTA_VALIDA;
+    return 1;
 }
 
 int getValoreK ( char *conninfo) {

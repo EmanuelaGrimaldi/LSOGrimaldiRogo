@@ -26,8 +26,8 @@ CREATE TABLE carrello(
     isbnCarrello INT,
     emailCarrello VARCHAR(50),
 
-	 FOREIGN KEY(isbnCarrello) REFERENCES libro(isbn),
-	  FOREIGN KEY(emailCarrello) REFERENCES utente(email)
+	FOREIGN KEY(isbnCarrello) REFERENCES libro(isbn),
+	FOREIGN KEY(emailCarrello) REFERENCES utente(email)
 );
 
 CREATE TABLE Kvalue(
