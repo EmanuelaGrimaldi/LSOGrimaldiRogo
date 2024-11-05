@@ -12,7 +12,7 @@
 int client_connesso, ISBN;
 int * puntatoreInt;
 char *user_name, *user_email, *charRisposta;
-char *parolaChiave, *email, *password, *nome, *charPtISBN, *buffer, *rispostaValidaPointer = "RISPOSTA_VALIDA";
+char *parolaChiave, *email, *password, *nome, *charPtISBN, *buffer, *bufferDeluxe, *rispostaValidaPointer = "RISPOSTA_VALIDA";
 
 int main()
 {
@@ -27,6 +27,7 @@ int main()
     charPtISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     buffer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     charRisposta = (char*)malloc(MAX_MESSAGE_LENGTH);
+    bufferDeluxe = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*10);
 
     int socket_desc;
     struct sockaddr_in server;
@@ -351,10 +352,10 @@ void funzioneElencoPrestiti(int socket){
     strcpy(buffer, "ELENCO_PRESTITI\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10, 0);
     printf("Ecco l'elenco completo di tutti i prestiti:\n");
-    printf("%s\n", buffer);
+    printf("%s\n", bufferDeluxe);
 }
 
 

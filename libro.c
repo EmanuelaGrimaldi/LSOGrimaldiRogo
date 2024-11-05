@@ -249,11 +249,11 @@ char *getAllPrestiti(char *conninfo){
 
 printf("\nSono in get all prestiti");
 
-free(bufferPoinDeluxe); free(chISBN); free(titolo); free(dataPrestito); free(dataRestituzione);
+free(bufferPoinDeluxe); free(chISBN); free(emailPrestito); free(dataPrestito); free(dataRestituzione);
 
     bufferPoinDeluxe = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*10);
     chISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
-    titolo = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    emailPrestito = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     dataPrestito = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     dataRestituzione = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
 
@@ -276,6 +276,7 @@ free(bufferPoinDeluxe); free(chISBN); free(titolo); free(dataPrestito); free(dat
     }
 
     int numeroRighe = PQntuples(res);
+    printf("Il numero righe: %d\n", numeroRighe);
 
     if (numeroRighe > 0) {
 
@@ -286,7 +287,7 @@ free(bufferPoinDeluxe); free(chISBN); free(titolo); free(dataPrestito); free(dat
             printf("\n1 - Ciclo for: %d", Ipointer);
 
             snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, Ipointer, 0));
-            snprintf(emailPrestito, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(res, Ipointer, 1));
+            snprintf(emailPrestito, sizeof(emailPrestito), "%s", PQgetvalue(res, Ipointer, 1));
             snprintf(dataPrestito, sizeof(dataPrestito), "%s", PQgetvalue(res, Ipointer, 2));
             snprintf(dataRestituzione, sizeof(dataRestituzione), "%s", PQgetvalue(res, Ipointer, 3));
 
