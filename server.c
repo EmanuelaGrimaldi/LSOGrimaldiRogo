@@ -180,7 +180,7 @@ void handleClient(int socket)
         { 
             //Attendo il buffer con tutti i dati          
             bzero(buffer, MAX_MESSAGE_LENGTH);
-            recv(socket, buffer, sizeof(buffer), 0);
+            recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
 
             //divido il buffer in 2 variabili
             sscanf(buffer, "%[^;];%[^;]", email, password);

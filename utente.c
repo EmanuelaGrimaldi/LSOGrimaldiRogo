@@ -80,6 +80,7 @@ int loginUtente(int socket, char *email, char *password, char *conninfo)
 
     // Verifica se c'è almeno una riga di risultato (cioè l'utente esiste)
     int num_rows = PQntuples(res);
+    
     if (num_rows == 1)
     {
         //Login riuscito!

@@ -176,11 +176,12 @@ void menuAdmin (int socket)
 
 void funzioneLogin(int socket){
 
-    //Mando comando "LOGIN"
+    //Mando opzione LOGIN
     bzero(buffer, MAX_MESSAGE_LENGTH);
     strcpy(buffer, "LOGIN\n");
-    send(socket, buffer, strlen(buffer), 0);
+    send(socket, buffer, strlen(buffer), 0); 
 
+    //Chiedo i dati
     printf("\nInserisci email: ");
     scanf("%s", email);
 
