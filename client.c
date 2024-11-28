@@ -298,6 +298,28 @@ void funzioneSearchISBN(int socket)
     printf("Risultati della ricerca:\n%s\n", buffer);
 }
 
+void funzioneSearchCategoria(int socket)
+{
+
+    // Mando comando "SEARCH_BY_CATEGORIA\n"
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, "SEARCH_BY_CATEGORIA\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    printf("\nInserisci la Categoria: ");
+    scanf("%s", buffer);
+
+    // printf("Client:\n %s",buffer);
+
+    send(socket, buffer, strlen(buffer), 0);
+
+    // riciclo il buffer per la lista di libri della categoria X
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH * sizeof(char), 0);
+    printf("\nRisultati della ricerca:\n%s\n", buffer);
+}
+
 void funzioneAddToCart(int socket)
 {
 
