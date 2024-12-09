@@ -7,7 +7,7 @@ CREATE TABLE utente(
 CREATE TABLE libro(
     isbn INT PRIMARY KEY,
     titolo VARCHAR(50) NOT NULL,
-    categoria VARCHAR(50),
+    categoria VARCHAR(50) NOT NULL,
     copieTotali INT NOT NULL,
     totCopiePrestate INT
 );

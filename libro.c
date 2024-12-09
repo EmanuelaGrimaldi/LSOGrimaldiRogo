@@ -1,32 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "libro.h"
+
 #include "define.h"
 #include <libpq-fe.h>
+#include "libro.h"
 
 char *titolo, *chISBN, *categoria, *charCopieTotali, *charTotCopiePrestate, *bufferPoin, *bufferPoinDeluxe, *charCopieDisponibili, *emailPrestito, *dataPrestito, *dataRestituzione;
 int intCopieTotali, intTotCopiePrestate, copieDisponibili, valore, Ipointer;
 char stringToAppend[MAX_MESSAGE_LENGTH];
+PGresult *res;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MODIFICATA SECONDO NUOVA LOGICA OK!!
 char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
 {
-    free(bufferPoin);
-    free(chISBN);
-    free(titolo);
-    free(categoria);
-    free(charCopieTotali);
-    free(charTotCopiePrestate);
-    free(charCopieDisponibili);
-
-    bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
-    chISBN = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
-    titolo = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
-    charCopieTotali = (char *)malloc(MAX_MESSAGE_LENGTH);
-    charTotCopiePrestate = (char *)malloc(MAX_MESSAGE_LENGTH);
-    charCopieDisponibili = (char *)malloc(MAX_MESSAGE_LENGTH);
-
     PGconn *conn = PQconnectdb(conninfo);
 
     if (PQstatus(conn) != CONNECTION_OK)
@@ -40,14 +27,14 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
     snprintf(queryKey, sizeof(queryKey), "%%%s%%", parolaChiave);
 
     const char *paramValues[1] = {queryKey};
-    PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM libro WHERE titolo ILIKE $1",
-                                 1,           // Numero di parametri
-                                 NULL,        // OID dei parametri (NULL per default)
-                                 paramValues, // Valori dei parametri
-                                 NULL,        // Lunghezza dei parametri (NULL per stringhe)
-                                 NULL,        // Formato dei parametri (NULL per stringhe)
-                                 0);          // Formato del risultato (0 = testo)
+    res = PQexecParams(conn,
+                       "SELECT * FROM libro WHERE titolo ILIKE $1",
+                       1,           // Numero di parametri
+                       NULL,        // OID dei parametri (NULL per default)
+                       paramValues, // Valori dei parametri
+                       NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                       NULL,        // Formato dei parametri (NULL per stringhe)
+                       0);          // Formato del risultato (0 = testo)
 
     // Verifica il risultato della query
     if (PQresultStatus(res) != PGRES_TUPLES_OK)
@@ -74,6 +61,22 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
 
 void creaStringaInfoLibri(int numeroRighe, char *buffer_x)
 {
+
+    free(bufferPoin);
+    free(chISBN);
+    free(titolo);
+    free(categoria);
+    free(charCopieTotali);
+    free(charTotCopiePrestate);
+    free(charCopieDisponibili);
+
+    bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
+    chISBN = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
+    titolo = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
+    charCopieTotali = (char *)malloc(MAX_MESSAGE_LENGTH);
+    charTotCopiePrestate = (char *)malloc(MAX_MESSAGE_LENGTH);
+    charCopieDisponibili = (char *)malloc(MAX_MESSAGE_LENGTH);
+
     for (valore = 0; valore < numeroRighe; valore++)
     {
         // Estrae i dati dalla query
@@ -136,15 +139,15 @@ char *cercaLibroByISBN(int socket, char *categoria, char *conninfo)
         return 0;
     }
 
-    const char *paramValues[1] = {ISBN};
-    PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM libro WHERE ISBN = $1",
-                                 1,           // Numero di parametri
-                                 NULL,        // OID dei parametri (NULL per default)
-                                 paramValues, // Valori dei parametri
-                                 NULL,        // Lunghezza dei parametri (NULL per stringhe)
-                                 NULL,        // Formato dei parametri (NULL per stringhe)
-                                 0);          // Formato del risultato (0 = testo)
+    const char *paramValues[1] = {chISBN};
+    res = PQexecParams(conn,
+                       "SELECT * FROM libro WHERE ISBN = $1",
+                       1,           // Numero di parametri
+                       NULL,        // OID dei parametri (NULL per default)
+                       paramValues, // Valori dei parametri
+                       NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                       NULL,        // Formato dei parametri (NULL per stringhe)
+                       0);          // Formato del risultato (0 = testo)
 
     // Verifica il risultato della query
     if (PQresultStatus(res) != PGRES_TUPLES_OK)
@@ -198,14 +201,14 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
     }
 
     const char *paramValues[1] = {categoria_x};
-    PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM libro WHERE categoria = $1",
-                                 1,           // Numero di parametri
-                                 NULL,        // OID dei parametri (NULL per default)
-                                 paramValues, // Valori dei parametri
-                                 NULL,        // Lunghezza dei parametri (NULL per stringhe)
-                                 NULL,        // Formato dei parametri (NULL per stringhe)
-                                 0);          // Formato del risultato (0 = testo)
+    res = PQexecParams(conn,
+                       "SELECT * FROM libro WHERE categoria = $1",
+                       1,           // Numero di parametri
+                       NULL,        // OID dei parametri (NULL per default)
+                       paramValues, // Valori dei parametri
+                       NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                       NULL,        // Formato dei parametri (NULL per stringhe)
+                       0);          // Formato del risultato (0 = testo)
 
     // Verifica il risultato della query
     if (PQresultStatus(res) != PGRES_TUPLES_OK)
@@ -259,7 +262,7 @@ char *getAllLibri(char *conninfo)
         return 0;
     }
 
-    PGresult *res = PQexec(conn, "SELECT * FROM libro");
+    res = PQexec(conn, "SELECT * FROM libro");
 
     if (PQresultStatus(res) != PGRES_TUPLES_OK)
     {
@@ -281,6 +284,7 @@ char *getAllLibri(char *conninfo)
             snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, Ipointer, 0));
             snprintf(titolo, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(res, Ipointer, 1));
             snprintf(categoria, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(res, Ipointer, 2));
+            printf("\nCategoria:%s\n", categoria);
             snprintf(charCopieTotali, sizeof(charCopieTotali), "%s", PQgetvalue(res, Ipointer, 3));
             snprintf(charTotCopiePrestate, sizeof(charTotCopiePrestate), "%s", PQgetvalue(res, Ipointer, 4));
 
@@ -342,7 +346,7 @@ char *getAllPrestiti(char *conninfo)
         return 0;
     }
 
-    PGresult *res = PQexec(conn, "SELECT * FROM prestito");
+    res = PQexec(conn, "SELECT * FROM prestito");
 
     if (PQresultStatus(res) != PGRES_TUPLES_OK)
     {
