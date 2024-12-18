@@ -74,26 +74,26 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
             // Aggiungi il libro in coda al buffer dei risultati
 
             if (valore == 0)
-                strcpy(buffer_x, "Titolo: ");
+                strcpy(bufferPoin, "Titolo: ");
 
             else
-                strcat(buffer_x, "Titolo: ");
+                strcat(bufferPoin, "Titolo: ");
 
-            strcat(buffer_x, titolo);
-            strcat(buffer_x, "| ISBN: ");
-            strcat(buffer_x, chISBN);
-            strcat(buffer_x, "| Categoria: ");
-            strcat(buffer_x, categoria);
-            strcat(buffer_x, "| Copie disponibili: ");
-            strcat(buffer_x, charCopieDisponibili);
-            strcat(buffer_x, "\n");
+            strcat(bufferPoin, titolo);
+            strcat(bufferPoin, "| ISBN: ");
+            strcat(bufferPoin, chISBN);
+            strcat(bufferPoin, "| Categoria: ");
+            strcat(bufferPoin, categoria);
+            strcat(bufferPoin, "| Copie disponibili: ");
+            strcat(bufferPoin, charCopieDisponibili);
+            strcat(bufferPoin, "\n");
         }
     }
 
     PQclear(res);
     PQfinish(conn);
 
-    return bufferPoin;
+    return \ufferPoin;
 }
 
 char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
@@ -164,19 +164,19 @@ char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
             // Aggiungi il libro in coda al buffer dei risultati
 
             if (valore == 0)
-                strcpy(buffer_x, "Titolo: ");
+                strcpy(bufferPoin, "Titolo: ");
 
             else
-                strcat(buffer_x, "Titolo: ");
+                strcat(bufferPoin, "Titolo: ");
 
-            strcat(buffer_x, titolo);
-            strcat(buffer_x, "| ISBN: ");
-            strcat(buffer_x, chISBN);
-            strcat(buffer_x, "| Categoria: ");
-            strcat(buffer_x, categoria);
-            strcat(buffer_x, "| Copie disponibili: ");
-            strcat(buffer_x, charCopieDisponibili);
-            strcat(buffer_x, "\n");
+            strcat(bufferPoin, titolo);
+            strcat(bufferPoin, "| ISBN: ");
+            strcat(bufferPoin, chISBN);
+            strcat(bufferPoin, "| Categoria: ");
+            strcat(bufferPoin, categoria);
+            strcat(bufferPoin, "| Copie disponibili: ");
+            strcat(bufferPoin, charCopieDisponibili);
+            strcat(bufferPoin, "\n");
         }
 
     else
@@ -258,19 +258,19 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
             // Aggiungi il libro in coda al buffer dei risultati
 
             if (valore == 0)
-                strcpy(buffer_x, "Titolo: ");
+                strcpy(bufferPoin, "Titolo: ");
 
             else
-                strcat(buffer_x, "Titolo: ");
+                strcat(bufferPoin, "Titolo: ");
 
-            strcat(buffer_x, titolo);
-            strcat(buffer_x, "| ISBN: ");
-            strcat(buffer_x, chISBN);
-            strcat(buffer_x, "| Categoria: ");
-            strcat(buffer_x, categoria);
-            strcat(buffer_x, "| Copie disponibili: ");
-            strcat(buffer_x, charCopieDisponibili);
-            strcat(buffer_x, "\n");
+            strcat(bufferPoin, titolo);
+            strcat(bufferPoin, "| ISBN: ");
+            strcat(bufferPoin, chISBN);
+            strcat(bufferPoin, "| Categoria: ");
+            strcat(bufferPoin, categoria);
+            strcat(bufferPoin, "| Copie disponibili: ");
+            strcat(bufferPoin, charCopieDisponibili);
+            strcat(bufferPoin, "\n");
         }
     }
     else
