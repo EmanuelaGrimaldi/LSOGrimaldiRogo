@@ -65,12 +65,13 @@ void menuGuest(int socket)
     int choice;
     while (1)
     {
-        printf("\n--- Menu ---\n");
+        printf("\n--- Menu Guest ---\n");
         printf("1. Registrazione nuovo utente\n");
         printf("2. Login\n");
         printf("3. Ricerca di un libro tramite parola chiave\n");
         printf("4. Ricerca di un libro tramite ISBN\n");
-        printf("5. Esci\n");
+        printf("5. Ricerca libri tramite Categoria.\n");
+        printf("6. Esci\n");
         printf("Inserisci qui la tua opzione: ");
         scanf("%d", &choice);
 
@@ -89,6 +90,9 @@ void menuGuest(int socket)
             funzioneSearchISBN(socket);
             break;
         case 5:
+            funzioneSearchCategoria(socket);
+            break;
+        case 6:
             exit(0);
         default:
             printf("Opzione non valida! Riprova.\n");
@@ -101,13 +105,14 @@ void menuUser(int socket)
     int choice;
     while (1)
     {
-        printf("\n--- Menu ---\n");
+        printf("\n--- Menu User ---\n");
         printf("1. Ricerca di un libro tramite parola chiave.\n");
         printf("2. Ricerca di un libro tramite ISBN.\n");
-        printf("3. Aggiungi al carrello un libro tramite ISBN\n");
-        printf("4. Checkout\n");
-        printf("5. Logout\n");
-        printf("6.  Exit.\n");
+        printf("3. Ricerca libri tramite Categoria.\n");
+        printf("4. Aggiungi al carrello un libro tramite ISBN\n");
+        printf("5. Checkout\n");
+        printf("6. Logout\n");
+        printf("7. Exit.\n");
         printf("Inserisci qui la tua opzione: ");
         scanf("%d", &choice);
 
@@ -120,16 +125,19 @@ void menuUser(int socket)
             funzioneSearchISBN(socket);
             break;
         case 3:
-            funzioneAddToCart(socket);
+            funzioneSearchCategoria(socket);
             break;
         case 4:
-            funzioneCheckout(socket);
+            funzioneAddToCart(socket);
             break;
         case 5:
+            funzioneCheckout(socket);
+            break;
+        case 6:
             logout();
             menuGuest(socket);
             break;
-        case 6:
+        case 7:
             exit(0);
         default:
             printf("Opzione non valida! Riprova.\n\n");
@@ -142,7 +150,7 @@ void menuAdmin(int socket)
     int choice;
     while (1)
     {
-        printf("\n--- Menu ---\n");
+        printf("\n--- Menu Admin ---\n");
         printf("1. Elenco di tutti i libri.\n");
         printf("2. Elenco di tutti i prestiti.\n");
         printf("3. Modifica valore K.\n");
@@ -342,7 +350,6 @@ void funzioneAddToCart(int socket)
 
 void funzioneCheckout(int socket)
 {
-
     // Mando comando "CHECKOUT\n"
     bzero(buffer, MAX_MESSAGE_LENGTH);
     strcpy(buffer, "CHECKOUT\n");
