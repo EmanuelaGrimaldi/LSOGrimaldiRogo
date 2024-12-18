@@ -93,7 +93,7 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
     PQclear(res);
     PQfinish(conn);
 
-    return \ufferPoin;
+    return bufferPoin;
 }
 
 char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
