@@ -106,9 +106,12 @@ char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
     free(charTotCopiePrestate);
     free(charCopieDisponibili);
 
+    printf("AAAA\n");
+
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     titolo = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
+    categoria = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     charCopieTotali = (char *)malloc(MAX_MESSAGE_LENGTH);
     charTotCopiePrestate = (char *)malloc(MAX_MESSAGE_LENGTH);
     charCopieDisponibili = (char *)malloc(MAX_MESSAGE_LENGTH);
@@ -143,8 +146,14 @@ char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
 
     int numeroRighe = PQntuples(res);
 
+    printf("AAAA\n");
+
     // Stampo tutti i risultati trovati
     if (numeroRighe > 0)
+    {
+
+        printf("AAAA\n");
+
         for (valore = 0; valore < numeroRighe; valore++)
         {
             // Estrae i dati dalla query
@@ -162,6 +171,8 @@ char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
             sprintf(charCopieDisponibili, "%d", copieDisponibili);
 
             // Aggiungi il libro in coda al buffer dei risultati
+            
+            printf("AAAA\n");
 
             if (valore == 0)
                 strcpy(bufferPoin, "Titolo: ");
@@ -179,13 +190,17 @@ char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
             strcat(bufferPoin, "\n");
         }
 
+    }
     else
+    {
         strcpy(bufferPoin, "Non è stato trovato nessun libro con l'isbn da lei inserito.\n");
-
+    }
+    
     PQclear(res);
     PQfinish(conn);
 
     return bufferPoin;
+
 }
 
 char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
@@ -217,7 +232,7 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
 
     const char *paramValues[1] = {categoria_x};
     PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM libro WHERE categoria = $1",
+                                 "SELECT * FROM libro WHERE categoria ILIKE $1",
                                  1,           // Numero di parametri
                                  NULL,        // OID dei parametri (NULL per default)
                                  paramValues, // Valori dei parametri

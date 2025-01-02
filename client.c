@@ -104,6 +104,10 @@ void menuGuest(int socket)
 void menuUser(int socket)
 {
     int choice;
+
+                                                                                                                        //DA IMPLEMENTARE:
+                                                                                                                        //NOTIFICA DEI PRESTITI SCADUTI.
+
     while (1)
     {
         printf("\n--- Menu User ---\n");
@@ -154,12 +158,10 @@ void menuAdmin(int socket)
         printf("\n--- Menu Admin ---\n");
         printf("1. Elenco di tutti i libri.\n");
         printf("2. Elenco di tutti i prestiti.\n");
-        printf("3. Modifica valore K.\n");
-        printf("4. Ricerca Libro per Prola Chiave.\n");
-        // printf("5. Ricerca Libro per Titolo.\n");
-        // printf("6. Ricerca Libro per ISBN.\n");
-        // printf("7. Exit\n");
-        printf("5. Exit\n");
+        printf("3. Elenco di tutti i prestiti SCADUTI.\n");
+        printf("4. Modifica valore K.\n");
+        printf("5. Ricerca Libro per Parola Chiave.\n");
+        printf("6. Exit\n");
         printf("Inserisci qui la tua opzione: ");
         scanf("%d", &choice);
 
@@ -172,12 +174,16 @@ void menuAdmin(int socket)
             funzioneElencoPrestiti(socket);
             break;
         case 3:
-            funzioneModificaK(socket);
+                                                                                                                            //funzione da implementare
+            printf("Sono ancora da implementare\n");
             break;
         case 4:
-            funzioneSearchParolaChiave(socket);
+            funzioneModificaK(socket);
             break;
         case 5:
+            funzioneSearchParolaChiave(socket);
+            break;
+        case 6:
             logout();
             menuGuest(socket);
             break;
@@ -303,7 +309,7 @@ void funzioneSearchISBN(int socket)
 
     // Attendi la risposta del server con la lista dei libri;
     bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH * sizeof(char), 0);
+    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("Risultati della ricerca:\n%s\n", buffer);
 }
 
@@ -316,6 +322,9 @@ void funzioneSearchCategoria(int socket)
     send(socket, buffer, strlen(buffer), 0);
 
     bzero(buffer, MAX_MESSAGE_LENGTH);
+
+    //DA TESTARE + finire elenco categorie                                                                                                             ----DA TESTARE!!!!
+    printf("\nLe categorie disponibili sono:\n");
     printf("\nInserisci la Categoria: ");
     scanf("%s", buffer);
 
