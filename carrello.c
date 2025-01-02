@@ -129,7 +129,7 @@ char* checkout(int socket, char *email, char *conninfo)
 
     for (i = 0; i < num_rows; i++) {
 
-        //singoloISBN = (char*)malloc(MAX_MESSAGE_LENGTH);
+        bzero(singoloISBN, MAX_MESSAGE_LENGTH);
 
             if (i == 0) {
                 singoloISBN = strtok(bufferCh, "\n");
@@ -270,7 +270,7 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
 
     // Verifica il risultato della query
 
-    if (PQresultStatus(res) != PGRES_TUPLES_OK) 
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) 
     {
         fprintf(stderr, "Errore durante la query finale di aggiorna numero libri: %s", PQerrorMessage(conn));
         PQclear(res);
@@ -324,7 +324,7 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
                                 0);       // Formato del risultato (0 = testo)
 
     // Verifica il risultato della query
-    if (PQresultStatus(res) != PGRES_TUPLES_OK) 
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) 
     {
         fprintf(stderr, "Errore durante la query crea Nuovo Prestito\n : %s", PQerrorMessage(conn));
         PQclear(res);

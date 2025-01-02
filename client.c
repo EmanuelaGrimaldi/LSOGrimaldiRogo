@@ -52,7 +52,8 @@ int main()
         return 1;
     }
 
-    int flags = fcntl(socket_desc, F_GETFL, 0);
+
+    
 
     printf("Connessione al server avvenuta con successo!♥\n");
     menuGuest(socket_desc);

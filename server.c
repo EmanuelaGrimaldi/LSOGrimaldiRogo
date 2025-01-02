@@ -37,25 +37,22 @@ int main()
     // Creazione socket server
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sock <= 0) {
-    perror("Socket creation failed");
-    exit(EXIT_FAILURE);
-}
-
-    int opt = 1;
-if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-        perror("Errore: setsockopt");
+        perror("Socket creation failed");
         exit(EXIT_FAILURE);
     }
 
-     
+    int opt = 1;
+
+    if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+        perror("Errore: setsockopt");
+        exit(EXIT_FAILURE);
+    }
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons(8080);
 
-    // Bind
-    if (bind(server_sock, (struct sockaddr *)&server, sizeof(server)) < 0)
-    {
+    if (bind(server_sock, (struct sockaddr *)&server, sizeof(server)) < 0) {
         printf("Errore col comando 'Bind' in server.c\n");
         return 1;
     }
@@ -65,8 +62,7 @@ if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
     printf("Server in ascolto sulla porta 8080!♥\n");
 
     c = sizeof(struct sockaddr_in);
-    while (1)
-    {
+    while (1) {
         client_sock = accept(server_sock, (struct sockaddr *)&client, (socklen_t *)&c);
 
         if (client_sock == -1){
@@ -75,7 +71,6 @@ if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
         }
 
         //Qui è dove grazie al fork gestisco i multiprocessi
-
         pid_t pid = fork();
 
         if (pid < 0 ){
@@ -84,7 +79,7 @@ if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
             close(client_sock);
             continue;
 
-        } else if ( pid == 0 ){
+            } else if ( pid == 0 ){
 
             //FIGLIO
             printf("PROCESSO FIGLIO %d :Client connesso con successo!♥\n", getpid());
@@ -93,14 +88,14 @@ if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
             close(client_sock);         // Chiude il client_socket al termine
             exit(0); 
 
-        } else {
-            //PADRE
-            close(client_sock);
-        }
+            } else {
+                //PADRE
+                close(client_sock);
+            }
 
-        //Pulizia di eventuali processi zombie
+            //Pulizia di eventuali processi zombie
         while (waitpid(-1, NULL, WNOHANG) > 0);
-    }
+        }
 
     close(server_sock);
     return 0;
@@ -256,12 +251,13 @@ void handleClient(int socket)
             bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
+            bzero(bufferPointer, MAX_MESSAGE_LENGTH);
             bufferPointer = checkout(socket, email, conninfo);
 
             if ( strcmp(bufferPointer, "") == 0){
                     send(socket, "Tutti i libri sono stati presi correttamente in prestito!\n", strlen("Tutti i libri sono stati presi correttamente in prestito!\n"), 0);
                 } else {
-                    send(socket, buffer, strlen(buffer), 0);
+                    send(socket, bufferPointer, strlen(bufferPointer), 0);
                 }
         }
 
