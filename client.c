@@ -70,7 +70,8 @@ void menuGuest(int socket)
         printf("2. Login\n");
         printf("3. Ricerca di un libro tramite parola chiave\n");
         printf("4. Ricerca di un libro tramite ISBN\n");
-        printf("5. Esci\n");
+        printf("5. Ricerca tramite categoria (*)\n");
+        printf("6. Esci\n");
         printf("Inserisci qui la tua opzione: ");
         scanf("%d", &choice);
 
@@ -89,6 +90,9 @@ void menuGuest(int socket)
             funzioneSearchISBN(socket);
             break;
         case 5:
+            funzioneSearchCategoria(socket);
+            break;
+        case 6:
             exit(0);
         default:
             printf("Opzione non valida! Riprova.\n");
@@ -98,16 +102,26 @@ void menuGuest(int socket)
 
 void menuUser(int socket)
 {
+    //if ricerca prestiti scaduti == 0
+    if (0){
+        printf("Non ha prestiti in scadenza!♥\n\n");
+    } else {
+        printf("!!ATTENZIONE!!\nVi sono prestiti in scadenza, si prega di controllare i propri prestiti.\n\n");
+    }
+    
     int choice;
     while (1)
     {
         printf("\n--- Menu ---\n");
         printf("1. Ricerca di un libro tramite parola chiave.\n");
         printf("2. Ricerca di un libro tramite ISBN.\n");
-        printf("3. Aggiungi al carrello un libro tramite ISBN\n");
-        printf("4. Checkout\n");
-        printf("5. Logout\n");
-        printf("6.  Exit.\n");
+        printf("3. Ricerca tramite categoria (*)\n");
+        printf("4. Aggiungi al carrello un libro tramite ISBN\n");
+        printf("5. Checkout\n");
+        printf("6. Visualizza il mio carrello (*)\n");
+        printf("7. Visualizza i miei prestiti (*)\n");
+        printf("8. Logout\n");
+        printf("9.  Exit.\n");
         printf("Inserisci qui la tua opzione: ");
         scanf("%d", &choice);
 
@@ -120,16 +134,25 @@ void menuUser(int socket)
             funzioneSearchISBN(socket);
             break;
         case 3:
-            funzioneAddToCart(socket);
+            funzioneSearchCategoria(socket);
             break;
         case 4:
-            funzioneCheckout(socket);
+            funzioneAddToCart(socket);
             break;
         case 5:
+            funzioneCheckout(socket);
+            break;
+        case 6:
+            printf("Sono da implementare");
+            break;
+        case 7:
+            printf("Sono da implementare");
+            break;
+        case 8:
             logout();
             menuGuest(socket);
             break;
-        case 6:
+        case 9:
             exit(0);
         default:
             printf("Opzione non valida! Riprova.\n\n");
@@ -265,7 +288,7 @@ void funzioneSearchParolaChiave (int socket){
 
     // Attendi la risposta del server con la lista dei libri;
     bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10, 0);
     printf("Risultati della ricerca:\n%s\n", buffer);
 
 }
@@ -287,9 +310,37 @@ void funzioneSearchISBN (int socket){
 
     // Attendi la risposta del server con la lista dei libri;
     bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10, 0);
     printf("Risultati della ricerca:\n%s\n", buffer);
 
+}
+
+void funzioneSearchCategoria(int socket)
+{
+    // Mando comando "SEARCH_BY_CATEGORIA\n"
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, "SEARCH_BY_CATEGORIA\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+
+    //DA TESTARE + finire elenco categorie                                                                                                             ----DA TESTARE!!!!
+    printf("\nLe categorie disponibili sono:");
+    printf("\n1. LIBRI SCOLASTICI: Testi didattici e libri usati per l'istruzione.");
+    printf("\n2. FUMETTI: Comprende graphic novel, manga, fumetti.");
+    printf("\n3. NARRATIVA: Una macro-categoria che abbraccia romanzi, racconti brevi e opere di fantasia.");
+    printf("\n4. SAGGISTICA: Una macro-categoria per libri basati su fatti reali, come biografie, trattati scientifici e testi storici.");
+    printf("\nInserisci la Categoria scelta: ");
+    scanf("%s", buffer);
+
+    // printf("Client:\n %s",buffer);
+
+    send(socket, buffer, strlen(buffer), 0);
+
+    // riciclo il buffer per la lista di libri della categoria X
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10, 0);
+    printf("\nRisultati della ricerca:\n%s\n", buffer);
 }
 
 void funzioneAddToCart(int socket){

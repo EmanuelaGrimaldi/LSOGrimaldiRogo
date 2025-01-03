@@ -4,9 +4,12 @@ CREATE TABLE utente(
     password VARCHAR(30) NOT NULL
 );
 
+CREATE TYPE categoria_enum AS ENUM ('scolastico', 'fumetto', 'narrativa', 'saggistica');
+
 CREATE TABLE libro(
     isbn INT PRIMARY KEY,
     titolo VARCHAR(50) NOT NULL,
+    categoria categoria_enum NOT NULL,
     copieTotali INT NOT NULL,
     totCopiePrestate INT
 );
@@ -46,23 +49,35 @@ VALUES ('Francesco Bianchi', 'Framail@mail.com', 'psw00');
 INSERT INTO utente (nome, email, password)
 VALUES ('Mario Rossi', 'Mariomail@mail.com', 'psw00');
 
-INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
-VALUES( 1111, 'libro di Storia', 7, 2);
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 1111, 'libro di Storia', 'scolastico', 7, 2);
 
-INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
-VALUES( 2222, 'libro di Geografia', 7, 1);
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 2222, 'libro di Geografia', 'scolastico', 7, 1);
 
-INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
-VALUES( 3333, 'libro di Arte', 5, 1);
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 3333, 'libro di Arte', 'saggistica', 5, 1);
 
-INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
-VALUES( 4444, 'libro di Storia Romana', 10, 2);
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 4444, 'libro di Storia Romana', 'saggistica', 10, 2);
 
-INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
-VALUES( 5555, 'libro di Fisica', 7, 0);
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 5555, 'Orgoglio e pregiudizio', 'narrativa', 7, 0);
 
-INSERT INTO libro ( isbn, titolo, copieTotali, totCopiePrestate)
-VALUES( 6666, 'libro di Matematica', 10, 0);
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 6666, 'cento anni di solitudine', 'narrativa', 10, 0);
+
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 7777, 'Naruto', 'fumetto', 10, 3);
+
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 8888, 'Sapiens: Da animali a dèi', 'saggistica', 10, 3);
+
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 9999, 'One Piece', 'fumetto', 11, 3);
+
+INSERT INTO libro ( isbn, titolo, categoria, copieTotali, totCopiePrestate)
+VALUES( 1010, 'Il gene egoista', 'saggistica', 10, 3);
 
 INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
 VALUES (1111, 'EmyMail@mail.com', '25/09', '25/12');

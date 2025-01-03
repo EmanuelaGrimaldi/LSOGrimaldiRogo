@@ -5,6 +5,7 @@
 
 char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo);
 char *cercaLibroByISBN(int socket, char* ISBN, char *conninfo);
+char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo);
 char *getAllLibri(char *conninfo);
 char *getAllPrestiti(char *conninfo);
 

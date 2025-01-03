@@ -28,7 +28,7 @@ int main()
     password = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     nome = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     request = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
-    bufferPointer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    bufferPointer = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*10);
     charPointerISBN = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     client_message = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     charPointerK = (char*)malloc(MAX_MESSAGE_LENGTH); 
@@ -206,9 +206,9 @@ void handleClient(int socket)
             bzero(request, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            bufferPointer = cercaLibroByParolaChiave(socket, buffer, conninfo);
+            bufferPointerDeluxe = cercaLibroByParolaChiave(socket, buffer, conninfo);
 
-            send(socket, bufferPointer, strlen(bufferPointer), 0);
+            send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
 
         // OPZIONE RICERCA ISBN: prendo l'isbn e vedo se ci sono similitudini, se si, la funzione cercaLibroByISBN stamperà tutte le occorrenze.
@@ -218,9 +218,20 @@ void handleClient(int socket)
             bzero(request, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            bufferPointer = cercaLibroByISBN(socket, buffer, conninfo);
+            bufferPointerDeluxe = cercaLibroByISBN(socket, buffer, conninfo);
 
-            send(socket, bufferPointer, strlen(bufferPointer), 0);
+            send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
+        }
+
+        // OPZIONE RICERCA CATEGORIA: chiedo una query per categoria e la restituisco
+        else if (strcmp(client_message, "SEARCH_BY_CATEGORIA") == 0)
+        {
+            bzero(buffer, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
+
+            bufferPointerDeluxe = cercaLibroByCategoria(socket, buffer, conninfo);
+
+            send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
 
         // OPZIONE AGGIUNGERE AL CARRELLO: Funziona SOLO tramite ISBN.
