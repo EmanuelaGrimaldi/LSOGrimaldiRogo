@@ -149,7 +149,7 @@ void handleClient(int socket)
         if (strcmp(client_message, "REGISTER") == 0)
         {
             //Attendo il buffer con tutti i dati          
-            bzero(request, MAX_MESSAGE_LENGTH);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
             //divido il buffer in 3 variabili
@@ -172,7 +172,7 @@ void handleClient(int socket)
         else if (strcmp(client_message, "LOGIN") == 0)
         { 
             //Attendo il buffer con tutti i dati          
-            bzero(request, MAX_MESSAGE_LENGTH);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
             //divido il buffer in 2 variabili
@@ -203,7 +203,7 @@ void handleClient(int socket)
         else if (strcmp(client_message, "SEARCH_BY_PAROLACHIAVE") == 0)
         {
             //Attendo il buffer con la parola chiave         
-            bzero(request, MAX_MESSAGE_LENGTH);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
             bufferPointerDeluxe = cercaLibroByParolaChiave(socket, buffer, conninfo);
@@ -214,10 +214,11 @@ void handleClient(int socket)
         // OPZIONE RICERCA ISBN: prendo l'isbn e vedo se ci sono similitudini, se si, la funzione cercaLibroByISBN stamperà tutte le occorrenze.
         else if (strcmp(client_message, "SEARCH_BY_ISBN\0") == 0)
         {
-            //Attendo il buffer con l'ISBN        
-            bzero(request, MAX_MESSAGE_LENGTH);
+            //Attendo il buffer con ISBN         
+            bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
+            //bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH*sizeof(char));
             bufferPointerDeluxe = cercaLibroByISBN(socket, buffer, conninfo);
 
             send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
@@ -226,6 +227,7 @@ void handleClient(int socket)
         // OPZIONE RICERCA CATEGORIA: chiedo una query per categoria e la restituisco
         else if (strcmp(client_message, "SEARCH_BY_CATEGORIA") == 0)
         {
+            //Attendo il buffer con la categoria         
             bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
@@ -293,7 +295,7 @@ void handleClient(int socket)
             send(socket, charPointerK, strlen(charPointerK), 0);
 
             //Ricevo risposta se voglio cambiarlo
-            bzero(buffer, MAX_MESSAGE_LENGTH);
+            bzero(bufferPointer, MAX_MESSAGE_LENGTH);
             recv(socket, bufferPointer, MAX_MESSAGE_LENGTH, 0);
 
             char *endptr;  // Puntatore per verificare eventuali errori

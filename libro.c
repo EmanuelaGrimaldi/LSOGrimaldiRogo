@@ -12,12 +12,12 @@ char stringToAppend[MAX_MESSAGE_LENGTH];
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MODIFICATA SECONDO NUOVA LOGICA OK!!
 char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
 {
-    free(bufferPoin); free(chISBN); free (categoria); free(titolo); free(charCopieTotali); free(charTotCopiePrestate); free(charCopieDisponibili);
+    free(bufferPoin); free(chISBN); free(categoria); free(titolo); free(charCopieTotali); free(charTotCopiePrestate); free(charCopieDisponibili);
 
-    bufferPoin = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    bufferPoin = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*9);
     chISBN = (char*)malloc(MAX_MESSAGE_LENGTH);
-    titolo = (char*)malloc(MAX_MESSAGE_LENGTH);
-    categoria = (char*)malloc(MAX_MESSAGE_LENGTH);
+    titolo = (char*)malloc(MAX_MESSAGE_LENGTH*100);
+    categoria = (char*)malloc(MAX_MESSAGE_LENGTH*100);
     charCopieTotali = (char*)malloc(MAX_MESSAGE_LENGTH);
     charTotCopiePrestate = (char*)malloc(MAX_MESSAGE_LENGTH);
     charCopieDisponibili  = (char*)malloc(MAX_MESSAGE_LENGTH);
@@ -59,17 +59,16 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
     if (numeroRighe > 0){
         for (valore = 0; valore < numeroRighe; valore++) {
             // Estrae i dati dalla query
-            snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, valore, 0));
-            snprintf(titolo, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(res, valore, 1));
-            snprintf(categoria, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(res, valore, 2));
-            snprintf(charCopieTotali, sizeof(charCopieTotali), "%s", PQgetvalue(res, valore, 3));
-            snprintf(charTotCopiePrestate, sizeof(charTotCopiePrestate), "%s", PQgetvalue(res, valore, 4));
+            snprintf(chISBN, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 0));
+            snprintf(titolo, MAX_MESSAGE_LENGTH*100, "%s", PQgetvalue(res, valore, 1));
+            snprintf(categoria, MAX_MESSAGE_LENGTH*100, "%s", PQgetvalue(res, valore, 2));
+            snprintf(charCopieTotali, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 3));
+            snprintf(charTotCopiePrestate, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 4));
 
             intCopieTotali = atoi(charCopieTotali);
             intTotCopiePrestate = atoi(charTotCopiePrestate);
 
             copieDisponibili =  intCopieTotali - intTotCopiePrestate;
-
 
             sprintf(charCopieDisponibili, "%d", copieDisponibili); 
 
@@ -77,11 +76,10 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
 
             if ( valore == 0 ) {
                     strcpy(bufferPoin, "Titolo: ");
-                    strcat(bufferPoin, titolo);
             } else {
                     strcat(bufferPoin, "Titolo: ");
-                    strcat(bufferPoin, titolo);
             }
+                    strcat(bufferPoin, titolo);
                     strcat(bufferPoin, "| ISBN: ");
                     strcat(bufferPoin, chISBN);
                     strcat(bufferPoin, "| Categoria: ");
@@ -106,8 +104,8 @@ char *cercaLibroByISBN(int socket, char* ISBN, char *conninfo)
 
     bufferPoin = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
     chISBN = (char*)malloc(MAX_MESSAGE_LENGTH);
-    titolo = (char*)malloc(MAX_MESSAGE_LENGTH);
-    categoria = (char*)malloc(MAX_MESSAGE_LENGTH);
+    titolo = (char*)malloc(MAX_MESSAGE_LENGTH*100);
+    categoria = (char*)malloc(MAX_MESSAGE_LENGTH*100);
     charCopieTotali = (char*)malloc(MAX_MESSAGE_LENGTH);
     charTotCopiePrestate = (char*)malloc(MAX_MESSAGE_LENGTH);
     charCopieDisponibili  = (char*)malloc(MAX_MESSAGE_LENGTH);
@@ -145,19 +143,21 @@ char *cercaLibroByISBN(int socket, char* ISBN, char *conninfo)
     // Stampo tutti i risultati trovati
     if (numeroRighe > 0) {
 
-            // Estrae i dati dalla query
-            snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, valore, 0));
-            snprintf(titolo, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(res, valore, 1));
-            snprintf(categoria, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(res, valore, 2));
-            snprintf(charCopieTotali, sizeof(charCopieTotali), "%s", PQgetvalue(res, valore, 3));
-            snprintf(charTotCopiePrestate, sizeof(charTotCopiePrestate), "%s", PQgetvalue(res, valore, 4));
+            snprintf(chISBN, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 0));
+            snprintf(titolo, MAX_MESSAGE_LENGTH*100, "%s", PQgetvalue(res, valore, 1));
+            snprintf(categoria, MAX_MESSAGE_LENGTH*100, "%s", PQgetvalue(res, valore, 2));
+            snprintf(charCopieTotali, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 3));
+            snprintf(charTotCopiePrestate, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 4));
 
             intCopieTotali = atoi(charCopieTotali);
             intTotCopiePrestate = atoi(charTotCopiePrestate);
 
             copieDisponibili =  intCopieTotali - intTotCopiePrestate;
+
             sprintf(charCopieDisponibili, "%d", copieDisponibili); 
-  
+
+            // Aggiungi il libro in coda al buffer dei risultati
+
                 strcpy(bufferPoin, "Titolo: ");
                 strcat(bufferPoin, titolo);
                 strcat(bufferPoin, "| ISBN: ");
@@ -167,6 +167,7 @@ char *cercaLibroByISBN(int socket, char* ISBN, char *conninfo)
                 strcat(bufferPoin, "| Copie disponibili: ");
                 strcat(bufferPoin, charCopieDisponibili);
                 strcat(bufferPoin, "\n");
+
             
     } else {
             strcpy(bufferPoin, "Non è stato trovato nessun libro con l'isbn da lei inserito.\n");
@@ -181,12 +182,11 @@ char *cercaLibroByISBN(int socket, char* ISBN, char *conninfo)
 
 char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
 {
-    free(bufferPoin); free(chISBN); free (categoria); free(titolo); free(charCopieTotali); free(charTotCopiePrestate); free(charCopieDisponibili);
+    free(bufferPoin); free(chISBN); free(titolo); free(charCopieTotali); free(charTotCopiePrestate); free(charCopieDisponibili);
 
-    bufferPoin = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char));
+    bufferPoin = (char*)malloc(MAX_MESSAGE_LENGTH*sizeof(char)*9);
     chISBN = (char*)malloc(MAX_MESSAGE_LENGTH);
-    titolo = (char*)malloc(MAX_MESSAGE_LENGTH);
-    categoria = (char*)malloc(MAX_MESSAGE_LENGTH);
+    titolo = (char*)malloc(MAX_MESSAGE_LENGTH*100);
     charCopieTotali = (char*)malloc(MAX_MESSAGE_LENGTH);
     charTotCopiePrestate = (char*)malloc(MAX_MESSAGE_LENGTH);
     charCopieDisponibili  = (char*)malloc(MAX_MESSAGE_LENGTH);
@@ -202,7 +202,7 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
 
     const char *paramValues[1] = {categoria_x};
     PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM libro WHERE categoria ILIKE $1",
+                                 "SELECT * FROM libro WHERE categoria = $1",
                                  1,           // Numero di parametri
                                  NULL,        // OID dei parametri (NULL per default)
                                  paramValues, // Valori dei parametri
@@ -227,11 +227,10 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
         for (valore = 0; valore < numeroRighe; valore++)
         {
             // Estrae i dati dalla query
-            snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, valore, 0));
-            snprintf(titolo, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(res, valore, 1));
-            snprintf(categoria, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(res, valore, 2));
-            snprintf(charCopieTotali, sizeof(charCopieTotali), "%s", PQgetvalue(res, valore, 3));
-            snprintf(charTotCopiePrestate, sizeof(charTotCopiePrestate), "%s", PQgetvalue(res, valore, 4));
+            snprintf(chISBN, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 0));
+            snprintf(titolo, MAX_MESSAGE_LENGTH*100, "%s", PQgetvalue(res, valore, 1));
+            snprintf(charCopieTotali, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 3));
+            snprintf(charTotCopiePrestate, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 4));
 
             intCopieTotali = atoi(charCopieTotali);
             intTotCopiePrestate = atoi(charTotCopiePrestate);
@@ -252,7 +251,7 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
             strcat(bufferPoin, "| ISBN: ");
             strcat(bufferPoin, chISBN);
             strcat(bufferPoin, "| Categoria: ");
-            strcat(bufferPoin, categoria);
+            strcat(bufferPoin, categoria_x);
             strcat(bufferPoin, "| Copie disponibili: ");
             strcat(bufferPoin, charCopieDisponibili);
             strcat(bufferPoin, "\n");
@@ -265,6 +264,8 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
 
     PQclear(res);
     PQfinish(conn);
+
+    printf("RICERCA CATEGORIA IN LIBRO.C:\n%s\n",bufferPoin);
 
     return bufferPoin;
 }
