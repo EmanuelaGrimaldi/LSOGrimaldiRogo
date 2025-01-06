@@ -63,6 +63,9 @@ int main()
 void menuGuest(int socket)
 {
     int choice;
+
+printf("ciao da emy");
+
     while (1)
     {
         printf("\n--- Menu ---\n");
