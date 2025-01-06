@@ -64,7 +64,7 @@ void menuGuest(int socket)
 {
     int choice;
 
-    printf("ciao da emy e da fra");
+    printf("ciao da emy e da fra :)");
 
     while (1)
     {
