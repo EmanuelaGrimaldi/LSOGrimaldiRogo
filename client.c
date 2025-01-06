@@ -148,11 +148,10 @@ void menuUser(int socket)
             funzioneCheckout(socket);
             break;
         case 6:
-            printf("Sono da implementare");
             visualizzaCarrello(socket);
             break;
         case 7:
-            printf("Sono da implementare");
+            visualizzaPrestiti(socket);
             break;
         case 8:
             logout();
@@ -178,12 +177,29 @@ void visualizzaCarrello(int socket)
     strcpy(buffer, email);
     send(socket, buffer, strlen(buffer), 0);
 
-    printf("\nemail: %s", email);
-
     bzero(bufferDeluxe, MAX_MESSAGE_LENGTH);
     recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH, 0);
 
     printf("\nEcco l'elenco completo di tutti i libri in Carrello:\n");
+    printf("%s\n", bufferDeluxe);
+}
+
+void visualizzaPrestiti(socket)
+{
+    // call server
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, "ELENCO_PRESTITI_BY_EMAIL\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, email);
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH, 0);
+
+    printf("\nEcco l'elenco dei tuoi Prestiti:\n");
     printf("%s\n", bufferDeluxe);
 }
 

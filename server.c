@@ -307,6 +307,17 @@ void handleClient(int socket)
             send(socket, bufferPointerDeluxe, strlen(bufferPointer), 0);
         }
 
+        else if (strcmp(client_message, "ELENCO_CARRELLO_BY_EMAIL") == 0)
+        {
+            bzero(bufferPointer, MAX_MESSAGE_LENGTH);
+            recv(socket, bufferPointer, sizeof(bufferPointer), 0);
+
+            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH);
+            bufferPointerDeluxe = getAllPrestiti(conninfo, bufferPointer);
+
+            send(socket, bufferPointerDeluxe, strlen(bufferPointer), 0);
+        }
+
         else if (strcmp(client_message, "ELENCO_PRESTITI") == 0)
         {
             bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH);

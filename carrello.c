@@ -9,15 +9,12 @@
 #include "define.h"
 #include <libpq-fe.h>
 
-char *charISBN, *charNumeroCopie, *charISBN, *bufferCart, *singoloISBN, charCategoria;
+char *charISBN, *charNumeroCopie, *bufferCart, *singoloISBN, *charCategoria;
 char bufferCh[MAX_MESSAGE_LENGTH], toAppend[MAX_MESSAGE_LENGTH];
 int numeroCopie, i, disponibile;
 
 char *getAllLibriInCarrello(char *conninfo, char *emaill)
 {
-
-    printf("\nSono in get all libri in carrello");
-
     free(bufferCart);
     free(charISBN);
 
