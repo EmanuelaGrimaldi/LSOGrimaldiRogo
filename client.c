@@ -1,3 +1,5 @@
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,10 +65,9 @@ int main()
 void menuGuest(int socket)
 {
     int choice;
-
     while (1)
     {
-        printf("\n--- Menu ---\n");
+        printf("\n--- Menu Guest ---\n");
         printf("1. Registrazione nuovo utente\n");
         printf("2. Login\n");
         printf("3. Ricerca di un libro tramite parola chiave\n");
@@ -116,7 +117,7 @@ void menuUser(int socket)
     int choice;
     while (1)
     {
-        printf("\n--- Menu ---\n");
+        printf("\n--- Menu User ---\n");
         printf("1. Ricerca di un libro tramite parola chiave.\n");
         printf("2. Ricerca di un libro tramite ISBN.\n");
         printf("3. Ricerca tramite categoria (*)\n");
@@ -148,6 +149,7 @@ void menuUser(int socket)
             break;
         case 6:
             printf("Sono da implementare");
+            visualizzaCarrello(socket);
             break;
         case 7:
             printf("Sono da implementare");
@@ -164,12 +166,33 @@ void menuUser(int socket)
     }
 }
 
+void visualizzaCarrello(int socket)
+{
+    // call server
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, "ELENCO_CARRELLO\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(buffer, MAX_MESSAGE_LENGTH);
+    strcpy(buffer, email);
+    send(socket, buffer, strlen(buffer), 0);
+
+    printf("\nemail: %s", email);
+
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH, 0);
+
+    printf("\nEcco l'elenco completo di tutti i libri in Carrello:\n");
+    printf("%s\n", bufferDeluxe);
+}
+
 void menuAdmin(int socket)
 {
     int choice;
     while (1)
     {
-        printf("\n--- Menu ---\n");
+        printf("\n--- Menu Admin ---\n");
         printf("1. Elenco di tutti i libri.\n");
         printf("2. Elenco di tutti i prestiti.\n");
         printf("3. Modifica valore K.\n");
@@ -206,9 +229,11 @@ void funzioneLogin(int socket)
     strcpy(buffer, "LOGIN\n");
     send(socket, buffer, strlen(buffer), 0);
 
+    bzero(email, MAX_MESSAGE_LENGTH);
     printf("\nInserisci email: ");
     scanf("%s", email);
 
+    bzero(password, MAX_MESSAGE_LENGTH);
     printf("\nInserisci psw: ");
     scanf("%s", password);
 
@@ -229,7 +254,6 @@ void funzioneLogin(int socket)
         printf("Login riuscito correttamente!\n\n");
         menuUser(socket);
     }
-
     else if (strcmp(buffer, "ADMIN") == 0)
     {
         printf("\nBentornato Libraio!\n\n");
@@ -367,8 +391,9 @@ void funzioneCheckout(int socket)
     strcpy(buffer, "CHECKOUT\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    send(socket, email, strlen(buffer), 0);
+    send(socket, email, strlen(email), 0);
 
+    bzero(buffer, MAX_MESSAGE_LENGTH);
     recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
     printf("%s\n", buffer);
 }
