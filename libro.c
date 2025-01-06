@@ -472,6 +472,9 @@ char *getAllPrestitiByEmail(char *conninfo, char *emaill)
     dataPrestito = (char *)malloc(MAX_MESSAGE_LENGTH);
     dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH);
 
+    PGresult *resLibro;
+    PGresult *resPrestito;
+
     PGconn *conn = PQconnectdb(conninfo);
 
     if (PQstatus(conn) != CONNECTION_OK)
@@ -482,35 +485,54 @@ char *getAllPrestitiByEmail(char *conninfo, char *emaill)
     }
 
     const char *paramValues[1] = {emaill};
-    PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM prestito WHERE emailPrestito = $1",
-                                 1,           // Numero di parametri
-                                 NULL,        // OID dei parametri (NULL per default)
-                                 paramValues, // Valori dei parametri
-                                 NULL,        // Lunghezza dei parametri (NULL per stringhe)
-                                 NULL,        // Formato dei parametri (NULL per stringhe)
-                                 0);          // Formato del risultato (0 = testo)
+    resPrestito = PQexecParams(conn,
+                               "SELECT * FROM prestito WHERE emailPrestito = $1",
+                               1,           // Numero di parametri
+                               NULL,        // OID dei parametri (NULL per default)
+                               paramValues, // Valori dei parametri
+                               NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                               NULL,        // Formato dei parametri (NULL per stringhe)
+                               0);          // Formato del risultato (0 = testo)
 
-    if (PQresultStatus(res) != PGRES_TUPLES_OK)
+    if (PQresultStatus(resPrestito) != PGRES_TUPLES_OK)
     {
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
-        PQclear(res);
+        PQclear(resPrestito);
         PQfinish(conn);
         return 0;
     }
 
-    int numeroRighe = PQntuples(res);
+    int numeroRighe = PQntuples(resPrestito);
 
     if (numeroRighe > 0)
     {
 
         for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++)
         {
+            snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(resPrestito, Ipointer, 0));
+            snprintf(dataPrestito, sizeof(dataPrestito), "%s", PQgetvalue(resPrestito, Ipointer, 2));
+            snprintf(dataRestituzione, sizeof(dataRestituzione), "%s", PQgetvalue(resPrestito, Ipointer, 3));
 
-            snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(res, Ipointer, 0));
-            // snprintf(charNome, sizeof(charNome), "%s", PQgetvalue(res, Ipointer, 1));
-            snprintf(dataPrestito, sizeof(dataPrestito), "%s", PQgetvalue(res, Ipointer, 2));
-            snprintf(dataRestituzione, sizeof(dataRestituzione), "%s", PQgetvalue(res, Ipointer, 3));
+            const char *paramValues1[1] = {chISBN};
+            resLibro = PQexecParams(conn,
+                                    "SELECT * FROM libro WHERE isbn = $1",
+                                    1,            // Numero di parametri
+                                    NULL,         // OID dei parametri (NULL per default)
+                                    paramValues1, // Valori dei parametri
+                                    NULL,         // Lunghezza dei parametri (NULL per stringhe)
+                                    NULL,         // Formato dei parametri (NULL per stringhe)
+                                    0);           // Formato del risultato (0 = testo)
+
+            if (PQresultStatus(resLibro) != PGRES_TUPLES_OK)
+            {
+                fprintf(stderr, "Errore durante la query in Libro: %s", PQerrorMessage(conn));
+                PQclear(resLibro);
+                PQfinish(conn);
+                return 0;
+            }
+
+            snprintf(titolo, sizeof(titolo), "%s", PQgetvalue(resLibro, Ipointer, 1));
+            snprintf(categoria, sizeof(categoria), "%s", PQgetvalue(resLibro, Ipointer, 2));
 
             if (Ipointer == 0)
                 strcpy(bufferPoin, "ISBN: ");
@@ -519,10 +541,11 @@ char *getAllPrestitiByEmail(char *conninfo, char *emaill)
 
             strcat(bufferPoin, charISBN);
 
-            /*
-                strcat(bufferPoin, "| Nome: ");
-                strcat(bufferPoin, charNome);
-            */
+            strcat(bufferPoin, "| Nome: ");
+            strcat(bufferPoin, titolo);
+
+            strcat(bufferPoin, "| Categoria: ");
+            strcat(bufferPoin, categoria);
 
             strcat(bufferPoin, "| Data prestito: ");
             strcat(bufferPoin, charDataIniz);
@@ -539,7 +562,8 @@ char *getAllPrestitiByEmail(char *conninfo, char *emaill)
         strcpy(bufferPoin, "Errore, non ci sono Prestiti o DB Error.\n");
     }
 
-    PQclear(res);
+    PQclear(resLibro);
+    PQclear(resPrestito);
     PQfinish(conn);
 
     return bufferPoin;

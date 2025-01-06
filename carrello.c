@@ -9,7 +9,7 @@
 #include "define.h"
 #include <libpq-fe.h>
 
-char *charISBN, *charNumeroCopie, *bufferCart, *singoloISBN, *charCategoria;
+char *charISBN, *charNumeroCopie, *bufferCart, *singoloISBN, *charCategoria, *charTitolo;
 char bufferCh[MAX_MESSAGE_LENGTH], toAppend[MAX_MESSAGE_LENGTH];
 int numeroCopie, i, disponibile;
 
@@ -17,9 +17,15 @@ char *getAllLibriInCarrello(char *conninfo, char *emaill)
 {
     free(bufferCart);
     free(charISBN);
+    free(charTitolo);
+    free(charCategoria);
+    // free(charNumeroCopie);
 
     bufferCart = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 11);
     charISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
+
+    PGresult *resLib;
+    PGresult *resCar;
 
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -31,24 +37,24 @@ char *getAllLibriInCarrello(char *conninfo, char *emaill)
     }
 
     const char *paramValues[1] = {emaill};
-    PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM carrello WHERE emailCarrello = $1",
-                                 1,           // Numero di parametri
-                                 NULL,        // OID dei parametri (NULL per default)
-                                 paramValues, // Valori dei parametri
-                                 NULL,        // Lunghezza dei parametri (NULL per stringhe)
-                                 NULL,        // Formato dei parametri (NULL per stringhe)
-                                 0);          // Formato del risultato (0 = testo)
+    resCar = PQexecParams(conn,
+                          "SELECT * FROM carrello WHERE emailCarrello = $1",
+                          1,           // Numero di parametri
+                          NULL,        // OID dei parametri (NULL per default)
+                          paramValues, // Valori dei parametri
+                          NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                          NULL,        // Formato dei parametri (NULL per stringhe)
+                          0);          // Formato del risultato (0 = testo)
 
-    if (PQresultStatus(res) != PGRES_TUPLES_OK)
+    if (PQresultStatus(resLib) != PGRES_TUPLES_OK)
     {
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
-        PQclear(res);
+        PQclear(resLib);
         PQfinish(conn);
         return 0;
     }
 
-    int numeroRighe = PQntuples(res);
+    int numeroRighe = PQntuples(resCar);
 
     if (numeroRighe > 0)
     {
@@ -56,22 +62,42 @@ char *getAllLibriInCarrello(char *conninfo, char *emaill)
         for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++)
         {
 
-            snprintf(charISBN, sizeof(charISBN), "%s", PQgetvalue(res, Ipointer, 0));
-            /*
-                snprintf(dataPrestito, sizeof(dataPrestito), "%s", PQgetvalue(res, Ipointer, 2));
-                snprintf(dataRestituzione, sizeof(dataRestituzione), "%s", PQgetvalue(res, Ipointer, 3));
-            */
+            snprintf(charISBN, sizeof(charISBN), "%s", PQgetvalue(resCar, Ipointer, 0));
 
-            if (Ipointer == 0)
+            const char *paramValues1[1] = {charISBN};
+            resLib = PQexecParams(conn,
+                                  "SELECT * FROM libro WHERE isbn = $1",
+                                  1,            // Numero di parametri
+                                  NULL,         // OID dei parametri (NULL per default)
+                                  paramValues1, // Valori dei parametri
+                                  NULL,         // Lunghezza dei parametri (NULL per stringhe)
+                                  NULL,         // Formato dei parametri (NULL per stringhe)
+                                  0);           // Formato del risultato (0 = testo)
+
+            if (PQresultStatus(resLib) != PGRES_TUPLES_OK)
             {
+                fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+                PQclear(resLib);
+                PQfinish(conn);
+                return 0;
+            }
+
+            snprintf(charTitolo, sizeof(charTitolo), "%s", PQgetvalue(resLib, Ipointer, 1));
+            snprintf(charCategoria, sizeof(charCategoria), "%s", PQgetvalue(resLib, Ipointer, 2));
+
+            if (numeroRighe == 0)
                 strcpy(bufferCart, "ISBN: ");
-            }
             else
-            {
                 strcat(bufferCart, "ISBN: ");
-            }
 
             strcat(bufferCart, charISBN);
+
+            strcat(bufferCart, "| Nome: ");
+            strcat(bufferCart, charTitolo);
+
+            strcat(bufferCart, "| Categoria: ");
+            strcat(bufferCart, charCategoria);
+
             strcat(bufferCart, "\n");
         }
     }
@@ -81,7 +107,8 @@ char *getAllLibriInCarrello(char *conninfo, char *emaill)
         strcpy(bufferCart, "Errore non ci sono lirbi nel Carrello o c'è stato un Errore con il DB.\n");
     }
 
-    PQclear(res);
+    PQclear(resLib);
+    PQclear(resCar);
     PQfinish(conn);
 
     return bufferCart;
