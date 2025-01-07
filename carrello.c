@@ -415,7 +415,7 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
     time_t t = time(NULL);
     struct tm *localTimeStamp = localtime(&t);
 
-    int currMese, currGiorno, meseRestituzione;
+    int currMese, currGiorno, meseRestituzione, currAnno;
     char *dataPrestito, *dataRestituzione;
 
     dataPrestito = (char *)malloc(MAX_MESSAGE_LENGTH);
@@ -424,8 +424,9 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
 
     sprintf(charISBN, "%d", ISBN);
 
-    currMese = localTimeStamp->tm_mon + 1;
     currGiorno = localTimeStamp->tm_mday;
+    currMese = localTimeStamp->tm_mon + 1;
+    currAnno = localTimeStamp->tm_year;
     meseRestituzione = localTimeStamp->tm_mon + 4;
 
     if (meseRestituzione > 11)
@@ -433,8 +434,8 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
         meseRestituzione -= 12;
     }
 
-    sprintf(dataPrestito, "%02d/%02d", currGiorno, currMese);
-    sprintf(dataRestituzione, "%02d/%02d", currGiorno, meseRestituzione);
+    sprintf(dataPrestito, "%02d/%02d/%04d", currGiorno, currMese, currAnno);
+    sprintf(dataRestituzione, "%02d/%02d/%04d", currGiorno, meseRestituzione, currAnno);
 
     const char *paramValues[4] = {charISBN, email, dataPrestito, dataRestituzione};
     PGresult *res = PQexecParams(conn,
