@@ -9,6 +9,6 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo);
 
 char *getAllLibri(char *conninfo);
 char *getAllPrestiti(char *conninfo);
-char *getAllPrestitiByEmail(char *conninfo, char *emaill)
+char *getAllPrestitiByEmail(char *conninfo, char *email);
 
 #endif

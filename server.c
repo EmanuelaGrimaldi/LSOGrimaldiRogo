@@ -29,7 +29,7 @@ int main()
     password = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     nome = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     request = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
-    bufferPointer = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
+    bufferPointer = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     charPointerISBN = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     client_message = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     charPointerK = (char *)malloc(MAX_MESSAGE_LENGTH);
@@ -291,36 +291,44 @@ void handleClient(int socket)
 
         else if (strcmp(client_message, "ELENCO_LIBRI") == 0)
         {
-            bzero(bufferPointer, MAX_MESSAGE_LENGTH);
+            bzero(bufferPointer, MAX_MESSAGE_LENGTH*sizeof(char));
             bufferPointer = getAllLibri(conninfo);
             send(socket, bufferPointer, strlen(bufferPointer), 0);
         }
 
-        else if (strcmp(client_message, "ELENCO_CARRELLO") == 0)
-        {
-            bzero(bufferPointer, MAX_MESSAGE_LENGTH);
-            recv(socket, bufferPointer, sizeof(bufferPointer), 0);
-
-            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH);
-            bufferPointerDeluxe = getAllLibriInCarrello(conninfo, bufferPointer);
-
-            send(socket, bufferPointerDeluxe, strlen(bufferPointer), 0);
-        }
-
         else if (strcmp(client_message, "ELENCO_CARRELLO_BY_EMAIL") == 0)
         {
-            bzero(bufferPointer, MAX_MESSAGE_LENGTH);
+            bzero(bufferPointer, MAX_MESSAGE_LENGTH*sizeof(char));
             recv(socket, bufferPointer, sizeof(bufferPointer), 0);
 
-            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH);
-            bufferPointerDeluxe = getAllPrestiti(conninfo, bufferPointer);
+            printf("BUFFER IN SERVER.C: %s\n",bufferPointer);
 
-            send(socket, bufferPointerDeluxe, strlen(bufferPointer), 0);
+            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10);
+            bufferPointerDeluxe = getAllLibriInCarrello(conninfo, bufferPointer);
+
+            printf("BUFFER DELUXE POST QUERY IN SERVER.C: %s\n",bufferPointerDeluxe);
+
+            send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
 
-        else if (strcmp(client_message, "ELENCO_PRESTITI") == 0)
+        else if (strcmp(client_message, "ELENCO_PRESTITI_BY_EMAIL") == 0)
         {
-            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH);
+            bzero(bufferPointer, MAX_MESSAGE_LENGTH*sizeof(char));
+            recv(socket, bufferPointer, sizeof(bufferPointer), 0);
+
+            printf("BUFFER IN SERVER.C: %s\n",bufferPointer);
+
+            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10);
+            bufferPointerDeluxe = getAllPrestitiByEmail(conninfo, bufferPointer);
+
+            printf("BUFFER DELUXE POST QUERY IN SERVER.C: %s\n",bufferPointerDeluxe);
+
+            send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
+        }
+
+        else if (strcmp(client_message, "ADMIN_GET_ALL_PRESTITI") == 0)
+        {
+            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);
             bufferPointerDeluxe = getAllPrestiti(conninfo);
             send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
@@ -333,8 +341,8 @@ void handleClient(int socket)
             send(socket, charPointerK, strlen(charPointerK), 0);
 
             // Ricevo risposta se voglio cambiarlo
-            bzero(bufferPointer, MAX_MESSAGE_LENGTH);
-            recv(socket, bufferPointer, MAX_MESSAGE_LENGTH, 0);
+            bzero(bufferPointer, MAX_MESSAGE_LENGTH*sizeof(char));
+            recv(socket, bufferPointer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
 
             char *endptr; // Puntatore per verificare eventuali errori
             int rispostaK = bufferPointer[0] - '0';
@@ -353,6 +361,9 @@ void handleClient(int socket)
         {
             send(socket, "ERRORE SERVER:Comando non valido.\n\n", strlen("ERRORE SERVER:Comando non valido.\n\n") + 1, 0);
         }
+
+//--------------------------------------------------------------------------------bzero(client_message, MAX_MESSAGE_LENGTH * sizeof(char));
+
     }
 
     if (read_size == 0)

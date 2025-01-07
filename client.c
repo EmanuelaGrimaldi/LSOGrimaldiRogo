@@ -169,16 +169,15 @@ void visualizzaCarrello(int socket)
 {
     // call server
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    strcpy(buffer, "ELENCO_CARRELLO\n");
+    bzero(buffer, MAX_MESSAGE_LENGTH * sizeof(char));
+    strcpy(buffer, "ELENCO_CARRELLO_BY_EMAIL\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    strcpy(buffer, email);
-    send(socket, buffer, strlen(buffer), 0);
+    printf("Email di visualizzaCarrello IN CLIENT.C: %s\n",email);
+    send(socket, email, strlen(email), 0);
 
-    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH);
-    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH, 0);
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10, 0);
 
     printf("\nEcco l'elenco completo di tutti i libri in Carrello:\n");
     printf("%s\n", bufferDeluxe);
@@ -188,16 +187,16 @@ void visualizzaPrestiti(socket)
 {
     // call server
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "ELENCO_PRESTITI_BY_EMAIL\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, email);
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH);
-    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH, 0);
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10, 0);
 
     printf("\nEcco l'elenco dei tuoi Prestiti:\n");
     printf("%s\n", bufferDeluxe);
@@ -241,20 +240,20 @@ void funzioneLogin(int socket)
 {
 
     // Mando comando "LOGIN"
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "LOGIN\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(email, MAX_MESSAGE_LENGTH);
+    bzero(email, MAX_MESSAGE_LENGTH*sizeof(char));
     printf("\nInserisci email: ");
     scanf("%s", email);
 
-    bzero(password, MAX_MESSAGE_LENGTH);
+    bzero(password, MAX_MESSAGE_LENGTH*sizeof(char));
     printf("\nInserisci psw: ");
     scanf("%s", password);
 
     // concateno i dati in un unico buffer
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, email);
     strcat(buffer, ";");
     strcat(buffer, password);
@@ -262,8 +261,8 @@ void funzioneLogin(int socket)
     send(socket, buffer, strlen(buffer), 0);
 
     // In base alla risposta restituisco un messaggio diverso
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
 
     if (strcmp(buffer, "RISPOSTA_VALIDA") == 0)
     {
@@ -285,7 +284,7 @@ void funzioneRegister(int socket)
 {
 
     // Mando comando "REGISTER"
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "REGISTER\n");
     send(socket, buffer, strlen(buffer), 0);
 
@@ -300,7 +299,7 @@ void funzioneRegister(int socket)
     scanf("%s", password);
 
     // concateno i dati in un unico buffer
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, nome);
     strcat(buffer, ";");
     strcat(buffer, email);
@@ -310,8 +309,8 @@ void funzioneRegister(int socket)
     send(socket, buffer, strlen(buffer), 0);
 
     // Attendi la risposta finale del server (registrazione riuscita o fallita)
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
     printf("%s\n", buffer); // Mostra "Registrazione riuscita" o "Registrazione fallita"
 }
 
@@ -319,11 +318,11 @@ void funzioneSearchParolaChiave(int socket)
 {
 
     // Mando comando "SEARCH_BY_PAROLACHIAVE\n"
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "SEARCH_BY_PAROLACHIAVE\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     printf("\nInserisci la parola chiave: ");
     scanf("%s", buffer);
     send(socket, buffer, strlen(buffer), 0);
@@ -338,11 +337,11 @@ void funzioneSearchISBN(int socket)
 {
 
     // Mando comando "SEARCH_BY_ISBN\n"
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "SEARCH_BY_ISBN\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     printf("\nInserisci l'ISBN: ");
     scanf("%s", buffer);
     send(socket, buffer, strlen(buffer), 0);
@@ -356,11 +355,11 @@ void funzioneSearchISBN(int socket)
 void funzioneSearchCategoria(int socket)
 {
     // Mando comando "SEARCH_BY_CATEGORIA\n"
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "SEARCH_BY_CATEGORIA\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
 
     // DA TESTARE + finire elenco categorie                                                                                                             ----DA TESTARE!!!!
     printf("\nLe categorie disponibili sono:");
@@ -383,19 +382,19 @@ void funzioneAddToCart(int socket)
 {
 
     // Mando comando "ADD_TO_CART\n"
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "ADD_TO_CART\n");
     send(socket, buffer, strlen(buffer), 0);
 
     // Mando ISBN
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     printf("\nInserisci l'ISBN da aggiungere al carrello: ");
     scanf("%s", buffer);
     send(socket, buffer, strlen(buffer), 0);
 
     // Attendi la risposta finale del server
-    bzero(buffer, MAX_MESSAGE_LENGTH); // Pulisci il buffer
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char)); // Pulisci il buffer
+    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
     printf("%s\n", buffer);
 }
 
@@ -403,26 +402,26 @@ void funzioneCheckout(int socket)
 {
 
     // Mando comando "CHECKOUT\n"
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "CHECKOUT\n");
     send(socket, buffer, strlen(buffer), 0);
 
     send(socket, email, strlen(email), 0);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
     printf("%s\n", buffer);
 }
 
 void funzioneElencoLibri(int socket)
 {
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "ELENCO_LIBRI\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
     printf("Ecco l'elenco completo di tutti i libri:\n");
     printf("%s\n", buffer);
 }
@@ -430,11 +429,11 @@ void funzioneElencoLibri(int socket)
 void funzioneElencoPrestiti(int socket)
 {
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    strcpy(buffer, "ELENCO_PRESTITI\n");
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    strcpy(buffer, "ADMIN_GET_ALL_PRESTITI\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH);
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);
     recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10, 0);
     printf("Ecco l'elenco completo di tutti i prestiti:\n");
     printf("%s\n", bufferDeluxe);
@@ -443,19 +442,19 @@ void funzioneElencoPrestiti(int socket)
 void funzioneModificaK(int socket)
 {
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "MODIFICA_K\n");
     send(socket, buffer, strlen(buffer), 0);
 
     // Riceve K attuale
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
 
     printf("\nIl valore attuale di K è: %s", buffer);
     printf("\nvuoi cambiare valore? (s/n): ");
     scanf("%s", charRisposta);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
 
     if (strcmp(charRisposta, "s") == 0)
     {
@@ -471,7 +470,7 @@ void funzioneModificaK(int socket)
         send(socket, buffer, strlen(buffer), 0);
     }
 
-    bzero(buffer, MAX_MESSAGE_LENGTH);
-    recv(socket, buffer, MAX_MESSAGE_LENGTH, 0);
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
     printf("%s\n", buffer);
 }

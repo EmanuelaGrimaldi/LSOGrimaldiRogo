@@ -456,7 +456,7 @@ char *getAllPrestiti(char *conninfo)
     return bufferPoinDeluxe;
 }
 
-char *getAllPrestitiByEmail(char *conninfo, char *emaill)
+char *getAllPrestitiByEmail(char *conninfo, char *email)
 {
     free(bufferPoin);
     free(chISBN);
@@ -484,7 +484,7 @@ char *getAllPrestitiByEmail(char *conninfo, char *emaill)
         return 0;
     }
 
-    const char *paramValues[1] = {emaill};
+    const char *paramValues[1] = {email};
     resPrestito = PQexecParams(conn,
                                "SELECT * FROM prestito WHERE emailPrestito = $1",
                                1,           // Numero di parametri
@@ -539,27 +539,27 @@ char *getAllPrestitiByEmail(char *conninfo, char *emaill)
             else
                 strcat(bufferPoin, "ISBN: ");
 
-            strcat(bufferPoin, charISBN);
+                strcat(bufferPoin, chISBN);
 
-            strcat(bufferPoin, "| Nome: ");
-            strcat(bufferPoin, titolo);
+                strcat(bufferPoin, "| Nome: ");
+                strcat(bufferPoin, titolo);
 
-            strcat(bufferPoin, "| Categoria: ");
-            strcat(bufferPoin, categoria);
+                strcat(bufferPoin, "| Categoria: ");
+                strcat(bufferPoin, categoria);
 
-            strcat(bufferPoin, "| Data prestito: ");
-            strcat(bufferPoin, charDataIniz);
+                strcat(bufferPoin, "| Data prestito: ");
+                strcat(bufferPoin, dataPrestito);
 
-            strcat(bufferPoin, "| Data restituzione: ");
-            strcat(bufferPoin, charDataFin);
+                strcat(bufferPoin, "| Data restituzione: ");
+                strcat(bufferPoin, dataRestituzione);
 
-            strcat(bufferPoin, "\n");
+                strcat(bufferPoin, "\n");
         }
     }
     else
     {
         bzero(bufferPoin, MAX_MESSAGE_LENGTH);
-        strcpy(bufferPoin, "Errore, non ci sono Prestiti o DB Error.\n");
+        strcpy(bufferPoin, "Non ci sono Prestiti.\n");
     }
 
     PQclear(resLibro);
