@@ -467,13 +467,10 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
 
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
-    titolo = (char *)malloc(MAX_MESSAGE_LENGTH);
-    categoria = (char *)malloc(MAX_MESSAGE_LENGTH);
-    dataPrestito = (char *)malloc(MAX_MESSAGE_LENGTH);
-    dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH);
-
-    PGresult *resLibro;
-    PGresult *resPrestito;
+    titolo = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
+    categoria = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
+    dataPrestito = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
+    dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
 
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -485,7 +482,7 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
     }
 
     const char *paramValues[1] = {email};
-    resPrestito = PQexecParams(conn,
+    PGresult *resPrestito = PQexecParams(conn,
                                "SELECT * FROM prestito WHERE emailPrestito = $1",
                                1,           // Numero di parametri
                                NULL,        // OID dei parametri (NULL per default)
@@ -509,12 +506,12 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
 
         for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++)
         {
-            snprintf(chISBN, sizeof(chISBN), "%s", PQgetvalue(resPrestito, Ipointer, 0));
-            snprintf(dataPrestito, sizeof(dataPrestito), "%s", PQgetvalue(resPrestito, Ipointer, 2));
-            snprintf(dataRestituzione, sizeof(dataRestituzione), "%s", PQgetvalue(resPrestito, Ipointer, 3));
+            snprintf(chISBN, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resPrestito, Ipointer, 0));
+            snprintf(dataPrestito, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resPrestito, Ipointer, 2));
+            snprintf(dataRestituzione, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resPrestito, Ipointer, 3));
 
             const char *paramValues1[1] = {chISBN};
-            resLibro = PQexecParams(conn,
+            PGresult *resLibro = PQexecParams(conn,
                                     "SELECT * FROM libro WHERE isbn = $1",
                                     1,            // Numero di parametri
                                     NULL,         // OID dei parametri (NULL per default)
@@ -531,38 +528,34 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
                 return 0;
             }
 
-            snprintf(titolo, sizeof(titolo), "%s", PQgetvalue(resLibro, Ipointer, 1));
-            snprintf(categoria, sizeof(categoria), "%s", PQgetvalue(resLibro, Ipointer, 2));
+            snprintf(titolo, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resLibro, 0, 1));
+            snprintf(categoria, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resLibro, 0, 2));
 
-            if (Ipointer == 0)
+            if (Ipointer == 0){
                 strcpy(bufferPoin, "ISBN: ");
-            else
+            }else{
                 strcat(bufferPoin, "ISBN: ");
+            }
 
-                strcat(bufferPoin, chISBN);
+            strcat(bufferPoin, chISBN);
+            strcat(bufferPoin, "| Nome: ");
+            strcat(bufferPoin, titolo);
+            strcat(bufferPoin, "| Categoria: ");
+            strcat(bufferPoin, categoria);
+            strcat(bufferPoin, "| Data prestito: ");
+            strcat(bufferPoin, dataPrestito);
+            strcat(bufferPoin, "| Data restituzione: ");
+            strcat(bufferPoin, dataRestituzione);
+            strcat(bufferPoin, "\n");
 
-                strcat(bufferPoin, "| Nome: ");
-                strcat(bufferPoin, titolo);
-
-                strcat(bufferPoin, "| Categoria: ");
-                strcat(bufferPoin, categoria);
-
-                strcat(bufferPoin, "| Data prestito: ");
-                strcat(bufferPoin, dataPrestito);
-
-                strcat(bufferPoin, "| Data restituzione: ");
-                strcat(bufferPoin, dataRestituzione);
-
-                strcat(bufferPoin, "\n");
+            PQclear(resLibro);
         }
     }
     else
     {
-        bzero(bufferPoin, MAX_MESSAGE_LENGTH);
         strcpy(bufferPoin, "Non ci sono Prestiti.\n");
     }
 
-    PQclear(resLibro);
     PQclear(resPrestito);
     PQfinish(conn);
 

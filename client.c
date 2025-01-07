@@ -165,43 +165,6 @@ void menuUser(int socket)
     }
 }
 
-void visualizzaCarrello(int socket)
-{
-    // call server
-
-    bzero(buffer, MAX_MESSAGE_LENGTH * sizeof(char));
-    strcpy(buffer, "ELENCO_CARRELLO_BY_EMAIL\n");
-    send(socket, buffer, strlen(buffer), 0);
-
-    printf("Email di visualizzaCarrello IN CLIENT.C: %s\n",email);
-    send(socket, email, strlen(email), 0);
-
-    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10);
-    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10, 0);
-
-    printf("\nEcco l'elenco completo di tutti i libri in Carrello:\n");
-    printf("%s\n", bufferDeluxe);
-}
-
-void visualizzaPrestiti(socket)
-{
-    // call server
-
-    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
-    strcpy(buffer, "ELENCO_PRESTITI_BY_EMAIL\n");
-    send(socket, buffer, strlen(buffer), 0);
-
-    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
-    strcpy(buffer, email);
-    send(socket, buffer, strlen(buffer), 0);
-
-    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);
-    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10, 0);
-
-    printf("\nEcco l'elenco dei tuoi Prestiti:\n");
-    printf("%s\n", bufferDeluxe);
-}
-
 void menuAdmin(int socket)
 {
     int choice;
@@ -473,4 +436,45 @@ void funzioneModificaK(int socket)
     bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
     printf("%s\n", buffer);
+}
+
+void visualizzaCarrello(int socket)
+{
+    // call server
+
+    bzero(buffer, MAX_MESSAGE_LENGTH * sizeof(char));
+    strcpy(buffer, "ELENCO_CARRELLO_BY_EMAIL\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    strcpy(buffer, email);
+
+    printf("Email di visualizzaCarrello IN CLIENT.C:\nEmail:%s\nBuffer: %s\n",email,buffer);
+
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10, 0);
+
+    printf("\nEcco l'elenco completo di tutti i libri in Carrello:\n");
+    printf("%s\n", bufferDeluxe);
+}
+
+void visualizzaPrestiti(socket)
+{
+    // call server
+
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    strcpy(buffer, "ELENCO_PRESTITI_BY_EMAIL\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    strcpy(buffer, email);
+    send(socket, buffer, strlen(buffer), 0);
+
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10, 0);
+
+    printf("\nEcco l'elenco dei tuoi Prestiti:\n");
+    printf("%s\n", bufferDeluxe);
 }

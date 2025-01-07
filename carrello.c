@@ -15,15 +15,14 @@ int numeroCopie, i, disponibile;
 
 char *getAllLibriInCarrello(char *conninfo, char *email)
 {
-    printf("sono in get all libri in carrello\n");
+    printf("sono in get all libri in carrello\n\n");
 
     free(bufferCart);
     free(charISBN);
     free(charTitolo);
     free(charCategoria);
-    // free(charNumeroCopie);
 
-    bufferCart = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 11);
+    bufferCart = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     charISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
     charTitolo = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     charCategoria = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
@@ -65,7 +64,7 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
         for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++)
         {
 
-            snprintf(charISBN, sizeof(charISBN), "%s", PQgetvalue(resCar, Ipointer, 0));
+            snprintf(charISBN, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(resCar, Ipointer, 0)); //funziona
 
             printf("\nCARRELLO.C: L'ISBN CHE GLI STO PASSANDO E' %s", charISBN);
 
@@ -87,22 +86,20 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
                 return 0;
             }
 
-            snprintf(charTitolo, sizeof(charTitolo), "%s", PQgetvalue(resLib, Ipointer, 1));
-            snprintf(charCategoria, sizeof(charCategoria), "%s", PQgetvalue(resLib, Ipointer, 2));
+            snprintf(charTitolo, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(resLib, 0, 1));
+            snprintf(charCategoria, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(resLib, 0, 2));
 
-            if (numeroRighe == 0)
+            if (Ipointer == 0) {
                 strcpy(bufferCart, "ISBN: ");
-            else
+            } else {
                 strcat(bufferCart, "ISBN: ");
+            }
 
             strcat(bufferCart, charISBN);
-
             strcat(bufferCart, "| Nome: ");
             strcat(bufferCart, charTitolo);
-
             strcat(bufferCart, "| Categoria: ");
             strcat(bufferCart, charCategoria);
-
             strcat(bufferCart, "\n");
 
             PQclear(resLib);
@@ -110,7 +107,7 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
     }
     else
     {
-        bzero(bufferCart, MAX_MESSAGE_LENGTH);
+        bzero(bufferCart, MAX_MESSAGE_LENGTH * sizeof(char) * 10);
         strcpy(bufferCart, "Non ci sono libri nel Carrello.\n");
     }
 
@@ -436,8 +433,8 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
         meseRestituzione -= 12;
     }
 
-    sprintf(dataPrestito, "%02d/%02d", currMese, currGiorno);
-    sprintf(dataRestituzione, "%02d/%02d", meseRestituzione, currGiorno);
+    sprintf(dataPrestito, "%02d/%02d", currGiorno, currMese);
+    sprintf(dataRestituzione, "%02d/%02d", currGiorno, meseRestituzione);
 
     const char *paramValues[4] = {charISBN, email, dataPrestito, dataRestituzione};
     PGresult *res = PQexecParams(conn,

@@ -298,13 +298,13 @@ void handleClient(int socket)
 
         else if (strcmp(client_message, "ELENCO_CARRELLO_BY_EMAIL") == 0)
         {
-            bzero(bufferPointer, MAX_MESSAGE_LENGTH*sizeof(char));
-            recv(socket, bufferPointer, sizeof(bufferPointer), 0);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
 
-            printf("BUFFER IN SERVER.C: %s\n",bufferPointer);
+            printf("BUFFER IN SERVER.C: %s\n",buffer);
 
             bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10);
-            bufferPointerDeluxe = getAllLibriInCarrello(conninfo, bufferPointer);
+            bufferPointerDeluxe = getAllLibriInCarrello(conninfo, buffer);
 
             printf("BUFFER DELUXE POST QUERY IN SERVER.C: %s\n",bufferPointerDeluxe);
 
@@ -313,13 +313,13 @@ void handleClient(int socket)
 
         else if (strcmp(client_message, "ELENCO_PRESTITI_BY_EMAIL") == 0)
         {
-            bzero(bufferPointer, MAX_MESSAGE_LENGTH*sizeof(char));
-            recv(socket, bufferPointer, sizeof(bufferPointer), 0);
+            bzero(buffer, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
 
-            printf("BUFFER IN SERVER.C: %s\n",bufferPointer);
+            printf("BUFFER IN SERVER.C: %s\n",buffer);
 
             bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10);
-            bufferPointerDeluxe = getAllPrestitiByEmail(conninfo, bufferPointer);
+            bufferPointerDeluxe = getAllPrestitiByEmail(conninfo, buffer);
 
             printf("BUFFER DELUXE POST QUERY IN SERVER.C: %s\n",bufferPointerDeluxe);
 
@@ -362,7 +362,7 @@ void handleClient(int socket)
             send(socket, "ERRORE SERVER:Comando non valido.\n\n", strlen("ERRORE SERVER:Comando non valido.\n\n") + 1, 0);
         }
 
-//--------------------------------------------------------------------------------bzero(client_message, MAX_MESSAGE_LENGTH * sizeof(char));
+        memset(client_message, 0, MAX_MESSAGE_LENGTH*sizeof(char));
 
     }
 
