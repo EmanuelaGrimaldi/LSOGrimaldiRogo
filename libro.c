@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <time.h>
 #include "libro.h"
 #include "define.h"
 #include <libpq-fe.h>
@@ -557,6 +559,133 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
     }
 
     PQclear(resPrestito);
+    PQfinish(conn);
+
+    return bufferPoin;
+}
+
+char *getMessaggioRiguardantePrestiti(char *conninfo, char *email){
+
+    free(bufferPoin); free(chISBN); free(titolo); free(dataRestituzione);
+
+    bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
+    chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
+    titolo = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
+    dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
+
+    int prestitiRitardo = 0;
+
+    PGconn *conn = PQconnectdb(conninfo);
+
+    if (PQstatus(conn) != CONNECTION_OK)
+    {
+        fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return 0;
+    }
+
+    const char *paramValues[1] = {email};
+    PGresult *resCheckPrestiti = PQexecParams(conn,
+                               "SELECT * FROM prestito WHERE emailPrestito = $1",
+                               1,           // Numero di parametri
+                               NULL,        // OID dei parametri (NULL per default)
+                               paramValues, // Valori dei parametri
+                               NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                               NULL,        // Formato dei parametri (NULL per stringhe)
+                               0);          // Formato del risultato (0 = testo)
+
+    if (PQresultStatus(resCheckPrestiti) != PGRES_TUPLES_OK)
+    {
+        fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+        PQclear(resCheckPrestiti);
+        PQfinish(conn);
+        return 0;
+    }
+
+    strcpy(bufferPoin, "Informazioni relative ai prestiti del suo account:\n");
+
+    int numeroRighe = PQntuples(resCheckPrestiti);
+
+    if (numeroRighe > 0)
+    {
+        for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++){
+
+            snprintf(chISBN, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resCheckPrestiti, Ipointer, 0));
+            snprintf(dataRestituzione, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resCheckPrestiti, Ipointer, 3));
+
+            const char *paramValuesOne[1] = {chISBN};
+            PGresult *resNomeLibro = PQexecParams(conn,
+                                    "SELECT * FROM libro WHERE isbn = $1",
+                                    1,            // Numero di parametri
+                                    NULL,         // OID dei parametri (NULL per default)
+                                    paramValuesOne, // Valori dei parametri
+                                    NULL,         // Lunghezza dei parametri (NULL per stringhe)
+                                    NULL,         // Formato dei parametri (NULL per stringhe)
+                                    0);           // Formato del risultato (0 = testo)
+
+            if (PQresultStatus(resNomeLibro) != PGRES_TUPLES_OK)
+            {
+                fprintf(stderr, "Errore durante la query in Libro: %s", PQerrorMessage(conn));
+                PQclear(resNomeLibro);
+                PQfinish(conn);
+                return 0;
+            }
+
+            snprintf(titolo, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resNomeLibro, 0, 1));
+
+            time_t timeCurrData = time(NULL);
+            struct tm structDataRestituzione = {0};
+
+            char *format = "%d/%m/%Y"; // gg/mm/aaaa
+            strptime(dataRestituzione, format, &structDataRestituzione);
+            time_t timeDataRestituzione = mktime(&structDataRestituzione);
+
+            // Controlla la validità della conversione
+            if (timeDataRestituzione == -1 || timeCurrData == -1) {
+                printf("Errore nella conversione delle date.\ntimeDataRestituzione = %ld\n timeCurrData = %ld\n", timeDataRestituzione, timeCurrData);
+                return 1;
+            }
+
+            // Differenza in secondi tra le due date
+            double diff_seconds = difftime(timeDataRestituzione, timeCurrData);
+            // Converte la differenza in giorni
+            double diff_days = diff_seconds / (60 * 60 * 24);
+
+            // Controlla se distano meno di una settimana
+            if (fabs(diff_days) < 7) {
+                strcat(bufferPoin, "!ATTENZIONE!\nIl libro '");
+                strcat (bufferPoin, titolo);
+                strcat (bufferPoin, "' con ISBN ");
+                strcat (bufferPoin, chISBN);
+                strcat (bufferPoin, " va restituito in meno di una settimana.\n(Ultimo giorno disponibile per la restituzione: ");
+                strcat (bufferPoin, dataRestituzione);
+                strcat (bufferPoin, ")\n\n");
+                prestitiRitardo++;
+            } 
+
+            if (timeDataRestituzione < timeCurrData) {
+                strcat(bufferPoin, "!!ATTENZIONE!!\nIl libro '");
+                strcat (bufferPoin, titolo);
+                strcat (bufferPoin, "' con ISBN ");
+                strcat (bufferPoin, chISBN);
+                strcat (bufferPoin, " va restituito con urgenza.\n(La restituzione era prevista entro il giorno: ");
+                strcat (bufferPoin, dataRestituzione);
+                strcat (bufferPoin, ")\n\n");
+                prestitiRitardo++;
+            } 
+
+            PQclear(resNomeLibro);
+        }
+
+        if (prestitiRitardo == 0){
+            strcat(bufferPoin, "Non risultano prestiti in scadenza per il suo account.\nEvviva!♥\n\n");
+        }
+
+    } else{
+        strcat(bufferPoin, "Non risultano prestiti in corso per il suo account.\n\n");
+    }   
+
+    PQclear(resCheckPrestiti);
     PQfinish(conn);
 
     return bufferPoin;

@@ -7,10 +7,11 @@ int main();
 void menuGuest(int socket);
 void menuUser(int socket);
 
-void visualizzaCarrello(socket);
-void visualizzaPrestiti(socket);
+void visualizzaCarrello(int socket);
+void visualizzaPrestiti(int socket);
 
 void funzioneLogin(int socket);
+void checkPrestitiInScadenza(int socket, char*email);
 void funzioneRegister(int socket);
 
 void funzioneSearchParolaChiave(int socket);

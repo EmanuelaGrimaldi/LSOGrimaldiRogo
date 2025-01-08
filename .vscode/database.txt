@@ -96,3 +96,6 @@ VALUES (4444,'Framail@mail.com', '11/09/2024', '11/01/2025');
 
 INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
 VALUES (4444,'Mariomail@mail.com', '20/10/2024', '20/02/2025');
+
+INSERT INTO prestito (isbnPrestito, emailPrestito, dataPrestito, dataRestituzione)
+VALUES (1111,'Framail@mail.com', '07/09/2024', '07/01/2025');

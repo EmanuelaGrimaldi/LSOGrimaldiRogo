@@ -104,16 +104,6 @@ void menuGuest(int socket)
 
 void menuUser(int socket)
 {
-    // if ricerca prestiti scaduti == 0
-    if (0)
-    {
-        printf("Non ha prestiti in scadenza!♥\n\n");
-    }
-    else
-    {
-        printf("!!ATTENZIONE!!\nVi sono prestiti in scadenza, si prega di controllare i propri prestiti.\n\n");
-    }
-
     int choice;
     while (1)
     {
@@ -229,7 +219,8 @@ void funzioneLogin(int socket)
 
     if (strcmp(buffer, "RISPOSTA_VALIDA") == 0)
     {
-        printf("Login riuscito correttamente!\n\n");
+        printf("\nLogin riuscito correttamente!\n\n");
+        checkPrestitiInScadenza(socket, email);
         menuUser(socket);
     }
     else if (strcmp(buffer, "ADMIN") == 0)
@@ -241,6 +232,26 @@ void funzioneLogin(int socket)
     {
         printf("Login non riuscito.\n\n");
     }
+}
+
+void checkPrestitiInScadenza(int socket, char*email){
+    
+    
+    // Mando al server il comando riguardante i prestiti dell'utente
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    strcpy(buffer, "CHECK_PRESTITI_IN_SCADENZA\n");
+    send(socket, buffer, strlen(buffer), 0);
+
+    //mando la mail
+    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
+    strcpy(buffer, email);
+    send(socket, buffer, strlen(buffer), 0);
+
+    // Attendi la risposta del server con il messaggio riguardante i prestiti dell'utente
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10, 0);
+    printf("%s", bufferDeluxe);
+    
 }
 
 void funzioneRegister(int socket)
@@ -460,7 +471,7 @@ void visualizzaCarrello(int socket)
     printf("%s\n", bufferDeluxe);
 }
 
-void visualizzaPrestiti(socket)
+void visualizzaPrestiti(int socket)
 {
     // call server
 

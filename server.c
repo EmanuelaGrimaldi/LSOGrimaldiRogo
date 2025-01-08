@@ -356,6 +356,18 @@ void handleClient(int socket)
             {
                 send(socket, "\nValore di K rimasto invariato.\n", strlen("\nValore di K rimasto invariato.\n"), 0);
             }
+
+        } else if (strcmp(client_message, "CHECK_PRESTITI_IN_SCADENZA") == 0)
+        {
+            bzero(buffer, MAX_MESSAGE_LENGTH);
+            recv(socket, buffer, sizeof(buffer), 0);
+
+            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10);
+            bufferPointerDeluxe = getMessaggioRiguardantePrestiti(conninfo, buffer);
+
+            printf("BUFFER DELUXE POST QUERY IN SERVER.C X CHECK PRESTITI: %s\n",bufferPointerDeluxe);
+
+            send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
         else
         {
