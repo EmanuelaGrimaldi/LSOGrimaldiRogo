@@ -9,7 +9,6 @@
 
 char *titolo, *chISBN, *charCopieTotali, *charTotCopiePrestate, *bufferPoin, *bufferPoinDeluxe, *charCopieDisponibili, *emailPrestito, *dataPrestito, *dataRestituzione, *categoria;
 int intCopieTotali, intTotCopiePrestate, copieDisponibili, valore, Ipointer;
-char stringToAppend[MAX_MESSAGE_LENGTH];
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MODIFICATA SECONDO NUOVA LOGICA OK!!
 char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)

@@ -12,21 +12,16 @@
 #include <fcntl.h>
 
 int client_connesso, ISBN;
-int *puntatoreInt;
-char *user_name, *user_email, *charRisposta;
-char *parolaChiave, *email, *password, *nome, *charPtISBN, *buffer, *bufferDeluxe, *rispostaValidaPointer = "RISPOSTA_VALIDA";
+char  *charRisposta, *parolaChiave, *email, *password, *nome, *buffer, *bufferDeluxe;
 
 int main()
 {
     client_connesso = NON_CONNESSO;
 
-    user_name = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
-    user_email = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     parolaChiave = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     email = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     password = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     nome = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
-    charPtISBN = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     buffer = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     charRisposta = (char *)malloc(MAX_MESSAGE_LENGTH);
     bufferDeluxe = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);

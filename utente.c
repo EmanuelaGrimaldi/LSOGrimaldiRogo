@@ -5,8 +5,8 @@
 #include "utente.h"
 #include <libpq-fe.h>
 
-char *user_name, *user_email, *charK;
-int client_connesso, risposta, intK;
+char *charK;
+int intK;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~DATABASEIZZATO - NOT OK
 void registraNuovoUtente(int socket, char *nome, char *email, char *password, char *conninfo)

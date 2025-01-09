@@ -14,8 +14,8 @@
 #include "define.h"
 
 char *conninfo = "host=postgres-db port=5432 dbname=mydb user=myuser password=mypassword";
-char *parolaChiave, *request, *email, *password, *nome, *bufferPointer, *charPointerISBN, *client_message, emailFinale[MAX_LENGTH], *charPointerK, *bufferPointerDeluxe;
-int ISBN, risultato, Kvalue;
+char *parolaChiave, *email, *password, *nome, *bufferPointer, *client_message, *charPointerK, *bufferPointerDeluxe;
+int ISBN, risultato;
 int *intPointer;
 char buffer[MAX_MESSAGE_LENGTH];
 
@@ -28,9 +28,7 @@ int main()
     email = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     password = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     nome = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
-    request = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     bufferPointer = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
-    charPointerISBN = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     client_message = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     charPointerK = (char *)malloc(MAX_MESSAGE_LENGTH);
     bufferPointerDeluxe = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);

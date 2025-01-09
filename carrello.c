@@ -10,7 +10,7 @@
 #include <libpq-fe.h>
 
 char *charISBN, *charNumeroCopie, *bufferCart, *singoloISBN, *charCategoria, *charTitolo;
-char bufferCh[MAX_MESSAGE_LENGTH], toAppend[MAX_MESSAGE_LENGTH];
+char bufferCh[MAX_MESSAGE_LENGTH];
 int numeroCopie, i, disponibile;
 
 char *getAllLibriInCarrello(char *conninfo, char *email)
