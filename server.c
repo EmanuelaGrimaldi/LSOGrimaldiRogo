@@ -230,7 +230,6 @@ void handleClient(int socket)
             bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            // bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH*sizeof(char));
             bufferPointerDeluxe = cercaLibroByISBN(socket, buffer, conninfo);
 
             send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
@@ -303,7 +302,6 @@ void handleClient(int socket)
 
             printf("BUFFER IN SERVER.C: %s\n",buffer);
 
-            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10);
             bufferPointerDeluxe = getAllLibriInCarrello(conninfo, buffer);
 
             printf("BUFFER DELUXE POST QUERY IN SERVER.C: %s\n",bufferPointerDeluxe);
@@ -318,7 +316,6 @@ void handleClient(int socket)
 
             printf("BUFFER IN SERVER.C: %s\n",buffer);
 
-            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10);
             bufferPointerDeluxe = getAllPrestitiByEmail(conninfo, buffer);
 
             printf("BUFFER DELUXE POST QUERY IN SERVER.C: %s\n",bufferPointerDeluxe);
@@ -328,7 +325,7 @@ void handleClient(int socket)
 
         else if (strcmp(client_message, "ADMIN_GET_ALL_PRESTITI") == 0)
         {
-            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);
+
             bufferPointerDeluxe = getAllPrestiti(conninfo);
             send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
@@ -362,10 +359,8 @@ void handleClient(int socket)
             bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10);
             bufferPointerDeluxe = getMessaggioRiguardantePrestiti(conninfo, buffer);
             
-
             printf("BUFFER DELUXE POST QUERY IN SERVER.C X CHECK PRESTITI: %s\n",bufferPointerDeluxe);
 
             send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);

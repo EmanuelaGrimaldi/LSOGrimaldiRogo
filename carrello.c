@@ -114,7 +114,6 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
 
     printf("\nCARRELLO.C: Il risultato di get all libri in carrello è:\n%s", bufferCart);
 
-    free(bufferCart);
     free(charISBN);
     free(charTitolo);
     free(charCategoria);
@@ -376,7 +375,7 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
     }
 
     int num_rows = PQntuples(res);
-    charNumeroCopie = PQgetvalue(res, 0, 0);
+    snprintf(charNumeroCopie, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, 0, 0));
     numeroCopie = atoi(charNumeroCopie);
     numeroCopie++;
 
@@ -429,7 +428,7 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
 
     currGiorno = localTimeStamp->tm_mday;
     currMese = localTimeStamp->tm_mon + 1;
-    currAnno = localTimeStamp->tm_year;
+    currAnno = 2025;
     meseRestituzione = localTimeStamp->tm_mon + 4;
 
     if (meseRestituzione > 11)
@@ -437,8 +436,9 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
         meseRestituzione -= 12;
     }
 
-    sprintf(dataPrestito, "%02d/%02d/%04d", currGiorno, currMese, currAnno);
-    sprintf(dataRestituzione, "%02d/%02d/%04d", currGiorno, meseRestituzione, currAnno);
+
+    sprintf(dataPrestito, "%02d/%02d/%d", currGiorno, currMese, currAnno);
+    sprintf(dataRestituzione, "%02d/%02d/%d", currGiorno, meseRestituzione, currAnno);
 
     const char *paramValues[4] = {charISBN, email, dataPrestito, dataRestituzione};
     PGresult *res = PQexecParams(conn,
