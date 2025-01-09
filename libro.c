@@ -14,14 +14,6 @@ char stringToAppend[MAX_MESSAGE_LENGTH];
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MODIFICATA SECONDO NUOVA LOGICA OK!!
 char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
 {
-    free(bufferPoin);
-    free(chISBN);
-    free(categoria);
-    free(titolo);
-    free(charCopieTotali);
-    free(charTotCopiePrestate);
-    free(charCopieDisponibili);
-
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 9);
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
     titolo = (char *)malloc(MAX_MESSAGE_LENGTH * 100);
@@ -103,6 +95,13 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
         }
     }
 
+    free(chISBN);
+    free(categoria);
+    free(titolo);
+    free(charCopieTotali);
+    free(charTotCopiePrestate);
+    free(charCopieDisponibili);
+
     PQclear(res);
     PQfinish(conn);
 
@@ -112,14 +111,6 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MODIFICATA SECONDO NUOVA LOGICA OK!!
 char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
 {
-    free(bufferPoin);
-    free(chISBN);
-    free(categoria);
-    free(titolo);
-    free(charCopieTotali);
-    free(charTotCopiePrestate);
-    free(charCopieDisponibili);
-
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
     titolo = (char *)malloc(MAX_MESSAGE_LENGTH * 100);
@@ -192,6 +183,13 @@ char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
         strcpy(bufferPoin, "Non è stato trovato nessun libro con l'isbn da lei inserito.\n");
     }
 
+    free(chISBN);
+    free(categoria);
+    free(titolo);
+    free(charCopieTotali);
+    free(charTotCopiePrestate);
+    free(charCopieDisponibili);
+
     PQclear(res);
     PQfinish(conn);
 
@@ -200,13 +198,6 @@ char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
 
 char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
 {
-    free(bufferPoin);
-    free(chISBN);
-    free(titolo);
-    free(charCopieTotali);
-    free(charTotCopiePrestate);
-    free(charCopieDisponibili);
-
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 9);
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
     titolo = (char *)malloc(MAX_MESSAGE_LENGTH * 100);
@@ -288,25 +279,22 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
         strcpy(bufferPoin, "Errore durante l'inserimento della categoria.\n");
     }
 
+    free(chISBN);
+    free(titolo);
+    free(charCopieTotali);
+    free(charTotCopiePrestate);
+    free(charCopieDisponibili);
+
     PQclear(res);
     PQfinish(conn);
 
-    printf("RICERCA CATEGORIA IN LIBRO.C:\n%s\n", bufferPoin);
+    // printf("RICERCA CATEGORIA IN LIBRO.C:\n%s\n", bufferPoin);
 
     return bufferPoin;
 }
 
 char *getAllLibri(char *conninfo)
 {
-
-    free(bufferPoin);
-    free(chISBN);
-    free(categoria);
-    free(titolo);
-    free(charCopieTotali);
-    free(charTotCopiePrestate);
-    free(charCopieDisponibili);
-
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
     titolo = (char *)malloc(MAX_MESSAGE_LENGTH);
@@ -372,6 +360,13 @@ char *getAllLibri(char *conninfo)
         strcpy(bufferPoin, "Errore query in getAllLibri.\n");
     }
 
+    free(chISBN);
+    free(categoria);
+    free(titolo);
+    free(charCopieTotali);
+    free(charTotCopiePrestate);
+    free(charCopieDisponibili);
+
     PQclear(res);
     PQfinish(conn);
 
@@ -380,18 +375,9 @@ char *getAllLibri(char *conninfo)
 
 char *getAllPrestiti(char *conninfo)
 {
+    // printf("\nSono in get all prestiti");
 
-    printf("\nSono in get all prestiti");
-
-    free(bufferPoin);
-    free(chISBN);
-    free(categoria);
-    free(titolo);
-    free(charCopieTotali);
-    free(charTotCopiePrestate);
-    free(charCopieDisponibili);
-
-    bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
+    bufferPoinDeluxe = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
     titolo = (char *)malloc(MAX_MESSAGE_LENGTH);
     categoria = (char *)malloc(MAX_MESSAGE_LENGTH);
@@ -404,6 +390,15 @@ char *getAllPrestiti(char *conninfo)
     if (PQstatus(conn) != CONNECTION_OK)
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+
+        free(bufferPoinDeluxe);
+        free(chISBN);
+        free(categoria);
+        free(titolo);
+        free(charCopieTotali);
+        free(charTotCopiePrestate);
+        free(charCopieDisponibili);
+
         PQfinish(conn);
         return 0;
     }
@@ -413,6 +408,15 @@ char *getAllPrestiti(char *conninfo)
     if (PQresultStatus(res) != PGRES_TUPLES_OK)
     {
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+
+        free(bufferPoinDeluxe);
+        free(chISBN);
+        free(categoria);
+        free(titolo);
+        free(charCopieTotali);
+        free(charTotCopiePrestate);
+        free(charCopieDisponibili);
+
         PQclear(res);
         PQfinish(conn);
         return 0;
@@ -455,6 +459,13 @@ char *getAllPrestiti(char *conninfo)
         strcpy(bufferPoinDeluxe, "Errore query in getAllPrestiti.\n");
     }
 
+    free(chISBN);
+    free(categoria);
+    free(titolo);
+    free(charCopieTotali);
+    free(charTotCopiePrestate);
+    free(charCopieDisponibili);
+
     PQclear(res);
     PQfinish(conn);
 
@@ -463,42 +474,51 @@ char *getAllPrestiti(char *conninfo)
 
 char *getAllPrestitiByEmail(char *conninfo, char *email)
 {
-    free(bufferPoin);
-    free(chISBN);
-    free(categoria);
-    free(titolo);
-    free(dataPrestito);
-    free(dataRestituzione);
-
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
-    titolo = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
-    categoria = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
-    dataPrestito = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
-    dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
+    titolo = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
+    categoria = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
+    dataPrestito = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
+    dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
 
     PGconn *conn = PQconnectdb(conninfo);
 
     if (PQstatus(conn) != CONNECTION_OK)
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+
+        free(bufferPoin);
+        free(chISBN);
+        free(categoria);
+        free(titolo);
+        free(dataPrestito);
+        free(dataRestituzione);
+
         PQfinish(conn);
         return 0;
     }
 
     const char *paramValues[1] = {email};
     PGresult *resPrestito = PQexecParams(conn,
-                               "SELECT * FROM prestito WHERE emailPrestito = $1",
-                               1,           // Numero di parametri
-                               NULL,        // OID dei parametri (NULL per default)
-                               paramValues, // Valori dei parametri
-                               NULL,        // Lunghezza dei parametri (NULL per stringhe)
-                               NULL,        // Formato dei parametri (NULL per stringhe)
-                               0);          // Formato del risultato (0 = testo)
+                                         "SELECT * FROM prestito WHERE emailPrestito = $1",
+                                         1,           // Numero di parametri
+                                         NULL,        // OID dei parametri (NULL per default)
+                                         paramValues, // Valori dei parametri
+                                         NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                                         NULL,        // Formato dei parametri (NULL per stringhe)
+                                         0);          // Formato del risultato (0 = testo)
 
     if (PQresultStatus(resPrestito) != PGRES_TUPLES_OK)
     {
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+
+        free(bufferPoin);
+        free(chISBN);
+        free(categoria);
+        free(titolo);
+        free(dataPrestito);
+        free(dataRestituzione);
+
         PQclear(resPrestito);
         PQfinish(conn);
         return 0;
@@ -511,19 +531,19 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
 
         for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++)
         {
-            snprintf(chISBN, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resPrestito, Ipointer, 0));
-            snprintf(dataPrestito, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resPrestito, Ipointer, 2));
-            snprintf(dataRestituzione, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resPrestito, Ipointer, 3));
+            snprintf(chISBN, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resPrestito, Ipointer, 0));
+            snprintf(dataPrestito, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resPrestito, Ipointer, 2));
+            snprintf(dataRestituzione, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resPrestito, Ipointer, 3));
 
             const char *paramValues1[1] = {chISBN};
             PGresult *resLibro = PQexecParams(conn,
-                                    "SELECT * FROM libro WHERE isbn = $1",
-                                    1,            // Numero di parametri
-                                    NULL,         // OID dei parametri (NULL per default)
-                                    paramValues1, // Valori dei parametri
-                                    NULL,         // Lunghezza dei parametri (NULL per stringhe)
-                                    NULL,         // Formato dei parametri (NULL per stringhe)
-                                    0);           // Formato del risultato (0 = testo)
+                                              "SELECT * FROM libro WHERE isbn = $1",
+                                              1,            // Numero di parametri
+                                              NULL,         // OID dei parametri (NULL per default)
+                                              paramValues1, // Valori dei parametri
+                                              NULL,         // Lunghezza dei parametri (NULL per stringhe)
+                                              NULL,         // Formato dei parametri (NULL per stringhe)
+                                              0);           // Formato del risultato (0 = testo)
 
             if (PQresultStatus(resLibro) != PGRES_TUPLES_OK)
             {
@@ -533,12 +553,15 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
                 return 0;
             }
 
-            snprintf(titolo, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resLibro, 0, 1));
-            snprintf(categoria, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resLibro, 0, 2));
+            snprintf(titolo, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resLibro, 0, 1));
+            snprintf(categoria, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resLibro, 0, 2));
 
-            if (Ipointer == 0){
+            if (Ipointer == 0)
+            {
                 strcpy(bufferPoin, "ISBN: ");
-            }else{
+            }
+            else
+            {
                 strcat(bufferPoin, "ISBN: ");
             }
 
@@ -561,21 +584,28 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
         strcpy(bufferPoin, "Non ci sono Prestiti.\n");
     }
 
+    free(chISBN);
+    free(categoria);
+    free(titolo);
+    free(dataPrestito);
+    free(dataRestituzione);
+
     PQclear(resPrestito);
     PQfinish(conn);
 
     return bufferPoin;
 }
 
-char *getMessaggioRiguardantePrestiti(char *conninfo, char *email){
+char *getMessaggioRiguardantePrestiti(char *conninfo, char *email)
+{
 
     /*
     printf("1");
-    free(bufferPoin); 
+    free(bufferPoin);
     printf("2");
-    free(chISBN); 
+    free(chISBN);
     printf("3");
-    free(titolo); 
+    free(titolo);
     printf("4");
     free(dataRestituzione);
     printf("5");
@@ -583,8 +613,8 @@ char *getMessaggioRiguardantePrestiti(char *conninfo, char *email){
 
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
-    titolo = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
-    dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH* sizeof(char));
+    titolo = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
+    dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
 
     int prestitiRitardo = 0;
 
@@ -593,19 +623,25 @@ char *getMessaggioRiguardantePrestiti(char *conninfo, char *email){
     if (PQstatus(conn) != CONNECTION_OK)
     {
         fprintf(stderr, "Connessione al database fallita: %s", PQerrorMessage(conn));
+
+        free(bufferPoin);
+        free(chISBN);
+        free(titolo);
+        free(dataRestituzione);
+
         PQfinish(conn);
         return 0;
     }
 
     const char *paramValues[1] = {email};
     PGresult *resCheckPrestiti = PQexecParams(conn,
-                               "SELECT * FROM prestito WHERE emailPrestito = $1",
-                               1,           // Numero di parametri
-                               NULL,        // OID dei parametri (NULL per default)
-                               paramValues, // Valori dei parametri
-                               NULL,        // Lunghezza dei parametri (NULL per stringhe)
-                               NULL,        // Formato dei parametri (NULL per stringhe)
-                               0);          // Formato del risultato (0 = testo)
+                                              "SELECT * FROM prestito WHERE emailPrestito = $1",
+                                              1,           // Numero di parametri
+                                              NULL,        // OID dei parametri (NULL per default)
+                                              paramValues, // Valori dei parametri
+                                              NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                                              NULL,        // Formato dei parametri (NULL per stringhe)
+                                              0);          // Formato del risultato (0 = testo)
 
     if (PQresultStatus(resCheckPrestiti) != PGRES_TUPLES_OK)
     {
@@ -621,30 +657,37 @@ char *getMessaggioRiguardantePrestiti(char *conninfo, char *email){
 
     if (numeroRighe > 0)
     {
-        for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++){
+        for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++)
+        {
 
-            snprintf(chISBN, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resCheckPrestiti, Ipointer, 0));
-            snprintf(dataRestituzione, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resCheckPrestiti, Ipointer, 3));
+            snprintf(chISBN, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resCheckPrestiti, Ipointer, 0));
+            snprintf(dataRestituzione, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resCheckPrestiti, Ipointer, 3));
 
             const char *paramValuesOne[1] = {chISBN};
             PGresult *resNomeLibro = PQexecParams(conn,
-                                    "SELECT * FROM libro WHERE isbn = $1",
-                                    1,            // Numero di parametri
-                                    NULL,         // OID dei parametri (NULL per default)
-                                    paramValuesOne, // Valori dei parametri
-                                    NULL,         // Lunghezza dei parametri (NULL per stringhe)
-                                    NULL,         // Formato dei parametri (NULL per stringhe)
-                                    0);           // Formato del risultato (0 = testo)
+                                                  "SELECT * FROM libro WHERE isbn = $1",
+                                                  1,              // Numero di parametri
+                                                  NULL,           // OID dei parametri (NULL per default)
+                                                  paramValuesOne, // Valori dei parametri
+                                                  NULL,           // Lunghezza dei parametri (NULL per stringhe)
+                                                  NULL,           // Formato dei parametri (NULL per stringhe)
+                                                  0);             // Formato del risultato (0 = testo)
 
             if (PQresultStatus(resNomeLibro) != PGRES_TUPLES_OK)
             {
                 fprintf(stderr, "Errore durante la query in Libro: %s", PQerrorMessage(conn));
+
+                free(bufferPoin);
+                free(chISBN);
+                free(titolo);
+                free(dataRestituzione);
+
                 PQclear(resNomeLibro);
                 PQfinish(conn);
                 return 0;
             }
 
-            snprintf(titolo, MAX_MESSAGE_LENGTH* sizeof(char), "%s", PQgetvalue(resNomeLibro, 0, 1));
+            snprintf(titolo, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resNomeLibro, 0, 1));
 
             time_t timeCurrData = time(NULL);
             struct tm structDataRestituzione = {0};
@@ -654,8 +697,15 @@ char *getMessaggioRiguardantePrestiti(char *conninfo, char *email){
             time_t timeDataRestituzione = mktime(&structDataRestituzione);
 
             // Controlla la validità della conversione
-            if (timeDataRestituzione == -1 || timeCurrData == -1) {
+            if (timeDataRestituzione == -1 || timeCurrData == -1)
+            {
                 printf("Errore nella conversione delle date.\ntimeDataRestituzione = %ld\n timeCurrData = %ld\n", timeDataRestituzione, timeCurrData);
+
+                free(bufferPoin);
+                free(chISBN);
+                free(titolo);
+                free(dataRestituzione);
+
                 return 1;
             }
 
@@ -665,38 +715,46 @@ char *getMessaggioRiguardantePrestiti(char *conninfo, char *email){
             double diff_days = diff_seconds / (60 * 60 * 24);
 
             // Controlla se distano meno di una settimana
-            if (fabs(diff_days) < 7) {
+            if (fabs(diff_days) < 7)
+            {
                 strcat(bufferPoin, "!ATTENZIONE!\nIl libro '");
-                strcat (bufferPoin, titolo);
-                strcat (bufferPoin, "' con ISBN ");
-                strcat (bufferPoin, chISBN);
-                strcat (bufferPoin, " va restituito in meno di una settimana.\n(Ultimo giorno disponibile per la restituzione: ");
-                strcat (bufferPoin, dataRestituzione);
-                strcat (bufferPoin, ")\n\n");
+                strcat(bufferPoin, titolo);
+                strcat(bufferPoin, "' con ISBN ");
+                strcat(bufferPoin, chISBN);
+                strcat(bufferPoin, " va restituito in meno di una settimana.\n(Ultimo giorno disponibile per la restituzione: ");
+                strcat(bufferPoin, dataRestituzione);
+                strcat(bufferPoin, ")\n\n");
                 prestitiRitardo++;
-            } 
+            }
 
-            if (timeDataRestituzione < timeCurrData) {
+            if (timeDataRestituzione < timeCurrData)
+            {
                 strcat(bufferPoin, "!!ATTENZIONE!!\nIl libro '");
-                strcat (bufferPoin, titolo);
-                strcat (bufferPoin, "' con ISBN ");
-                strcat (bufferPoin, chISBN);
-                strcat (bufferPoin, " va restituito con urgenza.\n(La restituzione era prevista entro il giorno: ");
-                strcat (bufferPoin, dataRestituzione);
-                strcat (bufferPoin, ")\n\n");
+                strcat(bufferPoin, titolo);
+                strcat(bufferPoin, "' con ISBN ");
+                strcat(bufferPoin, chISBN);
+                strcat(bufferPoin, " va restituito con urgenza.\n(La restituzione era prevista entro il giorno: ");
+                strcat(bufferPoin, dataRestituzione);
+                strcat(bufferPoin, ")\n\n");
                 prestitiRitardo++;
-            } 
+            }
 
             PQclear(resNomeLibro);
         }
 
-        if (prestitiRitardo == 0){
+        if (prestitiRitardo == 0)
+        {
             strcat(bufferPoin, "Non risultano prestiti in scadenza per il suo account.\nEvviva!♥\n\n");
         }
-
-    } else{
+    }
+    else
+    {
         strcat(bufferPoin, "Non risultano prestiti in corso per il suo account.\n\n");
-    }   
+    }
+
+    free(chISBN);
+    free(titolo);
+    free(dataRestituzione);
 
     PQclear(resCheckPrestiti);
     PQfinish(conn);

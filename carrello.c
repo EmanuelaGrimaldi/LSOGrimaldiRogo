@@ -17,11 +17,6 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
 {
     printf("sono in get all libri in carrello\n\n");
 
-    free(bufferCart);
-    free(charISBN);
-    free(charTitolo);
-    free(charCategoria);
-
     bufferCart = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     charISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
     charTitolo = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
@@ -40,13 +35,13 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
 
     const char *paramValues[1] = {email};
     PGresult *resCar = PQexecParams(conn,
-                          "SELECT * FROM carrello WHERE emailCarrello = $1",
-                          1,           // Numero di parametri
-                          NULL,        // OID dei parametri (NULL per default)
-                          paramValues, // Valori dei parametri
-                          NULL,        // Lunghezza dei parametri (NULL per stringhe)
-                          NULL,        // Formato dei parametri (NULL per stringhe)
-                          0);          // Formato del risultato (0 = testo)
+                                    "SELECT * FROM carrello WHERE emailCarrello = $1",
+                                    1,           // Numero di parametri
+                                    NULL,        // OID dei parametri (NULL per default)
+                                    paramValues, // Valori dei parametri
+                                    NULL,        // Lunghezza dei parametri (NULL per stringhe)
+                                    NULL,        // Formato dei parametri (NULL per stringhe)
+                                    0);          // Formato del risultato (0 = testo)
 
     if (PQresultStatus(resCar) != PGRES_TUPLES_OK)
     {
@@ -64,19 +59,19 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
         for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++)
         {
 
-            snprintf(charISBN, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(resCar, Ipointer, 0)); //funziona
+            snprintf(charISBN, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resCar, Ipointer, 0)); // funziona
 
             printf("\nCARRELLO.C: L'ISBN CHE GLI STO PASSANDO E' %s", charISBN);
 
             const char *paramValues1[1] = {charISBN};
             PGresult *resLib = PQexecParams(conn,
-                                  "SELECT * FROM libro WHERE isbn = $1",
-                                  1,            // Numero di parametri
-                                  NULL,         // OID dei parametri (NULL per default)
-                                  paramValues1, // Valori dei parametri
-                                  NULL,         // Lunghezza dei parametri (NULL per stringhe)
-                                  NULL,         // Formato dei parametri (NULL per stringhe)
-                                  0);           // Formato del risultato (0 = testo)
+                                            "SELECT * FROM libro WHERE isbn = $1",
+                                            1,            // Numero di parametri
+                                            NULL,         // OID dei parametri (NULL per default)
+                                            paramValues1, // Valori dei parametri
+                                            NULL,         // Lunghezza dei parametri (NULL per stringhe)
+                                            NULL,         // Formato dei parametri (NULL per stringhe)
+                                            0);           // Formato del risultato (0 = testo)
 
             if (PQresultStatus(resLib) != PGRES_TUPLES_OK)
             {
@@ -86,12 +81,15 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
                 return 0;
             }
 
-            snprintf(charTitolo, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(resLib, 0, 1));
-            snprintf(charCategoria, MAX_MESSAGE_LENGTH*sizeof(char), "%s", PQgetvalue(resLib, 0, 2));
+            snprintf(charTitolo, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resLib, 0, 1));
+            snprintf(charCategoria, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resLib, 0, 2));
 
-            if (Ipointer == 0) {
+            if (Ipointer == 0)
+            {
                 strcpy(bufferCart, "ISBN: ");
-            } else {
+            }
+            else
+            {
                 strcat(bufferCart, "ISBN: ");
             }
 
@@ -114,7 +112,12 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
     PQclear(resCar);
     PQfinish(conn);
 
-    printf("\nCARRELLO.C: Il risultato di get all libri in carrello è:\n%s",bufferCart);
+    printf("\nCARRELLO.C: Il risultato di get all libri in carrello è:\n%s", bufferCart);
+
+    free(bufferCart);
+    free(charISBN);
+    free(charTitolo);
+    free(charCategoria);
 
     return bufferCart;
 }
@@ -204,6 +207,7 @@ char *checkout(int socket, char *email, char *conninfo)
     if (PQresultStatus(res) != PGRES_TUPLES_OK)
     {
         fprintf(stderr, "Errore durante la query: %s", PQerrorMessage(conn));
+        free(bufferCart);
         PQclear(res);
         PQfinish(conn);
         return NULL;
@@ -394,10 +398,10 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
     if (PQresultStatus(res) != PGRES_TUPLES_OK)
     {
         fprintf(stderr, "Errore durante la query finale di aggiorna numero libri: %s", PQerrorMessage(conn));
-        PQclear(res);
-        PQfinish(conn);
-        return;
     }
+    free(charISBN);
+    PQclear(res);
+    PQfinish(conn);
 }
 
 void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
@@ -416,8 +420,6 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
 
     int currMese, currGiorno, meseRestituzione, currAnno;
     char *dataPrestito, *dataRestituzione;
-
-    free(charISBN);free(dataPrestito);free(dataRestituzione);
 
     dataPrestito = (char *)malloc(MAX_MESSAGE_LENGTH);
     dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH);
@@ -455,6 +457,10 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
         PQclear(res);
         PQfinish(conn);
     }
+
+    free(charISBN);
+    free(dataPrestito);
+    free(dataRestituzione);
 }
 
 void cancellaCarrelloDiUtente(char *email, char *conninfo)
