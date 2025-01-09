@@ -223,9 +223,12 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
         return 0;
     }
 
+    char queryKey[256]; // Assicurati che sia abbastanza grande per contenere parolaChiave + caratteri jolly
+    snprintf(queryKey, sizeof(queryKey), "%%%s%%", categoria_x);
+
     const char *paramValues[1] = {categoria_x};
     PGresult *res = PQexecParams(conn,
-                                 "SELECT * FROM libro WHERE categoria = $1",
+                                 "SELECT * FROM libro WHERE categoria LIKE $1",
                                  1,           // Numero di parametri
                                  NULL,        // OID dei parametri (NULL per default)
                                  paramValues, // Valori dei parametri
@@ -282,7 +285,7 @@ char *cercaLibroByCategoria(int socket, char *categoria_x, char *conninfo)
     }
     else
     {
-        strcpy(bufferPoin, "Non è stato trovato nessun libro con l'isbn da lei inserito.\n");
+        strcpy(bufferPoin, "Errore durante l'inserimento della categoria.\n");
     }
 
     PQclear(res);
@@ -566,7 +569,17 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
 
 char *getMessaggioRiguardantePrestiti(char *conninfo, char *email){
 
-    free(bufferPoin); free(chISBN); free(titolo); free(dataRestituzione);
+    /*
+    printf("1");
+    free(bufferPoin); 
+    printf("2");
+    free(chISBN); 
+    printf("3");
+    free(titolo); 
+    printf("4");
+    free(dataRestituzione);
+    printf("5");
+    */
 
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);

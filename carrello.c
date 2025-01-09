@@ -398,7 +398,6 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
         PQfinish(conn);
         return;
     }
-    free(charISBN);
 }
 
 void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
@@ -417,6 +416,8 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
 
     int currMese, currGiorno, meseRestituzione, currAnno;
     char *dataPrestito, *dataRestituzione;
+
+    free(charISBN);free(dataPrestito);free(dataRestituzione);
 
     dataPrestito = (char *)malloc(MAX_MESSAGE_LENGTH);
     dataRestituzione = (char *)malloc(MAX_MESSAGE_LENGTH);
@@ -454,10 +455,6 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
         PQclear(res);
         PQfinish(conn);
     }
-
-    free(charISBN);
-    free(dataPrestito);
-    free(dataRestituzione);
 }
 
 void cancellaCarrelloDiUtente(char *email, char *conninfo)

@@ -364,6 +364,7 @@ void handleClient(int socket)
 
             bzero(bufferPointerDeluxe, MAX_MESSAGE_LENGTH * sizeof(char)*10);
             bufferPointerDeluxe = getMessaggioRiguardantePrestiti(conninfo, buffer);
+            
 
             printf("BUFFER DELUXE POST QUERY IN SERVER.C X CHECK PRESTITI: %s\n",bufferPointerDeluxe);
 
