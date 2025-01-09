@@ -137,6 +137,8 @@ int emailValida(char *emailDaVerificare, char *conninfo)
         PQfinish(conn);
         return RISPOSTA_INVALIDA;
     }
+    PQclear(res);
+    PQfinish(conn);
 
     return RISPOSTA_VALIDA;
 }

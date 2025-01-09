@@ -15,7 +15,6 @@ int numeroCopie, i, disponibile;
 
 char *getAllLibriInCarrello(char *conninfo, char *email)
 {
-    printf("sono in get all libri in carrello\n\n");
 
     bufferCart = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     charISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
@@ -30,8 +29,6 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
         PQfinish(conn);
         return 0;
     }
-
-    printf("\nCARRELLO.C: l'email che sto passando è %s", email);
 
     const char *paramValues[1] = {email};
     PGresult *resCar = PQexecParams(conn,
@@ -59,9 +56,7 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
         for (int Ipointer = 0; Ipointer < numeroRighe; Ipointer++)
         {
 
-            snprintf(charISBN, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resCar, Ipointer, 0)); // funziona
-
-            printf("\nCARRELLO.C: L'ISBN CHE GLI STO PASSANDO E' %s", charISBN);
+            snprintf(charISBN, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resCar, Ipointer, 0));
 
             const char *paramValues1[1] = {charISBN};
             PGresult *resLib = PQexecParams(conn,
@@ -284,6 +279,8 @@ char *checkout(int socket, char *email, char *conninfo)
     }
     cancellaCarrelloDiUtente(email, conninfo);
 
+    PQclear(res);
+    PQfinish(conn);
     return bufferCart;
 }
 
@@ -338,6 +335,9 @@ int isLibroDisponibile(char *ISBN, char *conninfo)
             return 0;
         }
     }
+    //che succede se do un isbn che non ha libro?
+    PQclear(res);
+    PQfinish(conn);
 }
 
 void aggiornaNumeroLibri(int ISBN, char *conninfo)
@@ -352,6 +352,7 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
     }
 
     charISBN = (char *)malloc(12 * sizeof(char));
+    charNumeroCopie = (char *)malloc(12 * sizeof(char));
     sprintf(charISBN, "%d", ISBN);
 
     // STEP 1: Mi prendo il numero attuale di totcopieprestate
@@ -375,7 +376,7 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
     }
 
     int num_rows = PQntuples(res);
-    snprintf(charNumeroCopie, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, 0, 0));
+    snprintf(charNumeroCopie, 12 * sizeof(char), "%s", PQgetvalue(res, 0, 0));
     numeroCopie = atoi(charNumeroCopie);
     numeroCopie++;
 
@@ -394,11 +395,18 @@ void aggiornaNumeroLibri(int ISBN, char *conninfo)
 
     // Verifica il risultato della query
 
-    if (PQresultStatus(res) != PGRES_TUPLES_OK)
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
     {
-        fprintf(stderr, "Errore durante la query finale di aggiorna numero libri: %s", PQerrorMessage(conn));
+        fprintf(stderr, "Errore durante la query finale di aggiorna numero libri: %s.\n", PQerrorMessage(conn));
     }
+
+    if (strcmp(PQcmdTuples(res), "0") == 0)
+    {
+        fprintf(stderr, "Nessuna riga aggiornata. Verifica l'ISBN fornito.\n");
+    }
+
     free(charISBN);
+    free(charNumeroCopie);
     PQclear(res);
     PQfinish(conn);
 }
@@ -450,8 +458,9 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
                                  NULL,        // Formato dei parametri (NULL per stringhe)
                                  0);          // Formato del risultato (0 = testo)
 
+    
     // Verifica il risultato della query
-    if (PQresultStatus(res) != PGRES_TUPLES_OK)
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
     {
         fprintf(stderr, "Errore durante la query crea Nuovo Prestito\n : %s", PQerrorMessage(conn));
         PQclear(res);
@@ -461,6 +470,9 @@ void creaNuovoPrestito(char *email, int ISBN, char *conninfo)
     free(charISBN);
     free(dataPrestito);
     free(dataRestituzione);
+
+    PQclear(res);
+    PQfinish(conn);
 }
 
 void cancellaCarrelloDiUtente(char *email, char *conninfo)
@@ -487,9 +499,9 @@ void cancellaCarrelloDiUtente(char *email, char *conninfo)
     if (PQresultStatus(res) != PGRES_COMMAND_OK)
     {
         fprintf(stderr, "Errore durante la query cancellaCarrelloDiUtente : %s", PQerrorMessage(conn));
-        PQclear(res);
-        PQfinish(conn);
     }
+    PQclear(res);
+    PQfinish(conn);
 }
 
 int isNumeroLibriCarrelloMaggioreDiK(char *email, char *conninfo)

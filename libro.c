@@ -14,13 +14,14 @@ char stringToAppend[MAX_MESSAGE_LENGTH];
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MODIFICATA SECONDO NUOVA LOGICA OK!!
 char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
 {
-    bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 9);
+    bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
     titolo = (char *)malloc(MAX_MESSAGE_LENGTH * 100);
     categoria = (char *)malloc(MAX_MESSAGE_LENGTH * 100);
     charCopieTotali = (char *)malloc(MAX_MESSAGE_LENGTH);
     charTotCopiePrestate = (char *)malloc(MAX_MESSAGE_LENGTH);
     charCopieDisponibili = (char *)malloc(MAX_MESSAGE_LENGTH);
+
 
     PGconn *conn = PQconnectdb(conninfo);
 
@@ -93,7 +94,10 @@ char *cercaLibroByParolaChiave(int socket, char *parolaChiave, char *conninfo)
             strcat(bufferPoin, charCopieDisponibili);
             strcat(bufferPoin, "\n");
         }
+    }else{
+        strcpy(bufferPoin, "Non è stato trovato nessun libro con la parola chiave da lei inserita.\n");
     }
+
 
     free(chISBN);
     free(categoria);
@@ -153,11 +157,11 @@ char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
     if (numeroRighe > 0)
     {
 
-        snprintf(chISBN, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 0));
-        snprintf(titolo, MAX_MESSAGE_LENGTH * 100, "%s", PQgetvalue(res, valore, 1));
-        snprintf(categoria, MAX_MESSAGE_LENGTH * 100, "%s", PQgetvalue(res, valore, 2));
-        snprintf(charCopieTotali, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 3));
-        snprintf(charTotCopiePrestate, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, valore, 4));
+        snprintf(chISBN, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, 0, 0));
+        snprintf(titolo, MAX_MESSAGE_LENGTH * 100, "%s", PQgetvalue(res, 0, 1));
+        snprintf(categoria, MAX_MESSAGE_LENGTH * 100, "%s", PQgetvalue(res, 0, 2));
+        snprintf(charCopieTotali, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, 0, 3));
+        snprintf(charTotCopiePrestate, MAX_MESSAGE_LENGTH, "%s", PQgetvalue(res, 0, 4));
 
         intCopieTotali = atoi(charCopieTotali);
         intTotCopiePrestate = atoi(charTotCopiePrestate);
@@ -599,18 +603,6 @@ char *getAllPrestitiByEmail(char *conninfo, char *email)
 char *getMessaggioRiguardantePrestiti(char *conninfo, char *email)
 {
 
-    /*
-    printf("1");
-    free(bufferPoin);
-    printf("2");
-    free(chISBN);
-    printf("3");
-    free(titolo);
-    printf("4");
-    free(dataRestituzione);
-    printf("5");
-    */
-
     bufferPoin = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);
     titolo = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
@@ -684,7 +676,7 @@ char *getMessaggioRiguardantePrestiti(char *conninfo, char *email)
 
                 PQclear(resNomeLibro);
                 PQfinish(conn);
-                return 0;
+                return NULL;
             }
 
             snprintf(titolo, MAX_MESSAGE_LENGTH * sizeof(char), "%s", PQgetvalue(resNomeLibro, 0, 1));
@@ -705,8 +697,9 @@ char *getMessaggioRiguardantePrestiti(char *conninfo, char *email)
                 free(chISBN);
                 free(titolo);
                 free(dataRestituzione);
+                PQfinish(conn);
 
-                return 1;
+                return NULL;
             }
 
             // Differenza in secondi tra le due date

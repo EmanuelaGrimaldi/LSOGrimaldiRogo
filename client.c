@@ -144,7 +144,6 @@ void menuUser(int socket)
             visualizzaPrestiti(socket);
             break;
         case 8:
-            logout();
             menuGuest(socket);
             break;
         case 9:
@@ -180,7 +179,6 @@ void menuAdmin(int socket)
             funzioneModificaK(socket);
             break;
         case 4:
-            logout();
             menuGuest(socket);
             break;
         default:
