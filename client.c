@@ -218,7 +218,7 @@ void funzioneLogin(int socket)
     }
     else if (strcmp(buffer, "ADMIN") == 0)
     {
-        printf("\nBentornato Libraio!\n\n");
+        printf("\nBentornato Libraio!\n");
         menuAdmin(socket);
     }
     else
@@ -233,11 +233,6 @@ void checkPrestitiInScadenza(int socket, char*email){
     // Mando al server il comando riguardante i prestiti dell'utente
     bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "CHECK_PRESTITI_IN_SCADENZA\n");
-    send(socket, buffer, strlen(buffer), 0);
-
-    //mando la mail
-    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
-    strcpy(buffer, email);
     send(socket, buffer, strlen(buffer), 0);
 
     // Attendi la risposta del server con il messaggio riguardante i prestiti dell'utente
@@ -373,7 +368,7 @@ void funzioneCheckout(int socket)
     strcpy(buffer, "CHECKOUT\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    send(socket, email, strlen(email), 0);
+    //send(socket, email, strlen(email), 0);
 
     bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
@@ -402,7 +397,6 @@ void funzioneElencoPrestiti(int socket)
 
     bzero(bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);
     recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10, 0);
-    printf("Ecco l'elenco completo di tutti i prestiti:\n");
     printf("%s\n", bufferDeluxe);
 }
 
@@ -470,10 +464,6 @@ void visualizzaPrestiti(int socket)
 
     bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "ELENCO_PRESTITI_BY_EMAIL\n");
-    send(socket, buffer, strlen(buffer), 0);
-
-    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
-    strcpy(buffer, email);
     send(socket, buffer, strlen(buffer), 0);
 
     bzero(bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);

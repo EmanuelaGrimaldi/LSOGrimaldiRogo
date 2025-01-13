@@ -225,6 +225,12 @@ char *checkout(int socket, char *email, char *conninfo)
                 strcat(bufferCh, "\n");
             }
         }
+    } else {
+        PQclear(res);
+        PQfinish(conn);
+        strcpy(bufferCart, "Il suo carrello è vuoto, non vi sono libri per effettuare il checkout.\n");
+        return bufferCart;
+
     }
 
     /*STEP 2: per ogni libro:   mi prendo il singolo ISBN
@@ -335,7 +341,6 @@ int isLibroDisponibile(char *ISBN, char *conninfo)
             return 0;
         }
     }
-    //che succede se do un isbn che non ha libro?
     PQclear(res);
     PQfinish(conn);
 }

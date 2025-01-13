@@ -270,9 +270,6 @@ void handleClient(int socket)
 
         else if (strcmp(client_message, "CHECKOUT") == 0)
         {
-            // Attendo il buffer con l'email del checkout
-            bzero(buffer, MAX_MESSAGE_LENGTH);
-            recv(socket, buffer, sizeof(buffer), 0);
 
             bufferPointer = checkout(socket, email, conninfo);
 
@@ -282,7 +279,7 @@ void handleClient(int socket)
             }
             else
             {
-                send(socket, buffer, strlen(buffer), 0);
+                send(socket, bufferPointer, strlen(bufferPointer), 0);
             }
         }
 
@@ -298,26 +295,13 @@ void handleClient(int socket)
             bzero(buffer, MAX_MESSAGE_LENGTH);
             recv(socket, buffer, sizeof(buffer), 0);
 
-            printf("BUFFER IN SERVER.C: %s\n",buffer);
-
             bufferPointerDeluxe = getAllLibriInCarrello(conninfo, buffer);
-
-            printf("BUFFER DELUXE POST QUERY IN SERVER.C: %s\n",bufferPointerDeluxe);
-
             send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
 
         else if (strcmp(client_message, "ELENCO_PRESTITI_BY_EMAIL") == 0)
         {
-            bzero(buffer, MAX_MESSAGE_LENGTH);
-            recv(socket, buffer, sizeof(buffer), 0);
-
-            printf("BUFFER IN SERVER.C: %s\n",buffer);
-
-            bufferPointerDeluxe = getAllPrestitiByEmail(conninfo, buffer);
-
-            printf("BUFFER DELUXE POST QUERY IN SERVER.C: %s\n",bufferPointerDeluxe);
-
+            bufferPointerDeluxe = getAllPrestitiByEmail(conninfo, email);
             send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
 
@@ -354,13 +338,8 @@ void handleClient(int socket)
 
         } else if (strcmp(client_message, "CHECK_PRESTITI_IN_SCADENZA") == 0)
         {
-            bzero(buffer, MAX_MESSAGE_LENGTH);
-            recv(socket, buffer, sizeof(buffer), 0);
 
-            bufferPointerDeluxe = getMessaggioRiguardantePrestiti(conninfo, buffer);
-            
-            printf("BUFFER DELUXE POST QUERY IN SERVER.C X CHECK PRESTITI: %s\n",bufferPointerDeluxe);
-
+            bufferPointerDeluxe = getMessaggioRiguardantePrestiti(conninfo, email);
             send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
         else
