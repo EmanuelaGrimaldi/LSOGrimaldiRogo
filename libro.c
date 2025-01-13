@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <ctype.h>
 #include "libro.h"
 #include "define.h"
 #include <libpq-fe.h>
@@ -130,6 +131,23 @@ char *cercaLibroByISBN(int socket, char *ISBN, char *conninfo)
         PQfinish(conn);
         return 0;
     }
+
+    if ((!isdigit((unsigned char)*ISBN))){
+        
+        strcpy(bufferPoin, "Il valore da lei inserito non è valido.\nSi prega di inserire un ISBN numerico.\n");
+
+        free(chISBN);
+        free(categoria);
+        free(titolo);
+        free(charCopieTotali);
+        free(charTotCopiePrestate);
+        free(charCopieDisponibili);
+
+        PQfinish(conn);
+
+        return bufferPoin;
+    }
+
 
     const char *paramValues[1] = {ISBN};
     PGresult *res = PQexecParams(conn,
@@ -379,7 +397,6 @@ char *getAllLibri(char *conninfo)
 
 char *getAllPrestiti(char *conninfo)
 {
-    // printf("\nSono in get all prestiti");
 
     bufferPoinDeluxe = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char) * 10);
     chISBN = (char *)malloc(MAX_MESSAGE_LENGTH);

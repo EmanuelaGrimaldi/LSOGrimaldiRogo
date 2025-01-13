@@ -323,7 +323,6 @@ void funzioneSearchCategoria(int socket)
 
     bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
 
-    // DA TESTARE + finire elenco categorie                                                                                                             ----DA TESTARE!!!!
     printf("\nLe categorie disponibili sono:");
     printf("\n\n1. SCOLASTICO: Testi didattici.");
     printf("\n2. FUMETTO: Graphic novel, manga, fumetti.");
@@ -446,8 +445,6 @@ void visualizzaCarrello(int socket)
 
     bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, email);
-
-    printf("Email di visualizzaCarrello IN CLIENT.C:\nEmail:%s\nBuffer: %s\n",email,buffer);
 
     send(socket, buffer, strlen(buffer), 0);
 

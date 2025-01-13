@@ -107,8 +107,6 @@ char *getAllLibriInCarrello(char *conninfo, char *email)
     PQclear(resCar);
     PQfinish(conn);
 
-    printf("\nCARRELLO.C: Il risultato di get all libri in carrello è:\n%s", bufferCart);
-
     free(charISBN);
     free(charTitolo);
     free(charCategoria);
