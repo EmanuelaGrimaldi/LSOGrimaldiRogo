@@ -283,11 +283,17 @@ void handleClient(int socket)
             }
         }
 
-        else if (strcmp(client_message, "ELENCO_LIBRI") == 0)
+        else if (strcmp(client_message, "ADMIN_ELENCO_LIBRI") == 0)
         {
-            bzero(bufferPointer, MAX_MESSAGE_LENGTH*sizeof(char));
-            bufferPointer = getAllLibri(conninfo);
-            send(socket, bufferPointer, strlen(bufferPointer), 0);
+            bufferPointerDeluxe = getAllLibri(conninfo);
+            send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
+        }
+        
+        else if (strcmp(client_message, "ADMIN_GET_ALL_PRESTITI") == 0)
+        {
+
+            bufferPointerDeluxe = getAllPrestiti(conninfo);
+            send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
 
         else if (strcmp(client_message, "ELENCO_CARRELLO_BY_EMAIL") == 0)
@@ -302,13 +308,6 @@ void handleClient(int socket)
         else if (strcmp(client_message, "ELENCO_PRESTITI_BY_EMAIL") == 0)
         {
             bufferPointerDeluxe = getAllPrestitiByEmail(conninfo, email);
-            send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
-        }
-
-        else if (strcmp(client_message, "ADMIN_GET_ALL_PRESTITI") == 0)
-        {
-
-            bufferPointerDeluxe = getAllPrestiti(conninfo);
             send(socket, bufferPointerDeluxe, strlen(bufferPointerDeluxe), 0);
         }
 

@@ -376,26 +376,27 @@ void funzioneCheckout(int socket)
 
 void funzioneElencoLibri(int socket)
 {
-
     bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
-    strcpy(buffer, "ELENCO_LIBRI\n");
+    strcpy(buffer, "ADMIN_ELENCO_LIBRI\n");
     send(socket, buffer, strlen(buffer), 0);
 
-    bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
-    recv(socket, buffer, MAX_MESSAGE_LENGTH*sizeof(char), 0);
+    // Riceve ellenco
+    bzero(bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10, 0);
     printf("Ecco l'elenco completo di tutti i libri:\n");
-    printf("%s\n", buffer);
+    printf("%s\n", bufferDeluxe);
 }
 
 void funzioneElencoPrestiti(int socket)
 {
-
     bzero(buffer, MAX_MESSAGE_LENGTH*sizeof(char));
     strcpy(buffer, "ADMIN_GET_ALL_PRESTITI\n");
     send(socket, buffer, strlen(buffer), 0);
 
+    // Riceve elenco
     bzero(bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10);
-    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH * sizeof(char) * 10, 0);
+    recv(socket, bufferDeluxe, MAX_MESSAGE_LENGTH*sizeof(char)*10, 0);
+    printf("Ecco l'elenco completo di tutti i prestiti:\n");
     printf("%s\n", bufferDeluxe);
 }
 

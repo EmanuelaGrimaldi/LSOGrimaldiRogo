@@ -196,6 +196,7 @@ void updateValoreK(char *conninfo, int nuovoK)
         return;
     }
 
+    charK = (char *)malloc(MAX_MESSAGE_LENGTH * sizeof(char));
     sprintf(charK, "%d", nuovoK);
 
     const char *paramValuesDue[1] = {charK};
@@ -208,5 +209,7 @@ void updateValoreK(char *conninfo, int nuovoK)
                                  NULL,           // Formato dei parametri (NULL per stringhe)
                                  0);             // Formato del risultato (0 = testo)
 
+    free(charK);
+    PQclear(res);
     PQfinish(conn);
 }
